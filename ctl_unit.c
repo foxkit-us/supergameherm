@@ -2,14 +2,12 @@
 #include <stdint.h>	// integer types
 #include <stdlib.h>	// NULL
 
+#include "memory.h"	// mem_[read|write][8|16]
 #include "params.h"	// system_types
 #include "print.h"	// fatal
 
 
 #define WAIT_CYCLE(cycles, handler)  handler
-
-/*! usable memory */
-unsigned char memory[0x10000];
 
 /*! actual loaded ROM data */
 extern unsigned char *data;
@@ -52,7 +50,7 @@ void nop(void)
  */
 void jr_imm8(void)
 {
-	unsigned char to_add = memory[pc + 1];
+	unsigned char to_add = mem_read8(pc + 1);
 
 	pc += to_add;
 }
@@ -63,7 +61,7 @@ void jr_imm8(void)
  */
 void jr_nz_imm8(void)
 {
-	unsigned char to_add = memory[pc + 1];
+	unsigned char to_add = mem_read8(pc + 1);
 
 	pc += (flag_reg & FLAG_Z) ? 2 : to_add;
 }
@@ -74,7 +72,7 @@ void jr_nz_imm8(void)
  */
 void jr_z_imm8(void)
 {
-	unsigned char to_add = memory[pc + 1];
+	unsigned char to_add = mem_read8(pc + 1);
 
 	pc += (flag_reg & FLAG_Z) ? to_add : 2;
 }
@@ -85,7 +83,7 @@ void jr_z_imm8(void)
  */
 void ld_a_imm8(void)
 {
-	*a = memory[++pc];
+	*a = mem_read8(++pc);
 	pc++;
 }
 
@@ -170,8 +168,8 @@ void xor_a(void)
  */
 void jp_imm16(void)
 {
-	char lsb = memory[++pc];
-	char msb = memory[++pc];
+	char lsb = mem_read8(++pc);
+	char msb = mem_read8(++pc);
 
 	pc = (msb<<8 | lsb);
 }
@@ -184,8 +182,8 @@ void cp_imm8(void)
 {
 	char cmp;
 
-	cmp = memory[++pc];
-	printf("flags = %s%s%s%s; cmp = %d; A = %d\n",
+	cmp = mem_read8(++pc);
+	debug("flags = %s%s%s%s; cmp = %d; A = %d",
 	       (flag_reg & FLAG_Z) ? "Z":"z",
 	       (flag_reg & FLAG_N) ? "N":"n",
 	       (flag_reg & FLAG_H) ? "H":"h",
@@ -204,7 +202,7 @@ void cp_imm8(void)
 			flag_reg |= FLAG_H;
 		}
 	}
-	printf("flags = %s%s%s%s\n",
+	debug("flags = %s%s%s%s",
 	       (flag_reg & FLAG_Z) ? "Z":"z",
 	       (flag_reg & FLAG_N) ? "N":"n",
 	       (flag_reg & FLAG_H) ? "H":"h",
@@ -324,7 +322,7 @@ void init_ctl(char type)
 /*! the emulated CU for the 'z80-ish' CPU */
 bool execute(void)
 {
-	unsigned char opcode = memory[pc];
+	unsigned char opcode = mem_read8(pc);
 	opcode_t handler = handlers[opcode];
 
 	if(handler == NULL)
