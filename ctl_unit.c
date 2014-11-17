@@ -47,14 +47,25 @@ void nop(void)
 }
 
 /*!
+ * @brief JR n (0x18)
+ * @result add n to pc
+ */
+void jr_imm8(void)
+{
+	unsigned char to_add = memory[pc + 1];
+
+	pc += to_add;
+}
+
+/*!
  * @brief JR NZ,n (0x20)
  * @result add n to pc if Z (zero) flag clear
  */
 void jr_nz_imm8(void)
 {
-	unsigned char to_add = memory[++pc];
+	unsigned char to_add = memory[pc + 1];
 
-	pc += (flag_reg & FLAG_Z) ? 1 : to_add;
+	pc += (flag_reg & FLAG_Z) ? 2 : to_add;
 }
 
 /*!
@@ -63,9 +74,94 @@ void jr_nz_imm8(void)
  */
 void jr_z_imm8(void)
 {
-	unsigned char to_add = memory[++pc];
+	unsigned char to_add = memory[pc + 1];
 
-	pc += (flag_reg & FLAG_Z) ? to_add : 1;
+	pc += (flag_reg & FLAG_Z) ? to_add : 2;
+}
+
+/*!
+ * @brief LD A,n (0x3E)
+ * @result A = n
+ */
+void ld_a_imm8(void)
+{
+	*a = memory[++pc];
+	pc++;
+}
+
+void xor_common(char to_xor)
+{
+	*a ^= to_xor;
+
+	flag_reg = 0;
+	if(*a == 0) flag_reg |= FLAG_Z;
+
+	pc++;
+}
+
+/*!
+ * @brief XOR B (0xA8)
+ * @result A ^= B; Z flag set if A is now zero
+ */
+void xor_b(void)
+{
+	xor_common(*b);
+}
+
+/*!
+ * @brief XOR C (0xA9)
+ * @result A ^= C; Z flag set if A is now zero
+ */
+void xor_c(void)
+{
+	xor_common(*c);
+}
+
+/*!
+ * @brief XOR D (0xAA)
+ * @result A ^= D; Z flag set if A is now zero
+ */
+void xor_d(void)
+{
+	xor_common(*d);
+}
+
+/*!
+ * @brief XOR E (0xAB)
+ * @result A ^= E; Z flag set if A is now zero
+ */
+void xor_e(void)
+{
+	xor_common(*e);
+}
+
+/*!
+ * @brief XOR H (0xAC)
+ * @result A ^= H; Z flag set if A is now zero
+ */
+void xor_h(void)
+{
+	xor_common(*h);
+}
+
+/*!
+ * @brief XOR L (0xAD)
+ * @result A ^= H; Z flag set if A is now zero
+ */
+void xor_l(void)
+{
+	xor_common(*l);
+}
+
+/*!
+ * @brief XOR A (0xAF)
+ * @result A = 0; Z flag set
+ */
+void xor_a(void)
+{
+	*a = 0;
+	flag_reg = FLAG_Z;
+	pc++;
 }
 
 /*!
@@ -108,7 +204,7 @@ void cp_imm8(void)
 			flag_reg |= FLAG_H;
 		}
 	}
-	printf("flags = %s%s%s%s",
+	printf("flags = %s%s%s%s\n",
 	       (flag_reg & FLAG_Z) ? "Z":"z",
 	       (flag_reg & FLAG_N) ? "N":"n",
 	       (flag_reg & FLAG_H) ? "H":"h",
@@ -123,11 +219,11 @@ opcode_t handlers[0x100] = {
 	/* 0x00 */ nop, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x08 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x10 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x18 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x18 */ jr_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x20 */ jr_nz_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x28 */ jr_z_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x30 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x38 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x38 */ NULL, NULL, NULL, NULL, NULL, NULL, ld_a_imm8, NULL,
 	/* 0x40 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x48 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x50 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -141,7 +237,7 @@ opcode_t handlers[0x100] = {
 	/* 0x90 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x98 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xA0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xA8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, NULL, xor_a,
 	/* 0xB0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xC0 */ NULL, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
