@@ -57,7 +57,12 @@ uint8_t f_read(uint16_t location)
 	{
 		fatal("invalid memory read at %04X", location);
 	}
-	fatal("still not sure how I want to implement I/O access");
+	if(location < 0xFF80)
+	{
+	fatal("still not sure how I want to implement I/O access at %04X",
+		location);
+	}
+	return direct_read(location);
 }
 
 mem_read_fn readers[0x10] = {
@@ -102,8 +107,8 @@ uint16_t mem_read16(uint16_t location)
  ***********************************************************************/
 void mem_write8(uint16_t location, uint8_t data)
 {
-	if(location < 0xC000 || location >= 0xFE00)
-		fatal("invalid memory write at %04X (%02X)", location, data);
+	//if(location < 0xC000 || location >= 0xFE00)
+	//	fatal("invalid memory write at %04X (%02X)", location, data);
 	if(location < 0xE000)
 	{
 		debug("wrote %02X to %04X", data, location);
@@ -115,9 +120,20 @@ void mem_write8(uint16_t location, uint8_t data)
 		memory[location - 0x2000] = data;
 		return;
 	}
+	if(location >= 0xFE80)
+	{
+		memory[location] = data;
+		return;
+	}
+	debug("IGNORING write of %02X to %04X", data, location);
 }
 
 void mem_write16(uint16_t location, uint16_t data)
 {
-	fatal("invalid memory write at %04X (%04X)", location, data);
+	/* TODO this needs to be filtered just like the readers */
+	unsigned char *l = memory + location;
+	uint16_t *hax = (uint16_t *)l;
+
+	*l = data;
+	//fatal("invalid memory write at %04X (%04X)", location, data);
 }
