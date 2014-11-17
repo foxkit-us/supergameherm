@@ -78,6 +78,7 @@ bool read_rom_data(FILE *rom)
 	long size_in_bytes, actual_size;
 	cartridge_header header;
 	const enum offsets begin = graphic_begin;
+	uint8_t checksum;
 
 	if(fseek(rom, begin, SEEK_SET))
 	{
@@ -134,9 +135,7 @@ bool read_rom_data(FILE *rom)
 	}
 
 	debug("Header size is %d\n", header.rom_size);
-	size_in_bytes = (1 << ((header.rom_size & 0x7) + 1 /* implicit bank */
-				+ 14 /* 16384 bytes per bank */));
-	if(header.rom_size & 0x50) size_in_bytes += 1048576;
+	size_in_bytes = 0x8000 << header.rom_size;
 
 	if(fseek(rom, 0, SEEK_END))
 	{
