@@ -1,9 +1,9 @@
 #include <stdint.h>	// uint[XX]_t
 
 #include "print.h"	// fatal
+#include "memory.h"	// Constants and what have you */
 
-
-unsigned char memory[0x10000];
+unsigned char memory[MEM_SIZE];
 
 
 /***********************************************************************
@@ -36,6 +36,7 @@ uint8_t ram_bank_read(uint16_t location)
 
 uint8_t shadow_read(uint16_t location)
 {
+	/* Shadow is offset */
 	return memory[location - 0x2000];
 }
 
@@ -79,12 +80,12 @@ mem_read_fn readers[0x10] = {
 uint8_t mem_read8(uint16_t location)
 {
 	char reader = location >> 12;
-	
+
 	if(location > 0xFFFF)
 	{
 		fatal("invalid memory access - out of bounds");
 	}
-	
+
 	return readers[reader](location);
 }
 
