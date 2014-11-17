@@ -1,5 +1,6 @@
 #include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
+#include <stdlib.h>	// malloc
 #include <string.h>	// memcmp
 
 #include "print.h"	// fatal, error, debug
@@ -73,6 +74,8 @@ bool read_rom_data(FILE *rom)
 		0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC,
 		0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
 	char title[17];
+	char byte;
+	long size_in_bytes, actual_size;
 
 	if(fseek(rom, ROM_NINTENDO, SEEK_SET))
 	{
@@ -110,6 +113,56 @@ bool read_rom_data(FILE *rom)
 	}
 
 	debug("loading cartridge %s", title);
+
+	if(fseek(rom, ROM_SIZE, SEEK_SET))
+	{
+		perror("seeking");
+		return false;
+	}
+
+	if(fread(&byte, 1, 1, rom) != 1)
+	{
+		perror("reading ROM size");
+		return false;
+	}
+
+	size_in_bytes = (1 << ((byte & 0x7) + 1));
+	size_in_bytes *= 16384;
+	if(byte & 0x50) size_in_bytes += 1048576;
+
+	if(fseek(rom, 0, SEEK_END))
+	{
+		perror("seeking");
+		return false;
+	}
+
+	actual_size = ftell(rom);
+
+	if(actual_size != size_in_bytes)
+	{
+		fatal("ROM size %ld is not the expected %ld bytes",
+		      actual_size, size_in_bytes);
+	}
+
+	data = malloc(size_in_bytes);
+	if(data == NULL)
+	{
+		fatal("cannot allocate data segment of %ld bytes",
+		      size_in_bytes);
+	}
+
+	/* be kind, */ rewind(rom);
+
+	if(fread(data, 1, size_in_bytes, rom) != size_in_bytes)
+	{
+		perror("reading ROM data");
+		return false;
+	}
+
+	if(fclose(rom) == EOF)
+	{
+		error("couldn't close ROM file (libc bug?)");
+	}
 
 	return true;
 }
