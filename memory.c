@@ -58,10 +58,10 @@ uint16_t mem_read16(uint16_t location)
 
 void mem_write8(uint16_t location, uint8_t data)
 {
-	fatal("invalid memory write at %04X", location);
+	fatal("invalid memory write at %04X (%02X)", location, data);
 }
 
-void mem_write16(uint16_t location, uint8_t data)
+void mem_write16(uint16_t location, uint16_t data)
 {
-	fatal("invalid memory write at %04X", location);
+	fatal("invalid memory write at %04X (%04X)", location, data);
 }
