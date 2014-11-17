@@ -1,3 +1,4 @@
+#include <stdarg.h>	// required for gcc, because lol. (not clang/msvc)
 #include <stdio.h>	// ?fprintf
 #include <stdlib.h>	// exit
 
