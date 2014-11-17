@@ -126,8 +126,8 @@ bool read_rom_data(FILE *rom)
 		return false;
 	}
 
-	size_in_bytes = (1 << ((byte & 0x7) + 1));
-	size_in_bytes *= 16384;
+	size_in_bytes = (1 << ((byte & 0x7) + 1 /* implicit bank */
+				+ 14 /* 16384 bytes per bank */));
 	if(byte & 0x50) size_in_bytes += 1048576;
 
 	if(fseek(rom, 0, SEEK_END))
