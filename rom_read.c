@@ -125,8 +125,13 @@ bool read_rom_data(FILE *rom)
 		debug("loading cartridge %s", title);
 	}
 	else
+	{
 		/* Really old cart predating the SGB */
-		debug("loading cartridge %s", header.old_title);
+		char title[sizeof(header.old_title) + 1];
+		memcpy(title, header.old_title, sizeof(header.old_title));
+		title[sizeof(header.old_title)] = '\0';
+		debug("loading cartridge %s", title);
+	}
 
 	debug("Header size is %d\n", header.rom_size);
 	size_in_bytes = (1 << ((header.rom_size & 0x7) + 1 /* implicit bank */
