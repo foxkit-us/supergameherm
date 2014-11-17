@@ -90,6 +90,66 @@ void ld_a_imm8(void)
 	pc++;
 }
 
+/*!
+ * @brief LD B,A (0x47)
+ * @result B = A
+ */
+void ld_b_a(void)
+{
+	*b = *a;
+	pc++;
+}
+
+/*!
+ * @brief LD C,A (0x4F)
+ * @result C = A
+ */
+void ld_c_a(void)
+{
+	*c = *a;
+	pc++;
+}
+
+/*!
+ * @brief LD D,A (0x57)
+ * @result D = A
+ */
+void ld_d_a(void)
+{
+	*d = *a;
+	pc++;
+}
+
+/*!
+ * @brief LD E,A (0x5F)
+ * @result E = A
+ */
+void ld_e_a(void)
+{
+	*e = *a;
+	pc++;
+}
+
+/*!
+ * @brief LD H,A (0x67)
+ * @result H = A
+ */
+void ld_h_a(void)
+{
+	*h = *a;
+	pc++;
+}
+
+/*!
+ * @brief LD L,A (0x6F)
+ * @result L = A
+ */
+void ld_l_a(void)
+{
+	*l = *a;
+	pc++;
+}
+
 void xor_common(char to_xor)
 {
 	*a ^= to_xor;
@@ -178,6 +238,21 @@ void jp_imm16(void)
 }
 
 /*!
+ * @brief CALL nn (0xCD)
+ * @result next pc stored in stack; jump to nn
+ */
+void call_imm16(void)
+{
+	char lsb = mem_read8(++pc);
+	char msb = mem_read8(++pc);
+
+	sp -= 2;
+	mem_write16(sp, ++pc);
+
+	pc = (msb<<8 | lsb);
+}
+
+/*!
  * @brief LDH n,A (0xE0) - write A to 0xff00+n
  * @result the I/O register n will contain the value of A
  */
@@ -203,6 +278,17 @@ void ld_d16_a(void)
 	uint16_t loc = (msb<<8) | lsb;
 
 	mem_write8(loc, *a);
+
+	pc++;
+}
+
+/*!
+ * @brief LDH A,nn (0xF0) - read 0xff00+n to A
+ * @result A will contain the value of the I/O register n
+ */
+void ldh_a_imm8(void)
+{
+	*a = mem_read8(0xFF00 + ++pc);
 
 	pc++;
 }
@@ -277,12 +363,12 @@ opcode_t handlers[0x100] = {
 	/* 0x28 */ jr_z_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x30 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x38 */ NULL, NULL, NULL, NULL, NULL, NULL, ld_a_imm8, NULL,
-	/* 0x40 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x48 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x50 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x58 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x60 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x68 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x40 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_b_a,
+	/* 0x48 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_c_a,
+	/* 0x50 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_d_a,
+	/* 0x58 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_e_a,
+	/* 0x60 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_h_a,
+	/* 0x68 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_l_a,
 	/* 0x70 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x78 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x80 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -294,12 +380,12 @@ opcode_t handlers[0x100] = {
 	/* 0xB0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xC0 */ NULL, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
-	/* 0xC8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xC8 */ NULL, NULL, NULL, NULL, NULL, call_imm16, NULL, NULL,
 	/* 0xD0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xD8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
-	/* 0xF0 */ NULL, NULL, NULL, di, NULL, NULL, NULL, NULL,
+	/* 0xF0 */ ldh_a_imm8, NULL, NULL, di, NULL, NULL, NULL, NULL,
 	/* 0xF8 */ NULL, NULL, NULL, ei, NULL, NULL, cp_imm8, NULL
 };
 
