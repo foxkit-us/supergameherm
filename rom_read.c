@@ -7,7 +7,8 @@
 
 
 /*! actual loaded ROM data */
-char *data;
+unsigned char *data;
+extern unsigned char memory[0x10000];
 
 #define ROM_NINTENDO 0x0104
 #define ROM_TITLE 0x0134
@@ -163,6 +164,8 @@ bool read_rom_data(FILE *rom)
 	{
 		error("couldn't close ROM file (libc bug?)");
 	}
+
+	memcpy(memory, data, 0x7fff);
 
 	return true;
 }
