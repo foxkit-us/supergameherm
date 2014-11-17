@@ -238,6 +238,17 @@ void jp_imm16(void)
 }
 
 /*!
+ * @brief CB ..
+ * @note this is just a dispatch function for SWAP/BIT/etc
+ */
+void cb_dispatch(void)
+{
+	char opcode = mem_read8(++pc);
+
+	pc++;
+}
+
+/*!
  * @brief CALL nn (0xCD)
  * @result next pc stored in stack; jump to nn
  */
@@ -288,7 +299,8 @@ void ld_d16_a(void)
  */
 void ldh_a_imm8(void)
 {
-	*a = mem_read8(0xFF00 + ++pc);
+	unsigned char loc = mem_read8(++pc);
+	*a = mem_read8(0xFF00 + loc);
 
 	pc++;
 }
@@ -380,7 +392,7 @@ opcode_t handlers[0x100] = {
 	/* 0xB0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xC0 */ NULL, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
-	/* 0xC8 */ NULL, NULL, NULL, NULL, NULL, call_imm16, NULL, NULL,
+	/* 0xC8 */ NULL, NULL, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
 	/* 0xD0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xD8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
