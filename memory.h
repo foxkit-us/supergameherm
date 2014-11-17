@@ -142,7 +142,6 @@ typedef struct _cartridge_header
 	uint8_t mask_rom_version;	/* 0x14C almost always 0 */
 	uint8_t header_checksum; 	/* 0x14D Enforced! */
 	uint16_t cartridge_checksum;	/* 0x14E-0x14F Unenforced */
-} cartridge_header __attribute__((aligned(8)));
-
+} cartridge_header;
 
 #endif /*!__MEMORY_H_*/
