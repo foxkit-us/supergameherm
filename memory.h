@@ -31,12 +31,12 @@ enum offsets
 	graphic_end = 0x0133,
 
 	/* 10 bytes */
-	game_title_begin = 0x0134,
-	game_title_end = 0x013E,
+	title_begin = 0x0134,
+	title_end = 0x013E,
 
 	/* 4 bytes */
-	game_publisher_begin = 0x013F,
-	game_publisher_end = 0x0142,
+	publisher_begin = 0x013F,
+	publisher_end = 0x0142,
 
 	/* 1 byte */
 	color_compat = 0x0143,
@@ -110,24 +110,39 @@ enum offsets
 	int_flag = 0xFFFF,
 };
 
+
 typedef struct _cartridge_header
 {
 	/* NB: initial instructions excluded */
-	uint8_t graphic[48];
-	char game_title[10];
-	char game_publisher[3];
-	uint8_t compat;
-	char licensee_code[2];
-	uint8_t sgb_compat;
-	uint8_t cart_type;
-	uint8_t rom_size;
-	uint8_t ram_size; /* Cartridge RAM */
-	uint8_t dest_code; /* Japan or no? */
-	char old_licensee; /* Mostly unused */
-	uint8_t mask_rom_version;
-	uint8_t header_checksum; /* Enforced! */
-	uint16_t cartridge_checksum; /* Unenforced */
-} cartridge_header;
+	uint8_t graphic[48];	/* 0x104-0x133 */
+	union
+	{
+		/* new-style GBC header */
+		struct
+		{
+			char title[11];		/* 0x134-0x143 */
+			char publisher[4];	/* 0x13F-0x142 */
+			uint8_t compat;		/* 0x143 CGB flag */
+			char licensee_code[2];	/* 0x144-0x145 */
+			uint8_t sgb;
+		} gbc_title;
+		struct
+		{
+			char title[18];
+			uint8_t sgb;
+		} sgb_title;
+		char old_title[19];
+	};
+
+	uint8_t cart_type;	/* 0x147 */
+	uint8_t rom_size;	/* 0x148 */
+	uint8_t ram_size;	/* 0x149 Cartridge RAM */
+	uint8_t dest_code;	/* 0x14A Non-Japan if true */
+	char old_licensee;	/* 0x14B set to 0x33 if new code used */
+	uint8_t mask_rom_version;	/* 0x14C almost always 0 */
+	uint8_t header_checksum; 	/* 0x14D Enforced! */
+	uint16_t cartridge_checksum;	/* 0x14E-0x14F Unenforced */
+} cartridge_header __attribute__((aligned(8)));
 
 
 #endif /*!__MEMORY_H_*/

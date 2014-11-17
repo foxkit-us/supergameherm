@@ -2,6 +2,7 @@
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// malloc
 #include <string.h>	// memcmp
+#include <byteswap.h>	// __bswap_16
 
 #include "print.h"	// fatal, error, debug
 #include "memory.h"	// offsets
@@ -76,7 +77,7 @@ bool read_rom_data(FILE *rom)
 		0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
 	long size_in_bytes, actual_size;
 	cartridge_header header;
-	const enum offsets end = cart_end, begin = graphic_begin;
+	const enum offsets begin = graphic_begin;
 
 	if(fseek(rom, begin, SEEK_SET))
 	{
@@ -84,7 +85,7 @@ bool read_rom_data(FILE *rom)
 		return false;
 	}
 
-	if (fread(&header, sizeof(cartridge_header), 1, rom) != (end - begin))
+	if (fread(&header, sizeof(cartridge_header), 1, rom) != 1)
 	{
 		perror("Error reading ROM header");
 		return false;
@@ -101,8 +102,33 @@ bool read_rom_data(FILE *rom)
 		debug("valid nintendo graphic found");
 	}
 
-	debug("loading cartridge %s", header.game_title);
+	if (header.gbc_title.compat & 0x80)
+	{
+		/* Game boy color[sic] */
+		char title[sizeof(header.gbc_title.title) + 1];
+		char publisher[sizeof(header.gbc_title.publisher) + 1];
+		memcpy(title, header.gbc_title.title, sizeof(header.gbc_title.title));
+		memcpy(publisher, header.gbc_title.publisher, sizeof(header.gbc_title.publisher));
 
+		title[sizeof(header.gbc_title.title)] = '\0';
+		publisher[sizeof(header.gbc_title.publisher)] = '\0';
+
+		debug("loading cartridge %s", title);
+		debug("publisher %s", publisher);
+	}
+	else if (header.sgb_title.sgb & 0x03)
+	{
+		/* Super game boy */
+		char title[sizeof(header.sgb_title.title) + 1];
+		memcpy(title, header.sgb_title.title, sizeof(header.sgb_title.title));
+		title[sizeof(header.sgb_title.title)] = '\0';
+		debug("loading cartridge %s", title);
+	}
+	else
+		/* Really old cart predating the SGB */
+		debug("loading cartridge %s", header.old_title);
+
+	debug("Header size is %d\n", header.rom_size);
 	size_in_bytes = (1 << ((header.rom_size & 0x7) + 1 /* implicit bank */
 				+ 14 /* 16384 bytes per bank */));
 	if(header.rom_size & 0x50) size_in_bytes += 1048576;
@@ -120,6 +146,10 @@ bool read_rom_data(FILE *rom)
 		fatal("ROM size %ld is not the expected %ld bytes",
 		      actual_size, size_in_bytes);
 	}
+
+#ifdef BIG_ENDIAN
+	header.cartridge_checksum = __bswap_16(header.cartridge_checksum);
+#endif
 
 	data = malloc(size_in_bytes);
 	if(data == NULL)
