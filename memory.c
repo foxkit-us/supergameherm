@@ -58,7 +58,19 @@ uint16_t mem_read16(uint16_t location)
 
 void mem_write8(uint16_t location, uint8_t data)
 {
-	fatal("invalid memory write at %04X (%02X)", location, data);
+	if(location < 0xC000 || location >= 0xFE00)
+		fatal("invalid memory write at %04X (%02X)", location, data);
+	if(location < 0xE000)
+	{
+		debug("wrote %02X to %04X", data, location);
+		memory[location] = data;
+		return;
+	}
+	if(location < 0xFE00)
+	{
+		memory[location - 0x2000] = data;
+		return;
+	}
 }
 
 void mem_write16(uint16_t location, uint16_t data)

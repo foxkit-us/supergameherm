@@ -26,6 +26,9 @@ char *l = (char *)&hl;
 
 char flag_reg;
 
+bool toggle_int_on_next = false;
+bool interrupts = true;
+
 /*! Zero Flag */
 #define FLAG_Z 0x80
 /*! Subtract Flag */
@@ -175,6 +178,58 @@ void jp_imm16(void)
 }
 
 /*!
+ * @brief LDH n,A (0xE0) - write A to 0xff00+n
+ * @result the I/O register n will contain the value of A
+ */
+void ldh_imm8_a(void)
+{
+	uint16_t write = mem_read8(++pc);
+	write += 0xFF00;
+
+	mem_write8(write, *a);
+
+	pc++;
+}
+
+/*!
+ * @brief LD (nn),A (0xEA) - write A to *nn
+ * @result the memory at address nn will contain the value of A
+ */
+void ld_d16_a(void)
+{
+	char lsb = mem_read8(++pc);
+	char msb = mem_read8(++pc);
+
+	uint16_t loc = (msb<<8) | lsb;
+
+	mem_write8(loc, *a);
+
+	pc++;
+}
+
+/*!
+ * @brief DI (0xF3) - disable interrupts
+ * @result interrupts will be disabled the instruction AFTER this one
+ */
+void di(void)
+{
+	toggle_int_on_next = true;
+
+	pc++;
+}
+
+/*!
+ * @brief EI (0xFB) - enable interrupts
+ * @result interrupts will be enabled the instruction AFTER this one
+ */
+void ei(void)
+{
+	toggle_int_on_next = true;
+
+	pc++;
+}
+
+/*!
  * @brief CP n (0xFE) - compare A with 8-bit immediate value
  * @result flags register modified based on result
  */
@@ -242,10 +297,10 @@ opcode_t handlers[0x100] = {
 	/* 0xC8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xD0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xD8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xE0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xE8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xF0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xF8 */ NULL, NULL, NULL, NULL, NULL, NULL, cp_imm8, NULL
+	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
+	/* 0xF0 */ NULL, NULL, NULL, di, NULL, NULL, NULL, NULL,
+	/* 0xF8 */ NULL, NULL, NULL, ei, NULL, NULL, cp_imm8, NULL
 };
 
 char cycles[0x100] = {
@@ -324,6 +379,7 @@ bool execute(void)
 {
 	unsigned char opcode = mem_read8(pc);
 	opcode_t handler = handlers[opcode];
+	bool toggle = toggle_int_on_next;
 
 	if(handler == NULL)
 	{
@@ -331,6 +387,12 @@ bool execute(void)
 	}
 
 	WAIT_CYCLE(cycles[opcode], handler());
+
+	if(toggle)
+	{
+		toggle_int_on_next = false;
+		interrupts = !interrupts;
+	}
 
 	return true;
 }
