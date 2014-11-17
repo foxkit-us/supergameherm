@@ -1,6 +1,8 @@
 #ifndef __MEMORY_H_
 #define __MEMORY_H_
 
+#include <stdint.h> /* (u)int*_t */
+
 uint8_t mem_read8(uint16_t location);
 uint16_t mem_read16(uint16_t location);
 void mem_write8(uint16_t location, uint8_t data);
@@ -29,8 +31,8 @@ typedef enum
 	game_title_end = 0x013E,
 
 	/* 4 bytes */
-	game_desig_begin = 0x013F,
-	game_desig_end = 0x0142,
+	game_publisher_begin = 0x013F,
+	game_publisher_end = 0x0142,
 
 	/* 1 byte */
 	color_compat = 0x0143,
@@ -52,7 +54,7 @@ typedef enum
 
 	old_licensee = 0x014B, /* Mostly unused */
 
-	mask_rom_ver = 0x014C,
+	mask_rom_version = 0x014C,
 
 	header_checksum = 0x014D,
 
@@ -103,5 +105,24 @@ typedef enum
 	/* Interrupts locked out */
 	int_flag = 0xFFFF,
 } offsets;
+
+typedef struct _cartridge_header
+{
+	/* NB: initial instructions excluded */
+	char game_title[10];
+	char game_publisher[3];
+	uint8_t compat;
+	char licensee_code[2];
+	uint8_t sgb_compat;
+	uint8_t cart_type;
+	uint8_t rom_size;
+	uint8_t ram_size; /* Cartridge RAM */
+	uint8_t dest_code; /* Japan or no? */
+	char old_licensee; /* Mostly unused */
+	uint8_t mask_rom_version;
+	uint8_t header_checksum; /* Enforced! */
+	uint16_t cartridge_checksum; /* Unenforced */
+} cartridge_header;
+
 
 #endif /*!__MEMORY_H_*/
