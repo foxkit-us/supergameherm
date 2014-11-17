@@ -11,7 +11,7 @@ void mem_write16(uint16_t location, uint16_t data);
 /* 8-bit address space */
 #define MEM_SIZE	0x10000
 
-typedef enum
+enum offsets
 {
 	/* TODO GBC constants */
 
@@ -25,6 +25,10 @@ typedef enum
 	/* 4 bytes */
 	start_instr_begin = 0x0100,
 	start_instr_end = 0x0103,
+
+	/* 48 bytes */
+	graphic_begin = 0x0104,
+	graphic_end = 0x0133,
 
 	/* 10 bytes */
 	game_title_begin = 0x0134,
@@ -104,11 +108,12 @@ typedef enum
 
 	/* Interrupts locked out */
 	int_flag = 0xFFFF,
-} offsets;
+};
 
 typedef struct _cartridge_header
 {
 	/* NB: initial instructions excluded */
+	uint8_t graphic[48];
 	char game_title[10];
 	char game_publisher[3];
 	uint8_t compat;

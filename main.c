@@ -4,6 +4,7 @@
 
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
+#include "memory.h"	/* _offsets */
 
 // rom_read:
 bool read_rom_data(FILE *rom);

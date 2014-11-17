@@ -4,7 +4,7 @@
 #include <string.h>	// memcmp
 
 #include "print.h"	// fatal, error, debug
-
+#include "memory.h"	// offsets
 
 /*! actual loaded ROM data */
 unsigned char *data;
@@ -67,30 +67,30 @@ const char *friendly_cart_names[0x20] = {
 
 bool read_rom_data(FILE *rom)
 {
-	char nintendo[48];
-	const char expected[48] = { 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D,
+	const char graphic_expected[48] = {
+		0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D,
 		0x00, 0x0B, 0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00,
 		0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
 		0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB,
 		0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC,
 		0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
-	char title[17];
-	char byte;
 	long size_in_bytes, actual_size;
+	cartridge_header header;
+	const enum offsets end = cart_end, begin = graphic_begin;
 
-	if(fseek(rom, ROM_NINTENDO, SEEK_SET))
+	if(fseek(rom, begin, SEEK_SET))
 	{
 		perror("seeking");
 		return false;
 	}
 
-	if(fread(nintendo, 1, 48, rom) != 48)
+	if (fread(&header, sizeof(cartridge_header), 1, rom) != (end - begin))
 	{
-		perror("reading nintendo graphic");
+		perror("Error reading ROM header");
 		return false;
 	}
 
-	if(memcmp(nintendo, expected, 48) != 0)
+	if(memcmp(header.graphic, graphic_expected, sizeof(graphic_expected)) != 0)
 	{
 #ifdef NDEBUG
 		error("invalid nintendo graphic (don't care)");
@@ -101,35 +101,11 @@ bool read_rom_data(FILE *rom)
 		debug("valid nintendo graphic found");
 	}
 
-	if(fseek(rom, ROM_TITLE, SEEK_SET))
-	{
-		perror("seeking");
-		return false;
-	}
+	debug("loading cartridge %s", header.game_title);
 
-	if(fread(title, 1, 16, rom) != 16)
-	{
-		perror("reading cartridge title");
-		return false;
-	}
-
-	debug("loading cartridge %s", title);
-
-	if(fseek(rom, ROM_SIZE, SEEK_SET))
-	{
-		perror("seeking");
-		return false;
-	}
-
-	if(fread(&byte, 1, 1, rom) != 1)
-	{
-		perror("reading ROM size");
-		return false;
-	}
-
-	size_in_bytes = (1 << ((byte & 0x7) + 1 /* implicit bank */
+	size_in_bytes = (1 << ((header.rom_size & 0x7) + 1 /* implicit bank */
 				+ 14 /* 16384 bytes per bank */));
-	if(byte & 0x50) size_in_bytes += 1048576;
+	if(header.rom_size & 0x50) size_in_bytes += 1048576;
 
 	if(fseek(rom, 0, SEEK_END))
 	{
