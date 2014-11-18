@@ -45,7 +45,7 @@ void jr_imm8(emulator_state *state)
  */
 void jr_nz_imm8(emulator_state *state)
 {
-	unsigned char to_add = mem_read8(state, state->pc + 1);
+	uint8_t to_add = mem_read8(state, state->pc + 1);
 
 	state->pc += (state->flag_reg & FLAG_Z) ? 2 : to_add;
 }
@@ -56,7 +56,7 @@ void jr_nz_imm8(emulator_state *state)
  */
 void jr_z_imm8(emulator_state *state)
 {
-	unsigned char to_add = mem_read8(state, state->pc + 1);
+	uint8_t to_add = mem_read8(state, state->pc + 1);
 
 	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 2;
 }
@@ -213,8 +213,8 @@ void xor_a(emulator_state *state)
  */
 void jp_imm16(emulator_state *state)
 {
-	char lsb = mem_read8(state, ++state->pc);
-	char msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
 
 	state->pc = (msb<<8 | lsb);
 }
@@ -225,7 +225,7 @@ void jp_imm16(emulator_state *state)
  */
 void cb_dispatch(emulator_state *state)
 {
-	char opcode = mem_read8(state, ++state->pc);
+	uint8_t opcode = mem_read8(state, ++state->pc);
 
 	state->pc++;
 }
@@ -236,8 +236,8 @@ void cb_dispatch(emulator_state *state)
  */
 void call_imm16(emulator_state *state)
 {
-	char lsb = mem_read8(state, ++state->pc);
-	char msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
 
 	state->sp -= 2;
 	mem_write16(state, state->sp, ++state->pc);
@@ -265,8 +265,8 @@ void ldh_imm8_a(emulator_state *state)
  */
 void ld_d16_a(emulator_state *state)
 {
-	char lsb = mem_read8(state, ++state->pc);
-	char msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
 
 	uint16_t loc = (msb<<8) | lsb;
 
@@ -281,7 +281,7 @@ void ld_d16_a(emulator_state *state)
  */
 void ldh_a_imm8(emulator_state *state)
 {
-	unsigned char loc = mem_read8(state, ++state->pc);
+	uint8_t loc = mem_read8(state, ++state->pc);
 	*REG_A(state) = mem_read8(state, 0xFF00 + loc);
 
 	state->pc++;
@@ -315,7 +315,7 @@ void ei(emulator_state *state)
  */
 void cp_imm8(emulator_state *state)
 {
-	char cmp;
+	uint8_t cmp;
 
 	cmp = mem_read8(state, ++state->pc);
 	debug("flags = %s%s%s%s; cmp = %d; A = %d",
