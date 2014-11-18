@@ -14,7 +14,7 @@ static const unsigned char graphic_expected[] = {
 	0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
 };
 
-enum cart_types
+typedef enum
 {
 	CART_ROM_ONLY = 0x00,
 	CART_MBC1 = 0x01,
@@ -39,7 +39,7 @@ enum cart_types
 	CART_MBC5_RUMBLE_SRAM = 0x1D,
 	CART_MBC5_RUMBLE_SRAM_BATT = 0x1E,
 	CART_CAMERA = 0x1F
-};
+} cart_types;
 
 const char *friendly_cart_names[0x20] = {
 	"ROM only", "MBC1", "MBC1 with RAM", "MBC1 with RAM (Battery)",
@@ -60,7 +60,7 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 	long size_in_bytes, actual_size;
 	uint8_t checksum;
 	char title[19] = "\0", publisher[4] = "\0"; // Max sizes
-	const enum offsets begin = graphic_begin;
+	const offsets begin = OFF_GRAPHIC_BEGIN;
 	bool err = true;
 
 	/* Initalise */

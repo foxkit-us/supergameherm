@@ -8,105 +8,104 @@
 #include "sgherm.h"	/* emulator_state */
 #include "params.h"	/* system_types */
 
-enum offsets
+typedef enum
 {
 	/* TODO GBC constants */
 
 	/* restart and interrupt vectors */
-	vec_begin = 0x0000,
-	vec_end = 0x00FF,
+	OFF_VEC_BEGIN = 0x0000,
+	OFF_VEC_END = 0x00FF,
 
 	/* cart data */
-	cart_begin = 0x0100,
+	OFF_CART_BEGIN = 0x0100,
 
 	/* 4 bytes */
-	start_instr_begin = 0x0100,
-	start_instr_end = 0x0103,
+	OFF_START_INSTR_BEGIN = 0x0100,
+	OFF_START_INSTR_END = 0x0103,
 
 	/* 48 bytes */
-	graphic_begin = 0x0104,
-	graphic_end = 0x0133,
+	OFF_GRAPHIC_BEGIN = 0x0104,
+	OFF_GRAPHIC_END = 0x0133,
 
 	/* 10 bytes */
-	title_begin = 0x0134,
-	title_end = 0x013E,
+	OFF_TITLE_BEGIN = 0x0134,
+	OFF_TITLE_END = 0x013E,
 
 	/* 4 bytes */
-	publisher_begin = 0x013F,
-	publisher_end = 0x0142,
+	OFF_MANUFACTURER_BEGIN = 0x013F,
+	OFF_MANUFACTURER_END = 0x0142,
 
 	/* 1 byte */
-	color_compat = 0x0143,
+	OFF_COLOR_COMPAT = 0x0143,
 
 	/* 2 bytes */
-	licensee_begin = 0x0144,
-	licensee_end = 0x0145,
+	OFF_LICENSEE_BEGIN = 0x0144,
+	OFF_LICENSEE_END = 0x0145,
 
 	/* 1 byte */
-	sgb_compat = 0x0146,
+	OFF_SGB_COMPAT = 0x0146,
 
-	cart_type = 0x0147,
+	OFF_CART_TYPE = 0x0147,
 
-	cart_rom_size = 0x0148,
+	OFF_ROM_SIZE = 0x0148,
 
-	cart_ram_size = 0x0149,
+	OFF_RAM_SIZE = 0x0149,
 
-	cart_dest_code = 0x014A, /* Japanese or not */
+	OFF_DEST_CODE = 0x014A, /* Japanese or not */
 
-	old_licensee = 0x014B, /* Mostly unused */
+	OFF_OLD_LICENSEE = 0x014B, /* Mostly unused */
 
-	mask_rom_version = 0x014C,
+	OFF_MASK_ROM_VERSION = 0x014C,
 
-	header_checksum = 0x014D,
+	OFF_HEADER_CHECKSUM = 0x014D,
 
 	/* 2 bytes */
-	cart_checksum_begin = 0x014E,
-	cart_checksum_end = 0x014F,
+	OFF_CART_CHECKSUM_BEGIN = 0x014E,
+	OFF_CART_CHECKSUM_END = 0x014F,
 
-	cart_end = 0x014F,
+	OFF_CART_END = 0x014F,
 
 	/* Fixed bank */
-	rom0_begin = 0x0150,
-	rom0_end = 0x3FFF,
+	OFF_ROM0_BEGIN = 0x0150,
+	OFF_ROM0_END = 0x3FFF,
 
 	/* Switchable bank */
-	rom_bank_begin = 0x4000,
-	rom_bank_end = 0x7FFF,
+	OFF_ROM_BANK_BEGIN = 0x4000,
+	OFF_ROM_BANK_END = 0x7FFF,
 
-	tile_ram_begin = 0x8000,
-	tile_ram_end = 0x97FF,
+	OFF_TILE_RAM_BEGIN = 0x8000,
+	OFF_TILE_RAM_END = 0x97FF,
 
-	bg0_begin = 0x9800,
-	bg0_end = 0x9BFF,
+	OFF_BG0_BEGIN = 0x9800,
+	OFF_BG0_END = 0x9BFF,
 
-	bg1_begin = 0x9C00,
-	bg1_end = 0x9FFF,
+	OFF_BG1_BEGIN = 0x9C00,
+	OFF_BG1_END = 0x9FFF,
 
 	/* Not present on all carts! */
-	cart_ram_begin = 0xA000,
-	cart_ram_end = 0xBFFF,
+	OFF_CART_RAM_BEGIN = 0xA000,
+	OFF_CART_RAM_END = 0xBFFF,
 
-	ram_begin = 0xC000,
-	ram_end = 0xDFFF,
+	OFF_RAM_BEGIN = 0xC000,
+	OFF_RAM_END = 0xDFFF,
 
-	shadow_begin = 0xE000,
-	shadow_end = 0xFDFF,
+	OFF_SHADOW_BEGIN = 0xE000,
+	OFF_SHADOW_END = 0xFDFF,
 
-	oam_begin = 0xFE00,
-	oam_end = 0xFE9F,
+	OFF_OAM_BEGIN = 0xFE00,
+	OFF_OAM_END = 0xFE9F,
 
 	/* Contains control registers and other doodads */
-	mmio_begin = 0xFF00,
+	OFF_MMIO_BEGIN = 0xFF00,
 	/* TODO I/O constants */
-	mmio_end = 0xFF7F,
+	OFF_MMIO_END = 0xFF7F,
 
-	high_ram_begin = 0xFF80,
-	high_ram_end = 0xFFFE,
+	OFF_HIGH_RAM_BEGIN = 0xFF80,
+	OFF_HIGH_RAM_END = 0xFFFE,
 
 	/* Interrupts locked out */
-	int_flag = 0xFFFF,
-};
-
+	OFF_INT_FLAG = 0xFFFF,
+} offsets;
 
 typedef struct _cart_header
 {
