@@ -323,7 +323,7 @@ void cp_imm8(emulator_state *state)
 	       (state->flag_reg & FLAG_Z) ? "Z":"z",
 	       (state->flag_reg & FLAG_N) ? "N":"n",
 	       (state->flag_reg & FLAG_H) ? "H":"h",
-	       (state->flag_reg & FLAG_C) ? "C":"c", cmp, REG_A(state));
+	       (state->flag_reg & FLAG_C) ? "C":"c", cmp, *REG_A(state));
 	state->flag_reg |= FLAG_N;
 	state->flag_reg &= ~FLAG_H | ~FLAG_C;
 	if(*REG_A(state) == cmp)
