@@ -61,106 +61,116 @@ const char *friendly_cart_names[0x20] = {
 bool read_rom_data(FILE *rom)
 {
 	long size_in_bytes, actual_size;
-	cartridge_header header;
+	cartridge_header *header;
 	const enum offsets begin = graphic_begin;
 	uint8_t checksum;
+	bool err = true;
 
-	if(fseek(rom, begin, SEEK_SET))
+	/* Get the full ROM size */
+	if(fseek(rom, 0, SEEK_END))
 	{
 		perror("seeking");
-		return false;
+		goto close_rom;
 	}
 
-	if (fread(&header, sizeof(cartridge_header), 1, rom) != 1)
+	if((actual_size = ftell(rom)) < 0x8000)
 	{
-		perror("Error reading ROM header");
-		return false;
+		error("ROM is too small");
+		goto close_rom;
 	}
 
-	if(memcmp(header.graphic, graphic_expected, sizeof(graphic_expected)) != 0)
+	if((data = malloc(actual_size)) == NULL)
+	{
+		error("Could not allocate RAM for ROM");
+		goto close_rom;
+	}
+
+	if(fseek(rom, 0, SEEK_SET))
+	{
+		perror("seeking");
+		goto close_rom;
+	}
+
+	if(fread(data, actual_size, 1, rom) != 1)
+	{
+		perror("Could not read ROM");
+		goto close_rom;
+	}
+
+	/* Faster than a copy */
+	header = (cartridge_header *)(data + (size_t)begin);
+	if(memcmp(header->graphic, graphic_expected, sizeof(graphic_expected)) != 0)
 	{
 #ifdef NDEBUG
 		error("invalid nintendo graphic (don't care)");
 #else
 		fatal("invalid nintendo graphic!");
 #endif
+		goto close_rom;
 	} else {
 		debug("valid nintendo graphic found");
 	}
 
-	if (header.gbc_title.compat & 0x80)
+	if (header->gbc_title.compat & 0x80)
 	{
 		/* Game boy color[sic] */
-		char title[sizeof(header.gbc_title.title) + 1];
-		char publisher[sizeof(header.gbc_title.publisher) + 1];
-		memcpy(title, header.gbc_title.title, sizeof(header.gbc_title.title));
-		memcpy(publisher, header.gbc_title.publisher, sizeof(header.gbc_title.publisher));
+		char title[sizeof(header->gbc_title.title) + 1];
+		char publisher[sizeof(header->gbc_title.publisher) + 1];
+		memcpy(title, header->gbc_title.title, sizeof(header->gbc_title.title));
+		memcpy(publisher, header->gbc_title.publisher, sizeof(header->gbc_title.publisher));
 
-		title[sizeof(header.gbc_title.title)] = '\0';
-		publisher[sizeof(header.gbc_title.publisher)] = '\0';
+		title[sizeof(header->gbc_title.title)] = '\0';
+		publisher[sizeof(header->gbc_title.publisher)] = '\0';
 
 		debug("loading cartridge %s", title);
 		debug("publisher %s", publisher);
 	}
-	else if (header.sgb_title.sgb & 0x03)
+	else if (header->sgb_title.sgb & 0x03)
 	{
 		/* Super game boy */
-		char title[sizeof(header.sgb_title.title) + 1];
-		memcpy(title, header.sgb_title.title, sizeof(header.sgb_title.title));
-		title[sizeof(header.sgb_title.title)] = '\0';
+		char title[sizeof(header->sgb_title.title) + 1];
+		memcpy(title, header->sgb_title.title, sizeof(header->sgb_title.title));
+
+		title[sizeof(header->sgb_title.title)] = '\0';
+
 		debug("loading cartridge %s", title);
 	}
 	else
 	{
 		/* Really old cart predating the SGB */
-		char title[sizeof(header.old_title) + 1];
-		memcpy(title, header.old_title, sizeof(header.old_title));
-		title[sizeof(header.old_title)] = '\0';
+		char title[sizeof(header->old_title) + 1];
+		memcpy(title, header->old_title, sizeof(header->old_title));
+
+		title[sizeof(header->old_title)] = '\0';
+
 		debug("loading cartridge %s", title);
 	}
 
-	debug("Header size is %d\n", header.rom_size);
-	size_in_bytes = 0x8000 << header.rom_size;
-
-	if(fseek(rom, 0, SEEK_END))
-	{
-		perror("seeking");
-		return false;
-	}
-
-	actual_size = ftell(rom);
+	debug("Header size is %d\n", header->rom_size);
+	size_in_bytes = 0x8000 << header->rom_size;
 
 	if(actual_size != size_in_bytes)
 	{
 		fatal("ROM size %ld is not the expected %ld bytes",
 		      actual_size, size_in_bytes);
+		goto close_rom;
 	}
 
 #ifdef BIG_ENDIAN
-	header.cartridge_checksum = __bswap_16(header.cartridge_checksum);
+	checksum = __bswap_16(header->cartridge_checksum);
+#else
+	checksum = header->cartridge_checksum;
 #endif
 
-	data = malloc(size_in_bytes);
-	if(data == NULL)
-	{
-		fatal("cannot allocate data segment of %ld bytes",
-		      size_in_bytes);
-	}
-
-	/* be kind, */ rewind(rom);
-
-	if(fread(data, 1, size_in_bytes, rom) != size_in_bytes)
-	{
-		perror("reading ROM data");
-		return false;
-	}
+	err = false;
+close_rom:
+	if(err)
+		free(data);
 
 	if(fclose(rom) == EOF)
-	{
 		error("couldn't close ROM file (libc bug?)");
-	}
 
 	memcpy(memory, data, 0x7fff);
 
-	return true;
+	return (!err);
 }
