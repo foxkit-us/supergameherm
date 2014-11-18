@@ -34,4 +34,22 @@ typedef struct _emulator_state
 
 void init_emulator(emulator_state *state);
 
+#ifdef likely
+#	undef likely
+#	ifdef __GNUC__
+#		define likely(x) __builtin_expect ((x), 1)
+#	else
+#		define likely(x) x
+#	endif
+#endif
+
+#ifdef unlikely
+#	undef unlikely
+#	ifdef __GNUC__
+#		define unlikely(x) __builtin_expect ((x), 0)
+#	else
+#		define unlikely(x) x
+#	endif
+#endif
+
 #endif /*!__SGHERM_H_*/
