@@ -17,8 +17,8 @@ typedef struct _emulator_state
 } emulator_state;
 
 
-#define REG_HI(state, reg) ((char *)&((state)->reg) + 1)
-#define REG_LOW(state, reg) ((char *)&((state)->reg))
+#define REG_HI(state, reg) ((uint8_t *)&((state)->reg) + 1)
+#define REG_LOW(state, reg) ((uint8_t *)&((state)->reg))
 
 #define REG_A(state) REG_HI(state, af)
 #define REG_F(state) REG_LOW(state, af)
