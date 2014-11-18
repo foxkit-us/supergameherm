@@ -8,7 +8,12 @@
 #include "sgherm.h"	// emulator_state, REG_*, etc
 
 
-#define WAIT_CYCLE(cycles, handler)  handler
+#define WAIT_CYCLE(state, cycles, handler) \
+if(state->wait == 0) {\
+handler;\
+state->wait = cycles;\
+}\
+state->wait--;
 
 
 /*! Zero Flag */
@@ -401,11 +406,11 @@ void cp_imm8(emulator_state *state)
 	uint8_t cmp;
 
 	cmp = mem_read8(state, ++state->pc);
-	debug("flags = %s%s%s%s; cmp = %d; A = %d",
+	/*debug("flags = %s%s%s%s; cmp = %d; A = %d",
 	       (state->flag_reg & FLAG_Z) ? "Z":"z",
 	       (state->flag_reg & FLAG_N) ? "N":"n",
 	       (state->flag_reg & FLAG_H) ? "H":"h",
-	       (state->flag_reg & FLAG_C) ? "C":"c", cmp, *REG_A(state));
+	       (state->flag_reg & FLAG_C) ? "C":"c", cmp, *REG_A(state));*/
 	state->flag_reg |= FLAG_N;
 	state->flag_reg &= ~FLAG_H | ~FLAG_C;
 	if(*REG_A(state) == cmp)
@@ -420,7 +425,7 @@ void cp_imm8(emulator_state *state)
 			state->flag_reg |= FLAG_H;
 		}
 	}
-	dump_flags(state);
+	/* dump_flags(state); */
 
 	state->pc++;
 }
@@ -545,7 +550,7 @@ bool execute(emulator_state *state)
 		fatal("invalid opcode %02X at %04X", opcode, state->pc);
 	}
 
-	WAIT_CYCLE(cycles[opcode], handler(state));
+	WAIT_CYCLE(state, cycles[opcode], handler(state));
 
 	if(toggle)
 	{

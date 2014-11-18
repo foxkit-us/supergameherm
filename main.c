@@ -7,6 +7,7 @@
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
 #include "memory.h"	/* offsets, emulator_state */
+#include "timer.h"	// init_clock
 
 void init_emulator(emulator_state *state)
 {
@@ -46,7 +47,16 @@ int main(int argc, char *argv[])
 	fclose(rom);
 
 	init_ctl(&state, system);
-	while(execute(&state));
+	init_clock(&state);
+	uint64_t test = 0;
+	while(true)
+	{
+		test++;
+		if(test == 4194304) { printf("1 second maybe?\n"); test = 0; }
+		clock_tick(&state);
+		execute(&state);
+		//lcdc_tick(&state);
+	}
 
 	return EXIT_SUCCESS;
 }

@@ -1,6 +1,7 @@
 #ifndef __SGHERM_H_
 #define __SGHERM_H_
 
+#include <stdbool.h>	// bool
 #include <stdint.h>	// uint[XX]_t
 
 /* 8-bit address space */
@@ -14,6 +15,8 @@ typedef struct _emulator_state
 	char flag_reg;
 	bool toggle_int_on_next;
 	bool interrupts;			/* Initalise to 1! */
+	uint8_t wait;				/* number of clocks */
+	void *timer_obj;			/* Timer object */
 } emulator_state;
 
 
