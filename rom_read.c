@@ -54,14 +54,17 @@ const char *friendly_cart_names[0x20] = {
 	"MBC5 Rumble Cart with SRAM (Battery)", "GB Pocket Camera"
 };
 
-bool read_rom_data(emulator_state *state, FILE *rom)
+bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
+		system_types *system)
 {
 	long size_in_bytes, actual_size;
 	uint8_t checksum;
 	char title[19] = "\0", publisher[4] = "\0"; // Max sizes
-	cartridge_header *header = NULL;
 	const enum offsets begin = graphic_begin;
 	bool err = true;
+
+	/* Initalise */
+	*header = NULL;
 
 	/* Get the full ROM size */
 	if(fseek(rom, 0, SEEK_END))
@@ -94,8 +97,9 @@ bool read_rom_data(emulator_state *state, FILE *rom)
 		goto close_rom;
 	}
 
-	header = (cartridge_header *)(state->cart_data + (size_t)begin);
-	if(memcmp(header->graphic, graphic_expected, sizeof(graphic_expected)) != 0)
+	*header = (cart_header *)(state->cart_data + (size_t)begin);
+	if(memcmp((*header)->graphic, graphic_expected,
+				sizeof(graphic_expected)) != 0)
 	{
 #ifdef NDEBUG
 		error("invalid nintendo graphic (don't care)");
@@ -109,30 +113,52 @@ bool read_rom_data(emulator_state *state, FILE *rom)
 		debug("valid nintendo graphic found");
 	}
 
-	if (header->gbc_title.compat & 0x80)
+	if ((*header)->gbc_title.compat & 0x80)
 	{
 		/* Game boy color[sic] */
-		strncpy(title, header->gbc_title.title, sizeof(header->gbc_title.title));
-		strncpy(publisher, header->gbc_title.publisher, sizeof(header->gbc_title.publisher));
+		strncpy(title, (*header)->gbc_title.title,
+				sizeof((*header)->gbc_title.title));
+		strncpy(publisher, (*header)->gbc_title.publisher,
+						sizeof((*header)->gbc_title.publisher));
 
+		*system = SYSTEM_GBC;
 	}
-	else if (header->sgb_title.sgb & 0x03)
+	else if ((*header)->sgb_title.sgb & 0x03)
 	{
 		/* Super game boy */
-		strncpy(title, header->sgb_title.title, sizeof(header->sgb_title.title));
+		strncpy(title, (*header)->sgb_title.title,
+			sizeof((*header)->sgb_title.title));
+
+		*system = SYSTEM_SGB;
 	}
 	else
 	{
 		/* Really old cart predating the SGB */
-		strncpy(title, header->gb_title, sizeof(header->gb_title));
+		strncpy(title, (*header)->gb_title, sizeof((*header)->gb_title));
+
+		*system = SYSTEM_GB;
 	}
 
-	debug("loading cartridge %s", title);
+	switch (*system)
+	{
+	case SYSTEM_GBC:
+		debug("cart type is GBC");
+		break;
+	case SYSTEM_SGB:
+		debug("cart type is SGB");
+		break;
+	case SYSTEM_GB:
+	default:
+		debug("cart type is GB");
+		break;
+	}
+
+	debug("loading cart %s", title);
 	if(*publisher)
 		debug("publisher %s", publisher);
 
-	debug("Header size is %d\n", header->rom_size);
-	size_in_bytes = 0x8000 << header->rom_size;
+	debug("Header size is %d\n", (*header)->rom_size);
+	size_in_bytes = 0x8000 << (*header)->rom_size;
 
 	if(actual_size != size_in_bytes)
 	{
@@ -142,9 +168,9 @@ bool read_rom_data(emulator_state *state, FILE *rom)
 	}
 
 #ifdef BIG_ENDIAN
-	checksum = __bswap_16(header->cartridge_checksum);
+	checksum = __bswap_16((*header)->cart_checksum);
 #else
-	checksum = header->cartridge_checksum;
+	checksum = (*header)->cart_checksum;
 #endif
 
 	err = false;

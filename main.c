@@ -17,7 +17,9 @@ void init_emulator(emulator_state *state)
 int main(int argc, char *argv[])
 {
 	FILE *rom;
+	system_types system;
 	emulator_state state;
+	cart_header *header;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -36,14 +38,14 @@ int main(int argc, char *argv[])
 		fatal("Can't open ROM file %s", argv[1]);
 	}
 
-	if(!read_rom_data(&state, rom))
+	if(!read_rom_data(&state, rom, &header, &system))
 	{
 		fatal("can't read ROM data (ROM is corrupt)?");
 	}
 
 	fclose(rom);
 
-	init_ctl(&state, SYSTEM_SGB);
+	init_ctl(&state, system);
 	while(execute(&state));
 
 	return EXIT_SUCCESS;

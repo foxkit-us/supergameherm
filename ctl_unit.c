@@ -499,18 +499,13 @@ char cycles[0x100] = {
 
 
 /*! boot up */
-void init_ctl(emulator_state *state, char type)
+void init_ctl(emulator_state *state, system_types type)
 {
 	state->pc = 0x0100;
 	switch(type)
 	{
 	case SYSTEM_SGB:
 		debug("Super Game Boy emulation");
-		*REG_A(state) = 0x01;
-		break;
-	case SYSTEM_GB:
-	default:
-		debug("original Game Boy emulation");
 		*REG_A(state) = 0x01;
 		break;
 	case SYSTEM_GBC:
@@ -520,6 +515,11 @@ void init_ctl(emulator_state *state, char type)
 	case SYSTEM_GBP:
 		debug("Game Boy Portable emulation");
 		*REG_A(state) = 0xFF;
+		break;
+	case SYSTEM_GB:
+	default:
+		debug("original Game Boy emulation");
+		*REG_A(state) = 0x01;
 		break;
 	}
 	*REG_F(state) = 0xB0;

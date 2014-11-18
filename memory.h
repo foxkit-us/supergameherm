@@ -6,6 +6,7 @@
 #include <stdio.h>	/* FILE * */
 
 #include "sgherm.h"	/* emulator_state */
+#include "params.h"	/* system_types */
 
 enum offsets
 {
@@ -15,7 +16,7 @@ enum offsets
 	vec_begin = 0x0000,
 	vec_end = 0x00FF,
 
-	/* cartridge data */
+	/* cart data */
 	cart_begin = 0x0100,
 
 	/* 4 bytes */
@@ -107,7 +108,7 @@ enum offsets
 };
 
 
-typedef struct _cartridge_header
+typedef struct _cart_header
 {
 	/* NB: initial instructions excluded */
 	uint8_t graphic[48];	/* 0x104-0x133 */
@@ -125,7 +126,8 @@ typedef struct _cartridge_header
 
 		struct
 		{
-			char title[18];
+			char title[16];
+			char licensee_code[2];
 			uint8_t sgb;
 		} sgb_title;
 
@@ -139,8 +141,8 @@ typedef struct _cartridge_header
 	char old_licensee;	/* 0x14B set to 0x33 if new code used */
 	uint8_t mask_rom_version;	/* 0x14C almost always 0 */
 	uint8_t header_checksum; 	/* 0x14D Enforced! */
-	uint16_t cartridge_checksum;	/* 0x14E-0x14F Unenforced */
-} cartridge_header;
+	uint16_t cart_checksum;	/* 0x14E-0x14F Unenforced */
+} cart_header;
 
 
 uint8_t mem_read8(emulator_state *state, uint16_t location);
@@ -148,8 +150,7 @@ uint16_t mem_read16(emulator_state *state, uint16_t location);
 void mem_write8(emulator_state *state, uint16_t location, uint8_t data);
 void mem_write16(emulator_state *state, uint16_t location, uint16_t data);
 
-bool read_rom_data(emulator_state *state, FILE *rom);
-
-void init_emulator(emulator_state *state);
+bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
+		system_types *type);
 
 #endif /*!__MEMORY_H_*/
