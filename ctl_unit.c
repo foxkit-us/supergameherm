@@ -35,9 +35,9 @@ void nop(emulator_state *state)
  */
 void jr_imm8(emulator_state *state)
 {
-	uint8_t to_add = mem_read8(state, state->pc++);
+	uint8_t to_add = mem_read8(state, ++state->pc);
 
-	state->pc += to_add;
+	state->pc += to_add + 1;
 }
 
 /*!
@@ -46,9 +46,9 @@ void jr_imm8(emulator_state *state)
  */
 void jr_nz_imm8(emulator_state *state)
 {
-	uint8_t to_add = mem_read8(state, state->pc + 1);
+	uint8_t to_add = mem_read8(state, ++state->pc) + 1;
 
-	state->pc += (state->flag_reg & FLAG_Z) ? 2 : to_add;
+	state->pc += (state->flag_reg & FLAG_Z) ? 1 : to_add;
 }
 
 /*!
@@ -57,9 +57,9 @@ void jr_nz_imm8(emulator_state *state)
  */
 void jr_z_imm8(emulator_state *state)
 {
-	uint8_t to_add = mem_read8(state, state->pc + 1);
+	uint8_t to_add = mem_read8(state, ++state->pc) + 1;
 
-	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 2;
+	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 1;
 }
 
 /*!
