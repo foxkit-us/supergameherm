@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
 	system_types system;
 	emulator_state state;
 	cart_header *header;
+	uint64_t cycles = 0;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -47,13 +48,12 @@ int main(int argc, char *argv[])
 	fclose(rom);
 
 	init_ctl(&state, system);
-	uint64_t test = 0, cycles = 0;
 	do
 	{
-		if((++test % 8400000) == 0) printf("GBC seconds: %ld\n", test / 8400000);
+		if((++cycles % 8400000) == 0) printf("GBC seconds: %ld\n", cycles / 8400000);
 		execute(&state);
 		lcdc_tick(&state);
-		clock_tick(&state);
+		//clock_tick(&state);
 
 	} while (true);
 
