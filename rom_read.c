@@ -58,7 +58,7 @@ bool read_rom_data(emulator_state *state, FILE *rom)
 {
 	long size_in_bytes, actual_size;
 	uint8_t checksum;
-	unsigned char title[19] = "\0", publisher[4] = "\0";
+	char title[19] = "\0", publisher[4] = "\0"; // Max sizes
 	cartridge_header *header = NULL;
 	const enum offsets begin = graphic_begin;
 	bool err = true;
@@ -112,19 +112,19 @@ bool read_rom_data(emulator_state *state, FILE *rom)
 	if (header->gbc_title.compat & 0x80)
 	{
 		/* Game boy color[sic] */
-		memcpy(title, header->gbc_title.title, sizeof(header->gbc_title.title));
-		memcpy(publisher, header->gbc_title.publisher, sizeof(header->gbc_title.publisher));
+		strncpy(title, header->gbc_title.title, sizeof(header->gbc_title.title));
+		strncpy(publisher, header->gbc_title.publisher, sizeof(header->gbc_title.publisher));
 
 	}
 	else if (header->sgb_title.sgb & 0x03)
 	{
 		/* Super game boy */
-		memcpy(title, header->sgb_title.title, sizeof(header->sgb_title.title));
+		strncpy(title, header->sgb_title.title, sizeof(header->sgb_title.title));
 	}
 	else
 	{
 		/* Really old cart predating the SGB */
-		memcpy(title, header->old_title, sizeof(header->old_title));
+		strncpy(title, header->gb_title, sizeof(header->gb_title));
 	}
 
 	debug("loading cartridge %s", title);

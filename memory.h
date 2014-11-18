@@ -122,12 +122,14 @@ typedef struct _cartridge_header
 			char licensee_code[2];	/* 0x144-0x145 */
 			uint8_t sgb;
 		} gbc_title;
+
 		struct
 		{
 			char title[18];
 			uint8_t sgb;
 		} sgb_title;
-		char old_title[19];
+
+		char gb_title[19];
 	};
 
 	uint8_t cart_type;	/* 0x147 */
