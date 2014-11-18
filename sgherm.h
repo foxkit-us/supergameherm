@@ -16,6 +16,10 @@ typedef struct _emulator_state
 	bool toggle_int_on_next;
 	bool interrupts;			/* Initalise to 1! */
 	uint8_t wait;				/* number of clocks */
+	struct _lcdc_state
+	{
+		uint32_t curr_clk;		/* current clock */
+	} lcdc_state;
 } emulator_state;
 
 

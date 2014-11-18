@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	{
 		if((++test % 8400000) == 0) printf("GBC seconds: %ld\n", test / 8400000);
 		execute(&state);
-		//lcdc_tick(&state);
+		lcdc_tick(&state);
 		clock_tick(&state);
 
 	} while (true);
