@@ -47,13 +47,11 @@ int main(int argc, char *argv[])
 	fclose(rom);
 
 	init_ctl(&state, system);
-	init_clock(&state);
 	uint64_t test = 0;
-	while(true)
+	while(clock_tick(&state))
 	{
 		test++;
 		if(test == 4194304) { printf("1 second maybe?\n"); test = 0; }
-		clock_tick(&state);
 		execute(&state);
 		//lcdc_tick(&state);
 	}
