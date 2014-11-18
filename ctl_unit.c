@@ -34,9 +34,7 @@ void nop(emulator_state *state)
  */
 void jr_imm8(emulator_state *state)
 {
-	uint8_t to_add = mem_read8(state, state->pc + 1);
-
-	if(to_add == 0) to_add = 2;	/* Skip over what we just ran */
+	uint8_t to_add = mem_read8(state, state->pc++);
 
 	state->pc += to_add;
 }
