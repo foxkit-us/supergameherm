@@ -58,8 +58,8 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 		system_types *system)
 {
 	long size_in_bytes, actual_size;
-	uint8_t checksum;
-	char title[19] = "\0", publisher[4] = "\0"; // Max sizes
+	int8_t checksum = 0;
+	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
 	const offsets begin = OFF_GRAPHIC_BEGIN;
 	bool err = true;
 
@@ -105,8 +105,8 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 		error("invalid nintendo graphic (don't care)");
 #else
 		fatal("invalid nintendo graphic!");
-#endif
 		goto close_rom;
+#endif
 	}
 	else
 	{
@@ -167,11 +167,24 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 		goto close_rom;
 	}
 
-#ifdef BIG_ENDIAN
-	checksum = __bswap_16((*header)->cart_checksum);
+	for(size_t i = 0x134; i <= 0x14d; ++i)
+		checksum += state->cart_data[i] + 1;
+
+	printf("%d\n", checksum);
+
+	if(checksum != 1)
+	{
+#ifdef NDEBUG
+		error("invalid header checksum (don't care)");
 #else
-	checksum = (*header)->cart_checksum;
+		fatal("invalid header checksum!");
+		goto close_rom;
 #endif
+	}
+	else
+	{
+		debug("Valid header checksum found");
+	}
 
 	err = false;
 close_rom:
