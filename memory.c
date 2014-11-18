@@ -55,11 +55,12 @@ uint8_t f_read(emulator_state *state, uint16_t location)
 	{
 		fatal("invalid memory read at %04X", location);
 	}
+	/*
 	if(location < 0xFF80)
 	{
 	fatal("still not sure how I want to implement I/O access at %04X",
 		location);
-	}
+	}*/
 	return direct_read(state, location);
 }
 

@@ -47,14 +47,15 @@ int main(int argc, char *argv[])
 	fclose(rom);
 
 	init_ctl(&state, system);
-	uint64_t test = 0;
-	while(clock_tick(&state))
+	uint64_t test = 0, cycles = 0;
+	do
 	{
-		test++;
-		if(test == 4194304) { printf("1 second maybe?\n"); test = 0; }
+		if((++test % 8400000) == 0) printf("GBC seconds: %ld\n", test / 8400000);
 		execute(&state);
 		//lcdc_tick(&state);
-	}
+		clock_tick(&state);
+
+	} while (true);
 
 	return EXIT_SUCCESS;
 }
