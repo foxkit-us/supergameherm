@@ -101,4 +101,7 @@ void lcdc_write(emulator_state *state, uint16_t reg, uint8_t data)
 #endif
 		return;
 	}
+
+	/* XXX TODO FIXME */
+	state->memory[reg] = data;
 }

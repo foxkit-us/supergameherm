@@ -34,6 +34,17 @@ void dump_flags(emulator_state *state)
 	      (state->flag_reg & FLAG_C) ? "C":"c");
 }
 
+uint8_t int_flag_read(emulator_state *state, uint16_t location)
+{
+	return state->memory[location];
+}
+
+void int_flag_write(emulator_state *state, uint16_t location, uint8_t data)
+{
+	/* only allow setting of the first five bits. */
+	state->memory[location] = data & 0x1F;
+}
+
 /*!
  * @brief NOP (0x00)
  * @result Nothing.
