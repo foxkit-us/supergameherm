@@ -5,6 +5,7 @@
 #include "memory.h"	// mem_[read|write][8|16]
 #include "params.h"	// system_types
 #include "print.h"	// fatal
+#include "sgherm.h"	// emulator_state, REG_*, etc
 
 
 #define WAIT_CYCLE(cycles, handler)  handler

@@ -5,8 +5,7 @@
 #include <stdbool.h>	/* bool */
 #include <stdio.h>	/* FILE * */
 
-/* 8-bit address space */
-#define MEM_SIZE	0x10000
+#include "sgherm.h"	/* emulator_state */
 
 enum offsets
 {
@@ -141,29 +140,6 @@ typedef struct _cartridge_header
 	uint16_t cartridge_checksum;	/* 0x14E-0x14F Unenforced */
 } cartridge_header;
 
-typedef struct _emulator_state
-{
-	unsigned char memory[MEM_SIZE];		/*! RAM */
-	unsigned char *cart_data;		/*! Loaded cart data */
-	uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
-	char flag_reg;
-	bool toggle_int_on_next;
-	bool interrupts;			/* Initalise to 1! */
-} emulator_state;
-
-
-#define REG_HI(state, reg) ((char *)&((state)->reg) + 1)
-#define REG_LOW(state, reg) ((char *)&((state)->reg))
-
-#define REG_A(state) REG_HI(state, af)
-#define REG_F(state) REG_LOW(state, af)
-#define REG_B(state) REG_HI(state, bc)
-#define REG_C(state) REG_LOW(state, bc)
-#define REG_D(state) REG_HI(state, de)
-#define REG_E(state) REG_LOW(state, de)
-#define REG_H(state) REG_HI(state, hl)
-#define REG_L(state) REG_LOW(state, hl)
-
 
 uint8_t mem_read8(emulator_state *state, uint16_t location);
 uint16_t mem_read16(emulator_state *state, uint16_t location);
@@ -171,9 +147,6 @@ void mem_write8(emulator_state *state, uint16_t location, uint8_t data);
 void mem_write16(emulator_state *state, uint16_t location, uint16_t data);
 
 bool read_rom_data(emulator_state *state, FILE *rom);
-
-void init_ctl(emulator_state *, char);
-bool execute(emulator_state *);
 
 void init_emulator(emulator_state *state);
 

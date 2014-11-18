@@ -3,6 +3,7 @@
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
+#include "ctl_unit.h"	// init_ctl, execute
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
 #include "memory.h"	/* offsets, emulator_state */
