@@ -10,6 +10,7 @@
 
 typedef enum
 {
+	/*! A list of constants, mostly used for documentation purposes. */
 	/* TODO GBC constants */
 
 	/* restart and interrupt vectors */
@@ -96,9 +97,12 @@ typedef enum
 	OFF_OAM_END = 0xFE9F,
 
 	/* Contains control registers and other doodads */
-	OFF_MMIO_BEGIN = 0xFF00,
-	/* TODO I/O constants */
-	OFF_MMIO_END = 0xFF7F,
+	OFF_GBC_MMIO_BEGIN = 0xFF00,
+	/* TODO more I/O constants */
+
+	OFF_GBC_SWITCH_VIDEO_BANK = 0xFF40,
+
+	OFF_GBC_MMIO_END = 0xFF7F,
 
 	OFF_HIGH_RAM_BEGIN = 0xFF80,
 	OFF_HIGH_RAM_END = 0xFFFE,
