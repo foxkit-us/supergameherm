@@ -67,39 +67,39 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 	*header = NULL;
 
 	/* Get the full ROM size */
-	if(fseek(rom, 0, SEEK_END))
+	if(unlikely(fseek(rom, 0, SEEK_END)))
 	{
 		perror("seeking");
 		goto close_rom;
 	}
 
-	if((actual_size = ftell(rom)) < 0x8000)
+	if(unlikely((actual_size = ftell(rom)) < 0x8000))
 	{
 		error("ROM is too small");
 		goto close_rom;
 	}
 
-	if((state->cart_data = malloc(actual_size)) == NULL)
+	if(unlikely((state->cart_data = malloc(actual_size)) == NULL))
 	{
 		error("Could not allocate RAM for ROM");
 		goto close_rom;
 	}
 
-	if(fseek(rom, 0, SEEK_SET))
+	if(unlikely(fseek(rom, 0, SEEK_SET)))
 	{
 		perror("seeking");
 		goto close_rom;
 	}
 
-	if(fread(state->cart_data, actual_size, 1, rom) != 1)
+	if(unlikely(fread(state->cart_data, actual_size, 1, rom) != 1))
 	{
 		perror("Could not read ROM");
 		goto close_rom;
 	}
 
 	*header = (cart_header *)(state->cart_data + (size_t)begin);
-	if(memcmp((*header)->graphic, graphic_expected,
-				sizeof(graphic_expected)) != 0)
+	if(unlikely(memcmp((*header)->graphic, graphic_expected,
+				sizeof(graphic_expected)) != 0))
 	{
 #ifdef NDEBUG
 		error("invalid nintendo graphic (don't care)");
@@ -175,7 +175,7 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 
 	err = false;
 close_rom:
-	if(err)
+	if(unlikely(err))
 		free(state->cart_data);
 	else
 		memcpy(state->memory, state->cart_data, 0x7fff);

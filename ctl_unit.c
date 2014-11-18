@@ -146,9 +146,8 @@ void ld_l_a(emulator_state *state)
 	state->pc++;
 }
 
-void xor_common(emulator_state *state, char to_xor)
+static inline void xor_common(emulator_state *state, char to_xor)
 {
-	/* XXX this should be a macro */
 	*REG_A(state) ^= to_xor;
 
 	state->flag_reg = 0;
@@ -251,7 +250,7 @@ void cb_dispatch(emulator_state *state)
 {
 	uint8_t opcode = mem_read8(state, ++state->pc);
 
-	if(opcode >= 0x40)
+	if(likely(opcode >= 0x40))
 	{
 		uint8_t bit_number = (opcode & 0x38) >> 3;
 		enum cb_regs reg = (opcode & 0x7);
@@ -545,7 +544,7 @@ bool execute(emulator_state *state)
 	opcode_t handler = handlers[opcode];
 	bool toggle = state->toggle_int_on_next;
 
-	if(handler == NULL)
+	if(unlikely(handler == NULL))
 	{
 		fatal("invalid opcode %02X at %04X", opcode, state->pc);
 	}

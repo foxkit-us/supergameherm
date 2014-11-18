@@ -16,10 +16,10 @@ typedef struct _emulator_state
 	bool toggle_int_on_next;
 	bool interrupts;			/* Initalise to 1! */
 	uint8_t wait;				/* number of clocks */
-	void *timer_obj;			/* Timer object */
 } emulator_state;
 
 
+/* XXX ugh */
 #define REG_HI(state, reg) ((uint8_t *)&((state)->reg) + 1)
 #define REG_LOW(state, reg) ((uint8_t *)&((state)->reg))
 
@@ -36,20 +36,22 @@ void init_emulator(emulator_state *state);
 
 #ifdef likely
 #	undef likely
-#	ifdef __GNUC__
-#		define likely(x) __builtin_expect ((x), 1)
-#	else
-#		define likely(x) x
-#	endif
+#endif
+
+#ifdef __GNUC__
+#	define likely(x) __builtin_expect((x), 1)
+#else
+#	define likely(x) (x)
 #endif
 
 #ifdef unlikely
 #	undef unlikely
-#	ifdef __GNUC__
-#		define unlikely(x) __builtin_expect ((x), 0)
-#	else
-#		define unlikely(x) x
-#	endif
+#endif
+
+#ifdef __GNUC__
+#	define unlikely(x) __builtin_expect((x), 0)
+#else
+#	define unlikely(x) (x)
 #endif
 
 #endif /*!__SGHERM_H_*/
