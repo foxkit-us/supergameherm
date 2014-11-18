@@ -3,6 +3,7 @@
 
 #include <stdint.h>	/* (u)int*_t */
 #include <stdbool.h>	/* bool */
+#include <stdio.h>	/* FILE * */
 
 /* 8-bit address space */
 #define MEM_SIZE	0x10000
@@ -168,6 +169,11 @@ uint8_t mem_read8(emulator_state *state, uint16_t location);
 uint16_t mem_read16(emulator_state *state, uint16_t location);
 void mem_write8(emulator_state *state, uint16_t location, uint8_t data);
 void mem_write16(emulator_state *state, uint16_t location, uint16_t data);
+
+bool read_rom_data(emulator_state *state, FILE *rom);
+
+void init_ctl(emulator_state *, char);
+bool execute(emulator_state *);
 
 void init_emulator(emulator_state *state);
 

@@ -7,13 +7,6 @@
 #include "print.h"	// fatal, error, debug
 #include "memory.h"	/* offsets, emulator_state */
 
-// rom_read:
-extern bool read_rom_data(emulator_state *state, FILE *rom);
-
-// ctl_unit:
-void init_ctl(emulator_state *, char);
-bool execute(emulator_state *);
-
 void init_emulator(emulator_state *state)
 {
 	memset(state, 0, sizeof(emulator_state));
