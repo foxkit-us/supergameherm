@@ -20,6 +20,15 @@
 /*! Carry Flag */
 #define FLAG_C 0x10
 
+void dump_flags(emulator_state *state)
+{
+	debug("flags = %s%s%s%s",
+	      (state->flag_reg & FLAG_Z) ? "Z":"z",
+	      (state->flag_reg & FLAG_N) ? "N":"n",
+	      (state->flag_reg & FLAG_H) ? "H":"h",
+	      (state->flag_reg & FLAG_C) ? "C":"c");
+}
+
 /*!
  * @brief NOP (0x00)
  * @result Nothing.
@@ -220,6 +229,15 @@ void jp_imm16(emulator_state *state)
 	state->pc = (msb<<8 | lsb);
 }
 
+enum cb_regs {
+	CB_REG_B = 0, CB_REG_C, CB_REG_D, CB_REG_E, CB_REG_H, CB_REG_L,
+	CB_REG_HL, CB_REG_A
+};
+
+enum cb_ops {
+	CB_OP_BIT = 1, CB_OP_RES = 2, CB_OP_SET = 3
+};
+
 /*!
  * @brief CB ..
  * @note this is just a dispatch function for SWAP/BIT/etc
@@ -227,6 +245,70 @@ void jp_imm16(emulator_state *state)
 void cb_dispatch(emulator_state *state)
 {
 	uint8_t opcode = mem_read8(state, ++state->pc);
+
+	if(opcode >= 0x40)
+	{
+		uint8_t bit_number = (opcode & 0x38) >> 3;
+		enum cb_regs reg = (opcode & 0x7);
+		enum cb_ops op = (opcode & 0xC0) >> 6;
+		uint8_t *write_to;
+		uint8_t maybe_temp;
+
+		switch(reg)
+		{
+		case CB_REG_B:
+			write_to = REG_B(state); break;
+		case CB_REG_C:
+			write_to = REG_C(state); break;
+		case CB_REG_D:
+			write_to = REG_D(state); break;
+		case CB_REG_E:
+			write_to = REG_E(state); break;
+		case CB_REG_H:
+			write_to = REG_H(state); break;
+		case CB_REG_L:
+			write_to = REG_L(state); break;
+		case CB_REG_HL:
+			write_to = &maybe_temp; break;
+		case CB_REG_A:
+			write_to = REG_A(state); break;
+		}
+
+		uint8_t val = (1 << bit_number);
+
+		if(reg == CB_REG_HL)
+		{
+			maybe_temp = mem_read8(state, state->hl);
+		}
+
+		switch(op)
+		{
+		case CB_OP_RES:
+			// reset bit <bit_number> of register <reg>
+			//debug("reset bit %d of reg %d", bit_number, reg);
+			*write_to &= !val; break;
+		case CB_OP_SET:
+			// set bit <bit_number> of register <reg>
+			//debug("set bit %d of reg %d", bit_number, reg);
+			*write_to |= val;  break;
+		case CB_OP_BIT:
+			// test bit <bit_number> of register <reg>
+			//debug("test bit %d of reg %d", bit_number, reg);
+			dump_flags(state);
+			state->flag_reg |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
+			state->flag_reg |= FLAG_H;
+			state->flag_reg &= !FLAG_N;
+			dump_flags(state);
+			break;
+		}
+
+		if(reg == CB_REG_HL)
+		{
+			mem_write8(state, state->hl, maybe_temp);
+		}
+	} else {
+		debug("IGNORING CB op %02X", opcode);
+	}
 
 	state->pc++;
 }
@@ -338,11 +420,7 @@ void cp_imm8(emulator_state *state)
 			state->flag_reg |= FLAG_H;
 		}
 	}
-	debug("flags = %s%s%s%s",
-	       (state->flag_reg & FLAG_Z) ? "Z":"z",
-	       (state->flag_reg & FLAG_N) ? "N":"n",
-	       (state->flag_reg & FLAG_H) ? "H":"h",
-	       (state->flag_reg & FLAG_C) ? "C":"c");
+	dump_flags(state);
 
 	state->pc++;
 }
