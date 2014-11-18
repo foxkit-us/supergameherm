@@ -3,49 +3,47 @@
 #include "print.h"	// fatal
 #include "memory.h"	// Constants and what have you */
 
-unsigned char memory[MEM_SIZE];
-
 
 /***********************************************************************
  * readers
  ***********************************************************************/
-typedef uint8_t (*mem_read_fn)(uint16_t);
+typedef uint8_t (*mem_read_fn)(emulator_state*, uint16_t);
 
-uint8_t direct_read(uint16_t location)
+uint8_t direct_read(emulator_state *state, uint16_t location)
 {
-	return memory[location];
+	return state->memory[location];
 }
 
-uint8_t rom_bank_read(uint16_t location)
+uint8_t rom_bank_read(emulator_state *state, uint16_t location)
 {
 	fatal("bank switching not yet implemented");
 	/* NOTREACHED */
 }
 
-uint8_t not_impl(uint16_t location)
+uint8_t not_impl(emulator_state *state, uint16_t location)
 {
 	fatal("reading from %04X is not yet implemented", location);
 	/* NOTREACHED */
 }
 
-uint8_t ram_bank_read(uint16_t location)
+uint8_t ram_bank_read(emulator_state *state, uint16_t location)
 {
 	fatal("RAM bank switching not yet implemented");
 	/* NOTREACHED */
 }
 
-uint8_t shadow_read(uint16_t location)
+uint8_t shadow_read(emulator_state *state, uint16_t location)
 {
 	/* Shadow is offset */
-	return memory[location - 0x2000];
+	return state->memory[location - 0x2000];
 }
 
-uint8_t f_read(uint16_t location)
+uint8_t f_read(emulator_state *state, uint16_t location)
 {
 	/* who knows?  the SHADOW knows! */
 	if(location < 0xFE00)
 	{
-		return shadow_read(location);
+		return shadow_read(state, location);
 	}
 	/* OAM */
 	if(location < 0xFEA0)
@@ -62,7 +60,7 @@ uint8_t f_read(uint16_t location)
 	fatal("still not sure how I want to implement I/O access at %04X",
 		location);
 	}
-	return direct_read(location);
+	return direct_read(state, location);
 }
 
 mem_read_fn readers[0x10] = {
@@ -82,7 +80,7 @@ mem_read_fn readers[0x10] = {
 	f_read
 };
 
-uint8_t mem_read8(uint16_t location)
+uint8_t mem_read8(emulator_state *state, uint16_t location)
 {
 	char reader = location >> 12;
 
@@ -91,12 +89,12 @@ uint8_t mem_read8(uint16_t location)
 		fatal("invalid memory access - out of bounds");
 	}
 
-	return readers[reader](location);
+	return readers[reader](state, location);
 }
 
-uint16_t mem_read16(uint16_t location)
+uint16_t mem_read16(emulator_state *state, uint16_t location)
 {
-	return (mem_read8(location+1) << 8) | mem_read8(location);
+	return (mem_read8(state, location+1) << 8) | mem_read8(state, location);
 }
 
 
@@ -105,33 +103,33 @@ uint16_t mem_read16(uint16_t location)
 /***********************************************************************
  * writers
  ***********************************************************************/
-void mem_write8(uint16_t location, uint8_t data)
+void mem_write8(emulator_state *state, uint16_t location, uint8_t data)
 {
 	//if(location < 0xC000 || location >= 0xFE00)
 	//	fatal("invalid memory write at %04X (%02X)", location, data);
 	if(location < 0xE000)
 	{
 		debug("wrote %02X to %04X", data, location);
-		memory[location] = data;
+		state->memory[location] = data;
 		return;
 	}
 	if(location < 0xFE00)
 	{
-		memory[location - 0x2000] = data;
+		state->memory[location - 0x2000] = data;
 		return;
 	}
 	if(location >= 0xFE80)
 	{
-		memory[location] = data;
+		state->memory[location] = data;
 		return;
 	}
 	debug("IGNORING write of %02X to %04X", data, location);
 }
 
-void mem_write16(uint16_t location, uint16_t data)
+void mem_write16(emulator_state *state, uint16_t location, uint16_t data)
 {
 	/* TODO this needs to be filtered just like the readers */
-	unsigned char *l = memory + location;
+	unsigned char *l = state->memory + location;
 	uint16_t *hax = (uint16_t *)l;
 
 	*l = data;

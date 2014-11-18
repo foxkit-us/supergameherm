@@ -5,13 +5,9 @@
 #include <byteswap.h>	// __bswap_16
 
 #include "print.h"	// fatal, error, debug
-#include "memory.h"	// offsets
+#include "memory.h"	// offsets, emulator_state
 
-/*! actual loaded ROM data */
-unsigned char *data;
-extern unsigned char memory[0x10000];
-
-static const char graphic_expected[] = {
+static const unsigned char graphic_expected[] = {
 	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73, 0x00, 0x83,
 	0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
 	0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63,
@@ -58,12 +54,13 @@ const char *friendly_cart_names[0x20] = {
 	"MBC5 Rumble Cart with SRAM (Battery)", "GB Pocket Camera"
 };
 
-bool read_rom_data(FILE *rom)
+bool read_rom_data(emulator_state *state, FILE *rom)
 {
 	long size_in_bytes, actual_size;
-	cartridge_header *header;
-	const enum offsets begin = graphic_begin;
 	uint8_t checksum;
+	unsigned char title[19] = "\0", publisher[4] = "\0";
+	cartridge_header *header = NULL;
+	const enum offsets begin = graphic_begin;
 	bool err = true;
 
 	/* Get the full ROM size */
@@ -79,7 +76,7 @@ bool read_rom_data(FILE *rom)
 		goto close_rom;
 	}
 
-	if((data = malloc(actual_size)) == NULL)
+	if((state->cart_data = malloc(actual_size)) == NULL)
 	{
 		error("Could not allocate RAM for ROM");
 		goto close_rom;
@@ -91,14 +88,13 @@ bool read_rom_data(FILE *rom)
 		goto close_rom;
 	}
 
-	if(fread(data, actual_size, 1, rom) != 1)
+	if(fread(state->cart_data, actual_size, 1, rom) != 1)
 	{
 		perror("Could not read ROM");
 		goto close_rom;
 	}
 
-	/* Faster than a copy */
-	header = (cartridge_header *)(data + (size_t)begin);
+	header = (cartridge_header *)(state->cart_data + (size_t)begin);
 	if(memcmp(header->graphic, graphic_expected, sizeof(graphic_expected)) != 0)
 	{
 #ifdef NDEBUG
@@ -107,44 +103,33 @@ bool read_rom_data(FILE *rom)
 		fatal("invalid nintendo graphic!");
 #endif
 		goto close_rom;
-	} else {
+	}
+	else
+	{
 		debug("valid nintendo graphic found");
 	}
 
 	if (header->gbc_title.compat & 0x80)
 	{
 		/* Game boy color[sic] */
-		char title[sizeof(header->gbc_title.title) + 1];
-		char publisher[sizeof(header->gbc_title.publisher) + 1];
 		memcpy(title, header->gbc_title.title, sizeof(header->gbc_title.title));
 		memcpy(publisher, header->gbc_title.publisher, sizeof(header->gbc_title.publisher));
 
-		title[sizeof(header->gbc_title.title)] = '\0';
-		publisher[sizeof(header->gbc_title.publisher)] = '\0';
-
-		debug("loading cartridge %s", title);
-		debug("publisher %s", publisher);
 	}
 	else if (header->sgb_title.sgb & 0x03)
 	{
 		/* Super game boy */
-		char title[sizeof(header->sgb_title.title) + 1];
 		memcpy(title, header->sgb_title.title, sizeof(header->sgb_title.title));
-
-		title[sizeof(header->sgb_title.title)] = '\0';
-
-		debug("loading cartridge %s", title);
 	}
 	else
 	{
 		/* Really old cart predating the SGB */
-		char title[sizeof(header->old_title) + 1];
 		memcpy(title, header->old_title, sizeof(header->old_title));
-
-		title[sizeof(header->old_title)] = '\0';
-
-		debug("loading cartridge %s", title);
 	}
+
+	debug("loading cartridge %s", title);
+	if(*publisher)
+		debug("publisher %s", publisher);
 
 	debug("Header size is %d\n", header->rom_size);
 	size_in_bytes = 0x8000 << header->rom_size;
@@ -165,12 +150,9 @@ bool read_rom_data(FILE *rom)
 	err = false;
 close_rom:
 	if(err)
-		free(data);
-
-	if(fclose(rom) == EOF)
-		error("couldn't close ROM file (libc bug?)");
-
-	memcpy(memory, data, 0x7fff);
+		free(state->cart_data);
+	else
+		memcpy(state->memory, state->cart_data, 0x7fff);
 
 	return (!err);
 }

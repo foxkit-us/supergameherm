@@ -9,25 +9,6 @@
 
 #define WAIT_CYCLE(cycles, handler)  handler
 
-/*! actual loaded ROM data */
-extern unsigned char *data;
-
-/*! registers */
-uint16_t af, bc, de, hl, sp, pc;
-
-char *a = ((char *)&af) + 1;
-char *f = (char *)&af;
-char *b = ((char *)&bc) + 1;
-char *c = (char *)&bc;
-char *d = ((char *)&de) + 1;
-char *e = (char *)&de;
-char *h = ((char *)&hl) + 1;
-char *l = (char *)&hl;
-
-char flag_reg;
-
-bool toggle_int_on_next = false;
-bool interrupts = true;
 
 /*! Zero Flag */
 #define FLAG_Z 0x80
@@ -42,329 +23,330 @@ bool interrupts = true;
  * @brief NOP (0x00)
  * @result Nothing.
  */
-void nop(void)
+void nop(emulator_state *state)
 {
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief JR n (0x18)
  * @result add n to pc
  */
-void jr_imm8(void)
+void jr_imm8(emulator_state *state)
 {
-	unsigned char to_add = mem_read8(pc + 1);
+	unsigned char to_add = mem_read8(state, state->pc + 1);
 
-	pc += to_add;
+	state->pc += to_add;
 }
 
 /*!
  * @brief JR NZ,n (0x20)
  * @result add n to pc if Z (zero) flag clear
  */
-void jr_nz_imm8(void)
+void jr_nz_imm8(emulator_state *state)
 {
-	unsigned char to_add = mem_read8(pc + 1);
+	unsigned char to_add = mem_read8(state, state->pc + 1);
 
-	pc += (flag_reg & FLAG_Z) ? 2 : to_add;
+	state->pc += (state->flag_reg & FLAG_Z) ? 2 : to_add;
 }
 
 /*!
  * @brief JR Z,n (0x28)
  * @result add n to pc if Z (zero) flag set
  */
-void jr_z_imm8(void)
+void jr_z_imm8(emulator_state *state)
 {
-	unsigned char to_add = mem_read8(pc + 1);
+	unsigned char to_add = mem_read8(state, state->pc + 1);
 
-	pc += (flag_reg & FLAG_Z) ? to_add : 2;
+	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 2;
 }
 
 /*!
  * @brief LD A,n (0x3E)
  * @result A = n
  */
-void ld_a_imm8(void)
+void ld_a_imm8(emulator_state *state)
 {
-	*a = mem_read8(++pc);
-	pc++;
+	*REG_A(state) = mem_read8(state, ++state->pc);
+	state->pc++;
 }
 
 /*!
  * @brief LD B,A (0x47)
  * @result B = A
  */
-void ld_b_a(void)
+void ld_b_a(emulator_state *state)
 {
-	*b = *a;
-	pc++;
+	*REG_B(state) = *REG_A(state);
+	state->pc++;
 }
 
 /*!
  * @brief LD C,A (0x4F)
  * @result C = A
  */
-void ld_c_a(void)
+void ld_c_a(emulator_state *state)
 {
-	*c = *a;
-	pc++;
+	*REG_C(state) = *REG_A(state);
+	state->pc++;
 }
 
 /*!
  * @brief LD D,A (0x57)
  * @result D = A
  */
-void ld_d_a(void)
+void ld_d_a(emulator_state *state)
 {
-	*d = *a;
-	pc++;
+	*REG_D(state) = *REG_A(state);
+	state->pc++;
 }
 
 /*!
  * @brief LD E,A (0x5F)
  * @result E = A
  */
-void ld_e_a(void)
+void ld_e_a(emulator_state *state)
 {
-	*e = *a;
-	pc++;
+	*REG_E(state) = *REG_A(state);
+	state->pc++;
 }
 
 /*!
  * @brief LD H,A (0x67)
  * @result H = A
  */
-void ld_h_a(void)
+void ld_h_a(emulator_state *state)
 {
-	*h = *a;
-	pc++;
+	*REG_H(state) = *REG_A(state);
+	state->pc++;
 }
 
 /*!
  * @brief LD L,A (0x6F)
  * @result L = A
  */
-void ld_l_a(void)
+void ld_l_a(emulator_state *state)
 {
-	*l = *a;
-	pc++;
+	*REG_L(state) = *REG_A(state);
+	state->pc++;
 }
 
-void xor_common(char to_xor)
+void xor_common(emulator_state *state, char to_xor)
 {
-	*a ^= to_xor;
+	/* XXX this should be a macro */
+	*REG_A(state) ^= to_xor;
 
-	flag_reg = 0;
-	if(*a == 0) flag_reg |= FLAG_Z;
+	state->flag_reg = 0;
+	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief XOR B (0xA8)
  * @result A ^= B; Z flag set if A is now zero
  */
-void xor_b(void)
+void xor_b(emulator_state *state)
 {
-	xor_common(*b);
+	xor_common(state, *REG_B(state));
 }
 
 /*!
  * @brief XOR C (0xA9)
  * @result A ^= C; Z flag set if A is now zero
  */
-void xor_c(void)
+void xor_c(emulator_state *state)
 {
-	xor_common(*c);
+	xor_common(state, *REG_C(state));
 }
 
 /*!
  * @brief XOR D (0xAA)
  * @result A ^= D; Z flag set if A is now zero
  */
-void xor_d(void)
+void xor_d(emulator_state *state)
 {
-	xor_common(*d);
+	xor_common(state, *REG_D(state));
 }
 
 /*!
  * @brief XOR E (0xAB)
  * @result A ^= E; Z flag set if A is now zero
  */
-void xor_e(void)
+void xor_e(emulator_state *state)
 {
-	xor_common(*e);
+	xor_common(state, *REG_E(state));
 }
 
 /*!
  * @brief XOR H (0xAC)
  * @result A ^= H; Z flag set if A is now zero
  */
-void xor_h(void)
+void xor_h(emulator_state *state)
 {
-	xor_common(*h);
+	xor_common(state, *REG_H(state));
 }
 
 /*!
  * @brief XOR L (0xAD)
  * @result A ^= H; Z flag set if A is now zero
  */
-void xor_l(void)
+void xor_l(emulator_state *state)
 {
-	xor_common(*l);
+	xor_common(state, *REG_L(state));
 }
 
 /*!
  * @brief XOR A (0xAF)
  * @result A = 0; Z flag set
  */
-void xor_a(void)
+void xor_a(emulator_state *state)
 {
-	*a = 0;
-	flag_reg = FLAG_Z;
-	pc++;
+	*REG_A(state) = 0;
+	state->flag_reg = FLAG_Z;
+	state->pc++;
 }
 
 /*!
  * @brief JP nn (0xC3)
  * @result pc is set to 16-bit immediate value (LSB, MSB)
  */
-void jp_imm16(void)
+void jp_imm16(emulator_state *state)
 {
-	char lsb = mem_read8(++pc);
-	char msb = mem_read8(++pc);
+	char lsb = mem_read8(state, ++state->pc);
+	char msb = mem_read8(state, ++state->pc);
 
-	pc = (msb<<8 | lsb);
+	state->pc = (msb<<8 | lsb);
 }
 
 /*!
  * @brief CB ..
  * @note this is just a dispatch function for SWAP/BIT/etc
  */
-void cb_dispatch(void)
+void cb_dispatch(emulator_state *state)
 {
-	char opcode = mem_read8(++pc);
+	char opcode = mem_read8(state, ++state->pc);
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief CALL nn (0xCD)
  * @result next pc stored in stack; jump to nn
  */
-void call_imm16(void)
+void call_imm16(emulator_state *state)
 {
-	char lsb = mem_read8(++pc);
-	char msb = mem_read8(++pc);
+	char lsb = mem_read8(state, ++state->pc);
+	char msb = mem_read8(state, ++state->pc);
 
-	sp -= 2;
-	mem_write16(sp, ++pc);
+	state->sp -= 2;
+	mem_write16(state, state->sp, ++state->pc);
 
-	pc = (msb<<8 | lsb);
+	state->pc = (msb<<8 | lsb);
 }
 
 /*!
  * @brief LDH n,A (0xE0) - write A to 0xff00+n
  * @result the I/O register n will contain the value of A
  */
-void ldh_imm8_a(void)
+void ldh_imm8_a(emulator_state *state)
 {
-	uint16_t write = mem_read8(++pc);
+	uint16_t write = mem_read8(state, ++state->pc);
 	write += 0xFF00;
 
-	mem_write8(write, *a);
+	mem_write8(state, write, *REG_A(state));
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief LD (nn),A (0xEA) - write A to *nn
  * @result the memory at address nn will contain the value of A
  */
-void ld_d16_a(void)
+void ld_d16_a(emulator_state *state)
 {
-	char lsb = mem_read8(++pc);
-	char msb = mem_read8(++pc);
+	char lsb = mem_read8(state, ++state->pc);
+	char msb = mem_read8(state, ++state->pc);
 
 	uint16_t loc = (msb<<8) | lsb;
 
-	mem_write8(loc, *a);
+	mem_write8(state, loc, *REG_A(state));
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief LDH A,nn (0xF0) - read 0xff00+n to A
  * @result A will contain the value of the I/O register n
  */
-void ldh_a_imm8(void)
+void ldh_a_imm8(emulator_state *state)
 {
-	unsigned char loc = mem_read8(++pc);
-	*a = mem_read8(0xFF00 + loc);
+	unsigned char loc = mem_read8(state, ++state->pc);
+	*REG_A(state) = mem_read8(state, 0xFF00 + loc);
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief DI (0xF3) - disable interrupts
  * @result interrupts will be disabled the instruction AFTER this one
  */
-void di(void)
+void di(emulator_state *state)
 {
-	toggle_int_on_next = true;
+	state->toggle_int_on_next = true;
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief EI (0xFB) - enable interrupts
  * @result interrupts will be enabled the instruction AFTER this one
  */
-void ei(void)
+void ei(emulator_state *state)
 {
-	toggle_int_on_next = true;
+	state->toggle_int_on_next = true;
 
-	pc++;
+	state->pc++;
 }
 
 /*!
  * @brief CP n (0xFE) - compare A with 8-bit immediate value
  * @result flags register modified based on result
  */
-void cp_imm8(void)
+void cp_imm8(emulator_state *state)
 {
 	char cmp;
 
-	cmp = mem_read8(++pc);
+	cmp = mem_read8(state, ++state->pc);
 	debug("flags = %s%s%s%s; cmp = %d; A = %d",
-	       (flag_reg & FLAG_Z) ? "Z":"z",
-	       (flag_reg & FLAG_N) ? "N":"n",
-	       (flag_reg & FLAG_H) ? "H":"h",
-	       (flag_reg & FLAG_C) ? "C":"c", cmp, *a);
-	flag_reg |= FLAG_N;
-	flag_reg &= ~FLAG_H | ~FLAG_C;
-	if(*a == cmp)
+	       (state->flag_reg & FLAG_Z) ? "Z":"z",
+	       (state->flag_reg & FLAG_N) ? "N":"n",
+	       (state->flag_reg & FLAG_H) ? "H":"h",
+	       (state->flag_reg & FLAG_C) ? "C":"c", cmp, REG_A(state));
+	state->flag_reg |= FLAG_N;
+	state->flag_reg &= ~FLAG_H | ~FLAG_C;
+	if(*REG_A(state) == cmp)
 	{
-		flag_reg |= FLAG_Z;
+		state->flag_reg |= FLAG_Z;
 	} else {
-		flag_reg &= ~FLAG_Z;
-		if(*a < cmp)
+		state->flag_reg &= ~FLAG_Z;
+		if(*REG_A(state) < cmp)
 		{
-			flag_reg |= FLAG_C;
+			state->flag_reg |= FLAG_C;
 		} else {
-			flag_reg |= FLAG_H;
+			state->flag_reg |= FLAG_H;
 		}
 	}
 	debug("flags = %s%s%s%s",
-	       (flag_reg & FLAG_Z) ? "Z":"z",
-	       (flag_reg & FLAG_N) ? "N":"n",
-	       (flag_reg & FLAG_H) ? "H":"h",
-	       (flag_reg & FLAG_C) ? "C":"c");
+	       (state->flag_reg & FLAG_Z) ? "Z":"z",
+	       (state->flag_reg & FLAG_N) ? "N":"n",
+	       (state->flag_reg & FLAG_H) ? "H":"h",
+	       (state->flag_reg & FLAG_C) ? "C":"c");
 
-	pc++;
+	state->pc++;
 }
 
-typedef void (*opcode_t)(void);
+typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] = {
 	/* 0x00 */ nop, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -438,58 +420,58 @@ char cycles[0x100] = {
 
 
 /*! boot up */
-void init_ctl(char type)
+void init_ctl(emulator_state *state, char type)
 {
-	pc = 0x0100;
+	state->pc = 0x0100;
 	switch(type)
 	{
 	case SYSTEM_SGB:
 		debug("Super Game Boy emulation");
-		*a = 0x01;
+		*REG_A(state) = 0x01;
 		break;
 	case SYSTEM_GB:
 	default:
 		debug("original Game Boy emulation");
-		*a = 0x01;
+		*REG_A(state) = 0x01;
 		break;
 	case SYSTEM_GBC:
 		debug("Game Boy Color emulation");
-		*a = 0x11;
+		*REG_A(state) = 0x11;
 		break;
 	case SYSTEM_GBP:
 		debug("Game Boy Portable emulation");
-		*a = 0xFF;
+		*REG_A(state) = 0xFF;
 		break;
 	}
-	*f = 0xB0;
-	*b = 0x00;
-	*c = 0x13;
-	*d = 0x00;
-	*e = 0xD8;
-	*h = 0x01;
-	*l = 0x4D;
-	sp = 0xFFFE;
+	*REG_F(state) = 0xB0;
+	*REG_B(state) = 0x00;
+	*REG_C(state) = 0x13;
+	*REG_D(state) = 0x00;
+	*REG_E(state) = 0xD8;
+	*REG_H(state) = 0x01;
+	*REG_L(state) = 0x4D;
+	state->sp = 0xFFFE;
 }
 
 
 /*! the emulated CU for the 'z80-ish' CPU */
-bool execute(void)
+bool execute(emulator_state *state)
 {
-	unsigned char opcode = mem_read8(pc);
+	unsigned char opcode = mem_read8(state, state->pc);
 	opcode_t handler = handlers[opcode];
-	bool toggle = toggle_int_on_next;
+	bool toggle = state->toggle_int_on_next;
 
 	if(handler == NULL)
 	{
-		fatal("invalid opcode %02X at %04X", opcode, pc);
+		fatal("invalid opcode %02X at %04X", opcode, state->pc);
 	}
 
-	WAIT_CYCLE(cycles[opcode], handler());
+	WAIT_CYCLE(cycles[opcode], handler(state));
 
 	if(toggle)
 	{
-		toggle_int_on_next = false;
-		interrupts = !interrupts;
+		state->toggle_int_on_next = false;
+		state->interrupts = !state->interrupts;
 	}
 
 	return true;

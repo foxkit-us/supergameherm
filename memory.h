@@ -1,12 +1,8 @@
 #ifndef __MEMORY_H_
 #define __MEMORY_H_
 
-#include <stdint.h> /* (u)int*_t */
-
-uint8_t mem_read8(uint16_t location);
-uint16_t mem_read16(uint16_t location);
-void mem_write8(uint16_t location, uint8_t data);
-void mem_write16(uint16_t location, uint16_t data);
+#include <stdint.h>	/* (u)int*_t */
+#include <stdbool.h>	/* bool */
 
 /* 8-bit address space */
 #define MEM_SIZE	0x10000
@@ -143,5 +139,36 @@ typedef struct _cartridge_header
 	uint8_t header_checksum; 	/* 0x14D Enforced! */
 	uint16_t cartridge_checksum;	/* 0x14E-0x14F Unenforced */
 } cartridge_header;
+
+typedef struct _emulator_state
+{
+	unsigned char memory[MEM_SIZE];		/*! RAM */
+	unsigned char *cart_data;		/*! Loaded cart data */
+	uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
+	char flag_reg;
+	bool toggle_int_on_next;
+	bool interrupts;			/* Initalise to 1! */
+} emulator_state;
+
+
+#define REG_HI(state, reg) ((char *)&((state)->reg) + 1)
+#define REG_LOW(state, reg) ((char *)&((state)->reg))
+
+#define REG_A(state) REG_HI(state, af)
+#define REG_F(state) REG_LOW(state, af)
+#define REG_B(state) REG_HI(state, bc)
+#define REG_C(state) REG_LOW(state, bc)
+#define REG_D(state) REG_HI(state, de)
+#define REG_E(state) REG_LOW(state, de)
+#define REG_H(state) REG_HI(state, hl)
+#define REG_L(state) REG_LOW(state, hl)
+
+
+uint8_t mem_read8(emulator_state *state, uint16_t location);
+uint16_t mem_read16(emulator_state *state, uint16_t location);
+void mem_write8(emulator_state *state, uint16_t location, uint8_t data);
+void mem_write16(emulator_state *state, uint16_t location, uint16_t data);
+
+void init_emulator(emulator_state *state);
 
 #endif /*!__MEMORY_H_*/
