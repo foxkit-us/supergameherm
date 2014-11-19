@@ -345,6 +345,6 @@ void mem_write16(emulator_state *state, uint16_t location, uint16_t data)
 	unsigned char *l = state->memory + location;
 	uint16_t *hax = (uint16_t *)l;
 
-	*l = data;
+	*hax = data;
 	//fatal("invalid memory write at %04X (%04X)", location, data);
 }
