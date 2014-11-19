@@ -69,6 +69,26 @@ void ld_bc_imm16(emulator_state *state)
 }
 
 /*!
+ * @brief INC BC (0x03)
+ * @result 1 is added to BC (possibly wrapping)
+ */
+void inc_bc(emulator_state *state)
+{
+	state->bc++;
+	state->pc++;
+}
+
+/*!
+ * @brief DEC BC (0x0B)
+ * @result 1 is subtracted from BC (possibly wrapping)
+ */
+void dec_bc(emulator_state *state)
+{
+	state->bc--;
+	state->pc++;
+}
+
+/*!
  * @brief LD DE,nn (0x11)
  * @result DE = nn
  */
@@ -83,6 +103,16 @@ void ld_de_imm16(emulator_state *state)
 }
 
 /*!
+ * @brief INC DE (0x13)
+ * @result 1 is added to DE (possibly wrapping)
+ */
+void inc_de(emulator_state *state)
+{
+	state->de++;
+	state->pc++;
+}
+
+/*!
  * @brief JR n (0x18)
  * @result add n to pc
  */
@@ -91,6 +121,16 @@ void jr_imm8(emulator_state *state)
 	int8_t to_add = mem_read8(state, ++state->pc);
 
 	state->pc += to_add + 1;
+}
+
+/*!
+ * @brief DEC DE (0x1B)
+ * @result 1 is subtracted from DE (possibly wrapping)
+ */
+void dec_de(emulator_state *state)
+{
+	state->de--;
+	state->pc++;
 }
 
 /*!
@@ -119,6 +159,16 @@ void ld_hl_imm16(emulator_state *state)
 }
 
 /*!
+* @brief INC HL (0x23)
+* @result 1 is added to HL (possibly wrapping)
+*/
+void inc_hl(emulator_state *state)
+{
+	state->hl++;
+	state->pc++;
+}
+
+/*!
  * @brief JR Z,n (0x28)
  * @result add n to pc if Z (zero) flag set
  */
@@ -127,6 +177,16 @@ void jr_z_imm8(emulator_state *state)
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
 	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 1;
+}
+
+/*!
+ * @brief DEC HL (0x2B)
+ * @result 1 is subtracted from HL (possibly wrapping)
+ */
+void dec_hl(emulator_state *state)
+{
+	state->hl--;
+	state->pc++;
 }
 
 /*!
@@ -144,6 +204,16 @@ void ld_sp_imm16(emulator_state *state)
 }
 
 /*!
+ * @brief INC SP (0x33)
+ * @result 1 is added to SP (possibly wrapping)
+ */
+void inc_sp(emulator_state *state)
+{
+	state->sp++;
+	state->pc++;
+}
+
+/*!
  * @brief LD (HL),n (0x36)
  * @result contents of memory at HL = n
  */
@@ -151,6 +221,16 @@ void ld_hl_imm8(emulator_state *state)
 {
 	uint8_t n = mem_read8(state, ++state->pc);
 	mem_write8(state, state->hl, n);
+	state->pc++;
+}
+
+/*!
+ * @brief DEC SP (0x3B)
+ * @result 1 is subtracted from SP (possibly wrapping)
+ */
+void dec_sp(emulator_state *state)
+{
+	state->sp--;
 	state->pc++;
 }
 
@@ -1316,14 +1396,14 @@ void cp_imm8(emulator_state *state)
 typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] = {
-	/* 0x00 */ nop, ld_bc_imm16, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x08 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x10 */ NULL, ld_de_imm16, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x18 */ jr_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x28 */ jr_z_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x30 */ NULL, ld_sp_imm16, NULL, NULL, NULL, NULL, ld_hl_imm8, NULL,
-	/* 0x38 */ NULL, NULL, NULL, NULL, NULL, NULL, ld_a_imm8, NULL,
+	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, NULL, NULL, NULL, NULL,
+	/* 0x08 */ NULL, NULL, NULL, dec_bc, NULL, NULL, NULL, NULL,
+	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, NULL, NULL, NULL, NULL,
+	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, NULL, NULL, NULL, NULL,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, NULL, inc_hl, NULL, NULL, NULL, NULL,
+	/* 0x28 */ jr_z_imm8, NULL, NULL, dec_hl, NULL, NULL, NULL, NULL,
+	/* 0x30 */ NULL, ld_sp_imm16, NULL, inc_sp, NULL, NULL, ld_hl_imm8, NULL,
+	/* 0x38 */ NULL, NULL, NULL, dec_sp, NULL, NULL, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
