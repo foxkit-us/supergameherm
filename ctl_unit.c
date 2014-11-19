@@ -138,6 +138,30 @@ void ld_b_imm8(emulator_state *state)
 	state->pc++;
 }
 
+static inline void add_to_hl(emulator_state *state, uint16_t to_add)
+{
+	if((uint32_t)(state->hl + to_add) > 0xFFFF) state->flag_reg |= FLAG_C;
+	else state->flag_reg &= ~FLAG_C;
+
+	if((state->hl & 0xF) + (to_add & 0xF) > 0xF) state->flag_reg |= FLAG_H;
+	else state->flag_reg &= ~FLAG_H;
+
+	state->flag_reg &= ~FLAG_N;
+
+	state->hl += to_add;
+
+	state->pc++;
+}
+
+/*!
+ * @brief ADD HL,BC (0x09)
+ * @result HL += BC; N flag reset, H if carry from bit 11, C if overflow
+ */
+void add_hl_bc(emulator_state *state)
+{
+	add_to_hl(state, state->bc);
+}
+
 /*!
  * @brief DEC BC (0x0B)
  * @result 1 is subtracted from BC (possibly wrapping)
@@ -237,6 +261,15 @@ void jr_imm8(emulator_state *state)
 	int8_t to_add = mem_read8(state, ++state->pc);
 
 	state->pc += to_add + 1;
+}
+
+/*!
+ * @brief ADD HL,DE (0x19)
+ * @result HL += DE; N flag reset, H if carry from bit 11, C if overflow
+ */
+void add_hl_de(emulator_state *state)
+{
+	add_to_hl(state, state->de);
 }
 
 /*!
@@ -362,6 +395,15 @@ void jr_z_imm8(emulator_state *state)
 }
 
 /*!
+ * @brief ADD HL,HL (0x29)
+ * @result HL += HL; N flag reset, H if carry from bit 11, C if overflow
+ */
+void add_hl_hl(emulator_state *state)
+{
+	add_to_hl(state, state->hl);
+}
+
+/*!
  * @brief LD A,(HL+) (0x2A)
  * @result A = contents of memory at HL; HL incremented 1
  */
@@ -455,7 +497,16 @@ void ld_hl_imm8(emulator_state *state)
 }
 
 /*!
- * @brief LD A,(HL-) (0x2A)
+ * @brief ADD HL,SP (0x39)
+ * @result HL += SP; N flag reset, H if carry from bit 11, C if overflow
+ */
+void add_hl_sp(emulator_state *state)
+{
+	add_to_hl(state, state->sp);
+}
+
+/*!
+ * @brief LD A,(HL-) (0x3A)
  * @result A = contents of memory at HL; HL decremented 1
  */
 void ldd_a_hl(emulator_state *state)
@@ -1779,13 +1830,13 @@ typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] = {
 	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
-	/* 0x08 */ NULL, NULL, NULL, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
+	/* 0x08 */ NULL, add_hl_bc, NULL, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
 	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
-	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
+	/* 0x18 */ jr_imm8, add_hl_de, NULL, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
 	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
-	/* 0x28 */ jr_z_imm8, NULL, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
+	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
 	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, NULL,
-	/* 0x38 */ NULL, NULL, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, NULL,
+	/* 0x38 */ NULL, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
