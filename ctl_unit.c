@@ -55,6 +55,34 @@ void nop(emulator_state *state)
 }
 
 /*!
+ * @brief LD BC,nn (0x01)
+ * @result BC = nn
+ */
+void ld_bc_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->bc = (msb<<8)|lsb;
+
+	state->pc++;
+}
+
+/*!
+ * @brief LD DE,nn (0x11)
+ * @result DE = nn
+ */
+void ld_de_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->de = (msb<<8)|lsb;
+
+	state->pc++;
+}
+
+/*!
  * @brief JR n (0x18)
  * @result add n to pc
  */
@@ -77,6 +105,20 @@ void jr_nz_imm8(emulator_state *state)
 }
 
 /*!
+ * @brief LD HL,nn (0x21)
+ * @result HL = nn
+ */
+void ld_hl_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->hl = (msb<<8)|lsb;
+
+	state->pc++;
+}
+
+/*!
  * @brief JR Z,n (0x28)
  * @result add n to pc if Z (zero) flag set
  */
@@ -85,6 +127,31 @@ void jr_z_imm8(emulator_state *state)
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
 	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 1;
+}
+
+/*!
+ * @brief LD SP,nn (0x31)
+ * @result SP = nn
+ */
+void ld_sp_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->sp = (msb<<8)|lsb;
+
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),n (0x36)
+ * @result contents of memory at HL = n
+ */
+void ld_hl_imm8(emulator_state *state)
+{
+	uint8_t n = mem_read8(state, ++state->pc);
+	mem_write8(state, state->hl, n);
+	state->pc++;
 }
 
 /*!
@@ -1150,13 +1217,13 @@ void cp_imm8(emulator_state *state)
 typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] = {
-	/* 0x00 */ nop, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x00 */ nop, ld_bc_imm16, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x08 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x10 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x10 */ NULL, ld_de_imm16, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x18 */ jr_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x20 */ jr_nz_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x28 */ jr_z_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x30 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x30 */ NULL, ld_sp_imm16, NULL, NULL, NULL, NULL, ld_hl_imm8, NULL,
 	/* 0x38 */ NULL, NULL, NULL, NULL, NULL, NULL, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
