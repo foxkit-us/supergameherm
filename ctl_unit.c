@@ -157,6 +157,80 @@ void ld_l_a(emulator_state *state)
 	state->pc++;
 }
 
+static inline void and_common(emulator_state *state, uint8_t to_and)
+{
+	*REG_A(state) &= to_and;
+
+	state->flag_reg = FLAG_H;
+	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+
+	state->pc++;
+}
+
+/*!
+ * @brief AND B (0xA0)
+ * @result A &= B; Z flag set if A is now zero
+ */
+void and_b(emulator_state *state)
+{
+	and_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief AND C (0xA1)
+ * @result A &= C; Z flag set if A is now zero
+ */
+void and_c(emulator_state *state)
+{
+	and_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief AND D (0xA2)
+ * @result A &= D; Z flag set if A is now zero
+ */
+void and_d(emulator_state *state)
+{
+	and_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief AND E (0xA3)
+ * @result A &= E; Z flag set if A is now zero
+ */
+void and_e(emulator_state *state)
+{
+	and_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief AND H (0xA4)
+ * @result A &= H; Z flag set if A is now zero
+ */
+void and_h(emulator_state *state)
+{
+	and_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief AND L (0xA5)
+ * @result A &= L; Z flag set if A is now zero
+ */
+void and_l(emulator_state *state)
+{
+	and_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief AND A (0xA7)
+ * @result Z flag set if A is now zero
+ */
+void and_a(emulator_state *state)
+{
+	state->flag_reg = FLAG_H;
+	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+}
+
 static inline void xor_common(emulator_state *state, char to_xor)
 {
 	*REG_A(state) ^= to_xor;
@@ -358,6 +432,16 @@ void ldh_imm8_a(emulator_state *state)
 }
 
 /*!
+ * @brief AND nn (0xE6)
+ * @result A &= nn
+ */
+void and_imm8(emulator_state *state)
+{
+	uint8_t nn = mem_read8(state, ++state->pc);
+	and_common(state, nn);
+}
+
+/*!
  * @brief LD (nn),A (0xEA) - write A to *nn
  * @result the memory at address nn will contain the value of A
  */
@@ -463,7 +547,7 @@ opcode_t handlers[0x100] = {
 	/* 0x88 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x90 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x98 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xA0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, NULL, and_a,
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, NULL, xor_a,
 	/* 0xB0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -471,7 +555,7 @@ opcode_t handlers[0x100] = {
 	/* 0xC8 */ NULL, NULL, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
 	/* 0xD0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xD8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, and_imm8, NULL,
 	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
 	/* 0xF0 */ ldh_a_imm8, NULL, NULL, di, NULL, NULL, NULL, NULL,
 	/* 0xF8 */ NULL, NULL, NULL, ei, NULL, NULL, cp_imm8, NULL
