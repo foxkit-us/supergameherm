@@ -40,11 +40,15 @@ uint8_t timer_read(emulator_state *state, uint16_t reg)
 
 		switch(state->timer_state.ticks_per_tima)
 		{
-			case 1024: break;
-			/* fall through on purpose; it's fun! */
-			case 128: res++;	/* 16.384KHz = 3 */
-			case 64: res++;		/* 65.536KHz = 2 */
-			case 16: res++;		/* 262.14KHz = 1 */
+		case 1024:
+			break;
+		/* fall through on purpose; it's fun! */
+		case 128:
+			res++;		/* 16.384KHz = 3 */
+		case 64:
+			res++;		/* 65.536KHz = 2 */
+		case 16:
+			res++;		/* 262.14KHz = 1 */
 		}
 
 		return res;

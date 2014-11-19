@@ -24,8 +24,14 @@ void init_lcdc(emulator_state *state)
 static inline void _lcdc_inc_mode(emulator_state *state)
 {
 	uint8_t *byte = state->memory + 0xFF41;
-	if(*byte & 0x3) *byte ^= 0x3;
-	else *byte += 1;
+	if(*byte & 0x3)
+	{
+		*byte ^= 0x3;
+	}
+	else
+	{
+		*byte += 1;
+	}
 }
 
 void lcdc_tick(emulator_state *state)
@@ -63,7 +69,9 @@ void lcdc_tick(emulator_state *state)
 			{
 				/* going to v-blank */
 				_lcdc_inc_mode(state);
-			} else {
+			}
+			else
+			{
 				/* start another scan line */
 				state->memory[0xFF41] |= 0x02;
 			}

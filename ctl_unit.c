@@ -82,8 +82,14 @@ static inline void inc_r8(emulator_state *state, uint8_t *reg)
 {
 	uint8_t old = *reg;
 
-	if(*reg ^ 0x0F) state->flag_reg &= ~FLAG_H;
-	else state->flag_reg |= FLAG_H;
+	if(*reg ^ 0x0F)
+	{
+		state->flag_reg &= ~FLAG_H;
+	}
+	else
+	{
+		state->flag_reg |= FLAG_H;
+	}
 
 	*reg += 1;
 
@@ -107,8 +113,14 @@ static inline void dec_r8(emulator_state *state, uint8_t *reg)
 {
 	uint8_t old = *reg;
 
-	if(*reg & 0x0F) state->flag_reg &= ~FLAG_H;
-	else state->flag_reg |= FLAG_H;
+	if(*reg & 0x0F)
+	{
+		state->flag_reg &= ~FLAG_H;
+	}
+	else
+	{
+		state->flag_reg |= FLAG_H;
+	}
 
 	*reg -= 1;
 
@@ -140,11 +152,23 @@ void ld_b_imm8(emulator_state *state)
 
 static inline void add_to_hl(emulator_state *state, uint16_t to_add)
 {
-	if((uint32_t)(state->hl + to_add) > 0xFFFF) state->flag_reg |= FLAG_C;
-	else state->flag_reg &= ~FLAG_C;
+	if((uint32_t)(state->hl + to_add) > 0xFFFF)
+	{
+		state->flag_reg |= FLAG_C;
+	}
+	else
+	{
+		state->flag_reg &= ~FLAG_C;
+	}
 
-	if((state->hl & 0xF) + (to_add & 0xF) > 0xF) state->flag_reg |= FLAG_H;
-	else state->flag_reg &= ~FLAG_H;
+	if((state->hl & 0xF) + (to_add & 0xF) > 0xF)
+	{
+		state->flag_reg |= FLAG_H;
+	}
+	else
+	{
+		state->flag_reg &= ~FLAG_H;
+	}
 
 	state->flag_reg &= ~FLAG_N;
 
@@ -1566,8 +1590,14 @@ void ret(emulator_state *state)
  */
 void retnz(emulator_state *state)
 {
-	if(!(state->flag_reg & FLAG_Z)) ret(state);
-	else state->pc++;
+	if(!(state->flag_reg & FLAG_Z))
+	{
+		ret(state);
+	}
+	else
+	{
+		state->pc++;
+	}
 }
 
 /*!
@@ -1576,8 +1606,14 @@ void retnz(emulator_state *state)
  */
 void retz(emulator_state *state)
 {
-	if(state->flag_reg & FLAG_Z) ret(state);
-	else state->pc++;
+	if(state->flag_reg & FLAG_Z)
+	{
+		ret(state);
+	}
+	else
+	{
+		state->pc++;
+	}
 }
 
 /*!
@@ -1597,7 +1633,9 @@ void cb_dispatch(emulator_state *state)
 	{
 		bit_number = (opcode & 0x38) >> 3;
 		op = ((opcode & 0xC0) >> 7) + 8;
-	} else {
+	}
+	else
+	{
 		op = opcode >> 3;
 	}
 
@@ -1631,76 +1669,148 @@ void cb_dispatch(emulator_state *state)
 	switch(op)
 	{
 		case CB_OP_RLC:
-			if(*write_to & 0x80) state->flag_reg = FLAG_C;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x80)
+			{
+				state->flag_reg = FLAG_C;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to <<= 1;
 			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_RRC:
-			if(*write_to & 0x01) state->flag_reg = FLAG_C;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x01)
+			{
+				state->flag_reg = FLAG_C;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to >>= 1;
-			if(state->flag_reg & FLAG_C) *write_to |= 0x80;
+			if(state->flag_reg & FLAG_C)
+			{
+				*write_to |= 0x80;
+			}
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_RL:
 			/* abusing FLAG_H as a temp var. */
-			if(*write_to & 0x80) state->flag_reg = FLAG_H;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x80)
+			{
+				state->flag_reg = FLAG_H;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to <<= 1;
 			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
 
-			if(state->flag_reg & FLAG_H) state->flag_reg = FLAG_C;
+			if(state->flag_reg & FLAG_H)
+			{
+				state->flag_reg = FLAG_C;
+			}
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_RR:
 			/* same as above */
-			if(*write_to & 0x01) state->flag_reg = FLAG_H;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x01)
+			{
+				state->flag_reg = FLAG_H;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to >>= 1;
 			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
 
-			if(state->flag_reg & FLAG_H) state->flag_reg = FLAG_C;
+			if(state->flag_reg & FLAG_H)
+			{
+				state->flag_reg = FLAG_C;
+			}
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_SLA:
-			if(*write_to & 0x80) state->flag_reg = FLAG_C;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x80)
+			{
+				state->flag_reg = FLAG_C;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to <<= 1;
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_SRA:
-			if(*write_to & 0x01) state->flag_reg = FLAG_C;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x01)
+			{
+				state->flag_reg = FLAG_C;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to = (*write_to & 0x80) | (*write_to >> 1);
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_SRL:
-			if(*write_to & 0x01) state->flag_reg = FLAG_C;
-			else state->flag_reg = 0x00;
+			if(*write_to & 0x01)
+			{
+				state->flag_reg = FLAG_C;
+			}
+			else
+			{
+				state->flag_reg = 0x00;
+			}
 
 			*write_to >>= 1;
 
-			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+			if(*write_to == 0)
+			{
+				state->flag_reg |= FLAG_Z;
+			}
 
 			break;
 		case CB_OP_RES:
@@ -1748,8 +1858,14 @@ void call_imm16(emulator_state *state)
  */
 void retnc(emulator_state *state)
 {
-	if(!(state->flag_reg & FLAG_C)) ret(state);
-	else state->pc++;
+	if(!(state->flag_reg & FLAG_C))
+	{
+		ret(state);
+	}
+	else
+	{
+		state->pc++;
+	}
 }
 
 /*!
@@ -1789,8 +1905,14 @@ void sub_imm8(emulator_state *state)
  */
 void retc(emulator_state *state)
 {
-	if(state->flag_reg & FLAG_C) ret(state);
-	else state->pc++;
+	if(state->flag_reg & FLAG_C)
+	{
+		ret(state);
+	}
+	else
+	{
+		state->pc++;
+	}
 }
 
 /*!
@@ -1985,12 +2107,16 @@ void cp_imm8(emulator_state *state)
 	if(*REG_A(state) == cmp)
 	{
 		state->flag_reg |= FLAG_Z;
-	} else {
+	}
+	else
+	{
 		state->flag_reg &= ~FLAG_Z;
 		if(*REG_A(state) < cmp)
 		{
 			state->flag_reg |= FLAG_C;
-		} else {
+		}
+		else
+		{
 			state->flag_reg |= FLAG_H;
 		}
 	}
