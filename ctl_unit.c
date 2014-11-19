@@ -159,6 +159,16 @@ void ld_hl_imm16(emulator_state *state)
 }
 
 /*!
+ * @brief LD (HL+),A (0x22)
+ * @result contents of memory at HL = A; HL incremented 1
+ */
+void ldi_hl_a(emulator_state *state)
+{
+	mem_write8(state, state->hl++, *REG_A(state));
+	state->pc++;
+}
+
+/*!
 * @brief INC HL (0x23)
 * @result 1 is added to HL (possibly wrapping)
 */
@@ -177,6 +187,16 @@ void jr_z_imm8(emulator_state *state)
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
 	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 1;
+}
+
+/*!
+ * @brief LD A,(HL+) (0x2A)
+ * @result A = contents of memory at HL; HL incremented 1
+ */
+void ldi_a_hl(emulator_state *state)
+{
+	*REG_A(state) = mem_read8(state, state->hl++);
+	state->pc++;
 }
 
 /*!
@@ -204,6 +224,16 @@ void ld_sp_imm16(emulator_state *state)
 }
 
 /*!
+ * @brief LD (HL-),A (0x32)
+ * @result contents of memory at HL = A; HL decremented 1
+ */
+void ldd_hl_a(emulator_state *state)
+{
+	mem_write8(state, state->hl--, *REG_A(state));
+	state->pc++;
+}
+
+/*!
  * @brief INC SP (0x33)
  * @result 1 is added to SP (possibly wrapping)
  */
@@ -221,6 +251,16 @@ void ld_hl_imm8(emulator_state *state)
 {
 	uint8_t n = mem_read8(state, ++state->pc);
 	mem_write8(state, state->hl, n);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,(HL-) (0x2A)
+ * @result A = contents of memory at HL; HL decremented 1
+ */
+void ldd_a_hl(emulator_state *state)
+{
+	*REG_A(state) = mem_read8(state, state->hl--);
 	state->pc++;
 }
 
@@ -1488,10 +1528,10 @@ opcode_t handlers[0x100] = {
 	/* 0x08 */ NULL, NULL, NULL, dec_bc, NULL, NULL, NULL, NULL,
 	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, NULL, NULL, NULL, NULL,
 	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, NULL, NULL, NULL, NULL,
-	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, NULL, inc_hl, NULL, NULL, NULL, NULL,
-	/* 0x28 */ jr_z_imm8, NULL, NULL, dec_hl, NULL, NULL, NULL, NULL,
-	/* 0x30 */ NULL, ld_sp_imm16, NULL, inc_sp, NULL, NULL, ld_hl_imm8, NULL,
-	/* 0x38 */ NULL, NULL, NULL, dec_sp, NULL, NULL, ld_a_imm8, NULL,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, NULL, NULL, NULL, NULL,
+	/* 0x28 */ jr_z_imm8, NULL, ldi_a_hl, dec_hl, NULL, NULL, NULL, NULL,
+	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, NULL, NULL, ld_hl_imm8, NULL,
+	/* 0x38 */ NULL, NULL, ldd_a_hl, dec_sp, NULL, NULL, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
