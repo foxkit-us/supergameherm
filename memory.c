@@ -4,6 +4,7 @@
 #include "memory.h"	// Constants and what have you */
 #include "lcdc.h"	// lcdc_read
 #include "ctl_unit.h"	// int_flag_*
+#include "serio.h"	// serial_*
 
 
 /***********************************************************************
@@ -31,8 +32,8 @@ uint8_t ugh_sound(emulator_state *state, uint16_t location)
 /*! a table of hardware register read methods */
 mem_read_fn hw_reg_read[0x80] = {
 	no_hardware, /* 00 - P1 - joypad */
-	no_hardware, /* 01 - SB - serial data */
-	no_hardware, /* 02 - SC - serial control */
+	serial_read, /* 01 - SB - serial data */
+	serial_read, /* 02 - SC - serial control */
 	no_hardware, /* 03 - NO HARDWARE */
 	no_hardware, /* 04 - DIV - this is a CPU register.. ok there is
 			definitely hardware here.. */
@@ -232,8 +233,8 @@ void doofus_write(emulator_state *state, uint16_t location, uint8_t data)
 
 mem_write8_fn hw_reg_write[0x80] = {
 	doofus_write, /* 00 - P1 - joypad */
-	doofus_write, /* 01 - SB - serial data */
-	doofus_write, /* 02 - SC - serial control */
+	serial_write, /* 01 - SB - serial data */
+	serial_write, /* 02 - SC - serial control */
 	doofus_write, /* 03 - NO HARDWARE */
 	doofus_write, /* 04 - DIV - CPU register */
 	doofus_write, /* 05 - TIMA - timer step */

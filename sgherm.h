@@ -20,6 +20,14 @@ typedef struct _emulator_state
 	{
 		uint32_t curr_clk;		/* current clock */
 	} lcdc_state;
+	struct _ser_state
+	{
+		uint8_t curr_clk;		/*! ticks passed */
+		uint8_t in, out;		/*! in / out values */
+		int8_t cur_bit;			/*! the current bit */
+		bool enabled;			/*! transfer active */
+		bool use_internal;		/*! clock source */
+	} ser_state;
 } emulator_state;
 
 
