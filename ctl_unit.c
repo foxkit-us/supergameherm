@@ -852,6 +852,15 @@ void and_l(emulator_state *state)
 }
 
 /*!
+ * @brief AND (HL) (0xA6)
+ * @result A &= contents of memory at AL; Z flag set if A is now zero
+ */
+void and_hl(emulator_state *state)
+{
+	and_common(state, mem_read8(state, state->hl));
+}
+
+/*!
  * @brief AND A (0xA7)
  * @result Z flag set if A is now zero
  */
@@ -918,11 +927,20 @@ void xor_h(emulator_state *state)
 
 /*!
  * @brief XOR L (0xAD)
- * @result A ^= H; Z flag set if A is now zero
+ * @result A ^= L; Z flag set if A is now zero
  */
 void xor_l(emulator_state *state)
 {
 	xor_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief XOR (HL) (0xAE)
+ * @result A ^= contents of memory at HL; Z flag set if A is now zero
+ */
+void xor_hl(emulator_state *state)
+{
+	xor_common(state, mem_read8(state, state->hl));
 }
 
 /*!
@@ -934,6 +952,87 @@ void xor_a(emulator_state *state)
 	*REG_A(state) = 0;
 	state->flag_reg = FLAG_Z;
 	state->pc++;
+}
+
+static inline void or_common(emulator_state *state, uint8_t to_or)
+{
+	*REG_A(state) |= to_or;
+
+	state->flag_reg = (*REG_A(state) == 0 ? FLAG_Z : 0);
+
+	state->pc++;
+}
+
+/*!
+ * @brief OR B (0xB0)
+ * @result A |= B; Z flag set if A is zero
+ */
+void or_b(emulator_state *state)
+{
+	or_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief OR C (0xB1)
+ * @result A |= C; Z flag set if A is zero
+ */
+void or_c(emulator_state *state)
+{
+	or_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief OR D (0xB2)
+ * @result A |= D; Z flag set if A is zero
+ */
+void or_d(emulator_state *state)
+{
+	or_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief OR E (0xB3)
+ * @result A |= E; Z flag set if A is zero
+ */
+void or_e(emulator_state *state)
+{
+	or_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief OR H (0xB4)
+ * @result A |= H; Z flag set if A is zero
+ */
+void or_h(emulator_state *state)
+{
+	or_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief OR L (0xB5)
+ * @result A |= L; Z flag set if A is zero
+ */
+void or_l(emulator_state *state)
+{
+	or_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief OR (HL) (0xB6)
+ * @result A |= contents of memory at HL; Z flag set if A is zero
+ */
+void or_hl(emulator_state *state)
+{
+	or_common(state, mem_read8(state, state->hl));
+}
+
+/*!
+ * @brief OR A (0xB7)
+ * @result A |= A; Z flag set if A is zero
+ */
+void or_a(emulator_state *state)
+{
+	or_common(state, *REG_A(state));
 }
 
 /*!
@@ -1237,9 +1336,9 @@ opcode_t handlers[0x100] = {
 	/* 0x88 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x90 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x98 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, NULL, and_a,
-	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, NULL, xor_a,
-	/* 0xB0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, and_hl, and_a,
+	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
+	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xC0 */ retnz, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
 	/* 0xC8 */ retz, ret, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
