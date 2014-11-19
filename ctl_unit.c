@@ -1641,22 +1641,30 @@ void cb_dispatch(emulator_state *state)
 
 	switch(reg)
 	{
-		case CB_REG_B:
-			write_to = REG_B(state); break;
-		case CB_REG_C:
-			write_to = REG_C(state); break;
-		case CB_REG_D:
-			write_to = REG_D(state); break;
-		case CB_REG_E:
-			write_to = REG_E(state); break;
-		case CB_REG_H:
-			write_to = REG_H(state); break;
-		case CB_REG_L:
-			write_to = REG_L(state); break;
-		case CB_REG_HL:
-			write_to = &maybe_temp; break;
-		case CB_REG_A:
-			write_to = REG_A(state); break;
+	case CB_REG_B:
+		write_to = REG_B(state);
+		break;
+	case CB_REG_C:
+		write_to = REG_C(state);
+		break;
+	case CB_REG_D:
+		write_to = REG_D(state);
+		break;
+	case CB_REG_E:
+		write_to = REG_E(state);
+		break;
+	case CB_REG_H:
+		write_to = REG_H(state);
+		break;
+	case CB_REG_L:
+		write_to = REG_L(state);
+		break;
+	case CB_REG_HL:
+		write_to = &maybe_temp;
+		break;
+	case CB_REG_A:
+		write_to = REG_A(state);
+		break;
 	}
 
 	uint8_t val = (1 << bit_number);
@@ -1668,165 +1676,165 @@ void cb_dispatch(emulator_state *state)
 
 	switch(op)
 	{
-		case CB_OP_RLC:
-			if(*write_to & 0x80)
-			{
-				state->flag_reg = FLAG_C;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+	case CB_OP_RLC:
+		if(*write_to & 0x80)
+		{
+			state->flag_reg = FLAG_C;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to <<= 1;
-			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+		*write_to <<= 1;
+		*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_RRC:
-			if(*write_to & 0x01)
-			{
-				state->flag_reg = FLAG_C;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+		break;
+	case CB_OP_RRC:
+		if(*write_to & 0x01)
+		{
+			state->flag_reg = FLAG_C;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to >>= 1;
-			if(state->flag_reg & FLAG_C)
-			{
-				*write_to |= 0x80;
-			}
+		*write_to >>= 1;
+		if(state->flag_reg & FLAG_C)
+		{
+			*write_to |= 0x80;
+		}
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_RL:
-			/* abusing FLAG_H as a temp var. */
-			if(*write_to & 0x80)
-			{
-				state->flag_reg = FLAG_H;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+		break;
+	case CB_OP_RL:
+		/* abusing FLAG_H as a temp var. */
+		if(*write_to & 0x80)
+		{
+			state->flag_reg = FLAG_H;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to <<= 1;
-			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+		*write_to <<= 1;
+		*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
 
-			if(state->flag_reg & FLAG_H)
-			{
-				state->flag_reg = FLAG_C;
-			}
+		if(state->flag_reg & FLAG_H)
+		{
+			state->flag_reg = FLAG_C;
+		}
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_RR:
-			/* same as above */
-			if(*write_to & 0x01)
-			{
-				state->flag_reg = FLAG_H;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+		break;
+	case CB_OP_RR:
+		/* same as above */
+		if(*write_to & 0x01)
+		{
+			state->flag_reg = FLAG_H;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to >>= 1;
-			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+		*write_to >>= 1;
+		*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
 
-			if(state->flag_reg & FLAG_H)
-			{
-				state->flag_reg = FLAG_C;
-			}
+		if(state->flag_reg & FLAG_H)
+		{
+			state->flag_reg = FLAG_C;
+		}
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_SLA:
-			if(*write_to & 0x80)
-			{
-				state->flag_reg = FLAG_C;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+		break;
+	case CB_OP_SLA:
+		if(*write_to & 0x80)
+		{
+			state->flag_reg = FLAG_C;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to <<= 1;
+		*write_to <<= 1;
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_SRA:
-			if(*write_to & 0x01)
-			{
-				state->flag_reg = FLAG_C;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+		break;
+	case CB_OP_SRA:
+		if(*write_to & 0x01)
+		{
+			state->flag_reg = FLAG_C;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to = (*write_to & 0x80) | (*write_to >> 1);
+		*write_to = (*write_to & 0x80) | (*write_to >> 1);
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_SRL:
-			if(*write_to & 0x01)
-			{
-				state->flag_reg = FLAG_C;
-			}
-			else
-			{
-				state->flag_reg = 0x00;
-			}
+		break;
+	case CB_OP_SRL:
+		if(*write_to & 0x01)
+		{
+			state->flag_reg = FLAG_C;
+		}
+		else
+		{
+			state->flag_reg = 0x00;
+		}
 
-			*write_to >>= 1;
+		*write_to >>= 1;
 
-			if(*write_to == 0)
-			{
-				state->flag_reg |= FLAG_Z;
-			}
+		if(*write_to == 0)
+		{
+			state->flag_reg |= FLAG_Z;
+		}
 
-			break;
-		case CB_OP_RES:
-			/* reset bit <bit_number> of register <reg> */
-			*write_to &= ~val; break;
-		case CB_OP_SET:
-			/* set bit <bit_number> of register <reg> */
-			*write_to |= val;  break;
-		case CB_OP_BIT:
-			/* test bit <bit_number> of register <reg> */
-			dump_flags(state);
-			state->flag_reg |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
-			state->flag_reg |= FLAG_H;
-			state->flag_reg &= !FLAG_N;
-			dump_flags(state);
-			break;
+		break;
+	case CB_OP_RES:
+		/* reset bit <bit_number> of register <reg> */
+		*write_to &= ~val; break;
+	case CB_OP_SET:
+		/* set bit <bit_number> of register <reg> */
+		*write_to |= val;  break;
+	case CB_OP_BIT:
+		/* test bit <bit_number> of register <reg> */
+		dump_flags(state);
+		state->flag_reg |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
+		state->flag_reg |= FLAG_H;
+		state->flag_reg &= !FLAG_N;
+		dump_flags(state);
+		break;
 	}
 
 	if(reg == CB_REG_HL)
