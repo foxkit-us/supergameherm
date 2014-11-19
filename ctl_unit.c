@@ -891,6 +891,36 @@ enum cb_ops {
 };
 
 /*!
+ * @brief RET (0xC9) - return from CALL
+ * @result pop two bytes from the stack and jump to that location
+ */
+void ret(emulator_state *state)
+{
+	state->pc = mem_read16(state, state->sp);
+	state->sp += 2;
+}
+
+/*!
+ * @brief RETNZ (0xC0) - return from CALL if Z flag not set
+ * @result RET, if Z flag not set, otherwise nothing.
+ */
+void retnz(emulator_state *state)
+{
+	if(!(state->flag_reg & FLAG_Z)) ret(state);
+	else state->pc++;
+}
+
+/*!
+ * @brief RETZ (0xC8) - return from CALL if Z flag set
+ * @result RET, if Z flag is set, otherwise nothing.
+ */
+void retz(emulator_state *state)
+{
+	if(state->flag_reg & FLAG_Z) ret(state);
+	else state->pc++;
+}
+
+/*!
  * @brief CB ..
  * @note this is just a dispatch function for SWAP/BIT/etc
  */
@@ -978,6 +1008,36 @@ void call_imm16(emulator_state *state)
 	mem_write16(state, state->sp, ++state->pc);
 
 	state->pc = (msb<<8 | lsb);
+}
+
+/*!
+ * @brief RETNC (0xD0) - return from CALL if C flag not set
+ * @result RET, if C flag not set, otherwise nothing.
+ */
+void retnc(emulator_state *state)
+{
+	if(!(state->flag_reg & FLAG_C)) ret(state);
+	else state->pc++;
+}
+
+/*!
+ * @brief RETC (0xD8) - return from CALL if C flag set
+ * @result RET, if C flag is set, otherwise nothing.
+ */
+void retc(emulator_state *state)
+{
+	if(state->flag_reg & FLAG_C) ret(state);
+	else state->pc++;
+}
+
+/*!
+ * @brief RETI (0xD9) - return from CALL and enable interrupts
+ * @result RET + EI
+ */
+void reti(emulator_state *state)
+{
+	state->toggle_int_on_next = true;
+	ret(state);
 }
 
 /*!
@@ -1114,10 +1174,10 @@ opcode_t handlers[0x100] = {
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, NULL, xor_a,
 	/* 0xB0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xC0 */ NULL, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
-	/* 0xC8 */ NULL, NULL, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
-	/* 0xD0 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xD8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xC0 */ retnz, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
+	/* 0xC8 */ retz, ret, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
+	/* 0xD0 */ retnc, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xD8 */ retc, reti, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, and_imm8, NULL,
 	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
 	/* 0xF0 */ ldh_a_imm8, NULL, NULL, di, NULL, NULL, NULL, NULL,
