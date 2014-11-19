@@ -1116,6 +1116,17 @@ void or_a(emulator_state *state)
 }
 
 /*!
+ * @brief POP BC (0xC1)
+ * @result BC = memory at SP; SP incremented 2
+ */
+void pop_bc(emulator_state *state)
+{
+	state->bc = mem_read16(state, state->sp);
+	state->sp += 2;
+	state->pc++;
+}
+
+/*!
  * @brief JP nn (0xC3)
  * @result pc is set to 16-bit immediate value (LSB, MSB)
  */
@@ -1125,6 +1136,17 @@ void jp_imm16(emulator_state *state)
 	uint8_t msb = mem_read8(state, ++state->pc);
 
 	state->pc = (msb<<8 | lsb);
+}
+
+/*!
+ * @brief PUSH BC (0xC5)
+ * @result contents of memory at SP = BC; SP decremented 2
+ */
+void push_bc(emulator_state *state)
+{
+	state->sp -= 2;
+	mem_write16(state, state->sp, state->bc);
+	state->pc++;
 }
 
 enum cb_regs {
@@ -1267,6 +1289,28 @@ void retnc(emulator_state *state)
 }
 
 /*!
+ * @brief POP DE (0xD1)
+ * @result DE = memory at SP; SP incremented 2
+ */
+void pop_de(emulator_state *state)
+{
+	state->de = mem_read16(state, state->sp);
+	state->sp += 2;
+	state->pc++;
+}
+
+/*!
+ * @brief PUSH DE (0xD5)
+ * @result contents of memory at SP = DE; SP decremented 2
+ */
+void push_de(emulator_state *state)
+{
+	state->sp -= 2;
+	mem_write16(state, state->sp, state->de);
+	state->pc++;
+}
+
+/*!
  * @brief RETC (0xD8) - return from CALL if C flag set
  * @result RET, if C flag is set, otherwise nothing.
  */
@@ -1297,6 +1341,28 @@ void ldh_imm8_a(emulator_state *state)
 
 	mem_write8(state, write, *REG_A(state));
 
+	state->pc++;
+}
+
+/*!
+ * @brief POP HL (0xE1)
+ * @result HL = memory at SP; SP incremented 2
+ */
+void pop_hl(emulator_state *state)
+{
+	state->hl = mem_read16(state, state->sp);
+	state->sp += 2;
+	state->pc++;
+}
+
+/*!
+ * @brief PUSH HL (0xE5)
+ * @result contents of memory at SP = HL; SP decremented 2
+ */
+void push_hl(emulator_state *state)
+{
+	state->sp -= 2;
+	mem_write16(state, state->sp, state->hl);
 	state->pc++;
 }
 
@@ -1339,6 +1405,17 @@ void ldh_a_imm8(emulator_state *state)
 }
 
 /*!
+ * @brief POP AF (0xF1)
+ * @result AF = memory at SP; SP incremented 2
+ */
+void pop_af(emulator_state *state)
+{
+	state->af = mem_read16(state, state->sp);
+	state->sp += 2;
+	state->pc++;
+}
+
+/*!
  * @brief DI (0xF3) - disable interrupts
  * @result interrupts will be disabled the instruction AFTER this one
  */
@@ -1346,6 +1423,17 @@ void di(emulator_state *state)
 {
 	state->toggle_int_on_next = true;
 
+	state->pc++;
+}
+
+/*!
+ * @brief PUSH AF (0xF5)
+ * @result contents of memory at SP = AF; SP decremented 2
+ */
+void push_af(emulator_state *state)
+{
+	state->sp -= 2;
+	mem_write16(state, state->sp, state->af);
 	state->pc++;
 }
 
@@ -1420,13 +1508,13 @@ opcode_t handlers[0x100] = {
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xC0 */ retnz, NULL, NULL, jp_imm16, NULL, NULL, NULL, NULL,
+	/* 0xC0 */ retnz, pop_bc, NULL, jp_imm16, NULL, push_bc, NULL, NULL,
 	/* 0xC8 */ retz, ret, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
-	/* 0xD0 */ retnc, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xD0 */ retnc, pop_de, NULL, NULL, NULL, push_de, NULL, NULL,
 	/* 0xD8 */ retc, reti, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xE0 */ ldh_imm8_a, NULL, NULL, NULL, NULL, NULL, and_imm8, NULL,
+	/* 0xE0 */ ldh_imm8_a, pop_hl, NULL, NULL, NULL, push_hl, and_imm8, NULL,
 	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
-	/* 0xF0 */ ldh_a_imm8, NULL, NULL, di, NULL, NULL, NULL, NULL,
+	/* 0xF0 */ ldh_a_imm8, pop_af, NULL, di, NULL, push_af, NULL, NULL,
 	/* 0xF8 */ NULL, NULL, NULL, ei, NULL, NULL, cp_imm8, NULL
 };
 
