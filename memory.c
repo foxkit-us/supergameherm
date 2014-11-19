@@ -106,8 +106,8 @@ uint8_t direct_read(emulator_state *state, uint16_t location)
 /*! read from the switchable ROM bank space */
 uint8_t rom_bank_read(emulator_state *state, uint16_t location)
 {
-	fatal("bank switching not yet implemented");
-	/* NOTREACHED */
+	uint32_t addr = (state->bank - 1) * 0x4000;
+	return state->cart_data[addr + location];
 }
 
 uint8_t not_impl(emulator_state *state, uint16_t location)

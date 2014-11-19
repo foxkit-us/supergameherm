@@ -15,6 +15,7 @@ void init_emulator(emulator_state *state)
 {
 	memset(state, 0, sizeof(emulator_state));
 	state->interrupts = true;
+	state->bank = 1;
 }
 
 int main(int argc, char *argv[])

@@ -37,6 +37,7 @@ typedef struct _emulator_state
 		uint8_t curr_clk;		/*! ticks passed */
 		bool enabled;			/*! timer armed */
 	} timer_state;
+	uint8_t bank;				/*! current bank */
 } emulator_state;
 
 

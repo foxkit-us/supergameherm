@@ -1608,6 +1608,16 @@ void pop_hl(emulator_state *state)
 }
 
 /*!
+ * @brief LD (C),A (0xE2)
+ * @result contents of memory at 0xFF00 + C = A
+ */
+void ld_ff00_c_a(emulator_state *state)
+{
+	mem_write8(state, 0xFF00 + *REG_C(state), *REG_A(state));
+	state->pc++;
+}
+
+/*!
  * @brief PUSH HL (0xE5)
  * @result contents of memory at SP = HL; SP decremented 2
  */
@@ -1668,6 +1678,16 @@ void pop_af(emulator_state *state)
 }
 
 /*!
+ * @brief LD A,(C) (0xF2)
+ * @result A = contents of memory at 0xFF00 + C
+ */
+void ld_a_ff00_c(emulator_state *state)
+{
+	*REG_A(state) = mem_read8(state, 0xFF00 + *REG_C(state));
+	state->pc++;
+}
+
+/*!
  * @brief DI (0xF3) - disable interrupts
  * @result interrupts will be disabled the instruction AFTER this one
  */
@@ -1686,6 +1706,22 @@ void push_af(emulator_state *state)
 {
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->af);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,(nn) (0xFA) - write *nn to A
+ * @result A will contain the value of memory at address nn
+ */
+void ld_a_d16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	uint16_t loc = (msb<<8) | lsb;
+
+	*REG_A(state) = mem_read8(state, loc);
+
 	state->pc++;
 }
 
@@ -1764,10 +1800,10 @@ opcode_t handlers[0x100] = {
 	/* 0xC8 */ retz, ret, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
 	/* 0xD0 */ retnc, pop_de, NULL, NULL, NULL, push_de, NULL, NULL,
 	/* 0xD8 */ retc, reti, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xE0 */ ldh_imm8_a, pop_hl, NULL, NULL, NULL, push_hl, and_imm8, NULL,
+	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, NULL, NULL, push_hl, and_imm8, NULL,
 	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
-	/* 0xF0 */ ldh_a_imm8, pop_af, NULL, di, NULL, push_af, NULL, NULL,
-	/* 0xF8 */ NULL, NULL, NULL, ei, NULL, NULL, cp_imm8, NULL
+	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, NULL, push_af, NULL, NULL,
+	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, NULL, NULL, cp_imm8, NULL
 };
 
 char cycles[0x100] = {
