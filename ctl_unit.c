@@ -1186,6 +1186,85 @@ void ld_a_a(emulator_state *state)
 	state->pc++;
 }
 
+void sub_common(emulator_state *state, uint8_t to_sub)
+{
+	*REG_A(state) -= to_sub;
+
+	state->pc++;
+}
+
+/*!
+ * @brief SUB B (0x90)
+ * @result A -= B; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_b(emulator_state *state)
+{
+	sub_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief SUB C (0x91)
+ * @result A -= C; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_c(emulator_state *state)
+{
+	sub_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief SUB D (0x92)
+ * @result A -= D; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_d(emulator_state *state)
+{
+	sub_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief SUB E (0x93)
+ * @result A -= E; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_e(emulator_state *state)
+{
+	sub_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief SUB H (0x94)
+ * @result A -= H; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_h(emulator_state *state)
+{
+	sub_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief SUB L (0x95)
+ * @result A -= L; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_l(emulator_state *state)
+{
+	sub_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief SUB (HL) (0x96)
+ * @result A -= contents of memory at HL
+ */
+void sub_hl(emulator_state *state)
+{
+	sub_common(state, mem_read8(state, state->hl));
+}
+
+/*!
+ * @brief SUB A (0x97)
+ * @result A = 0; Z set, H if no borrow from bit 4, C if no borrow
+ */
+void sub_a(emulator_state *state)
+{
+	sub_common(state, *REG_A(state));
+}
+
 /*!
  * @brief AND B (0xA0)
  * @result A &= B; Z flag set if A is now zero
@@ -1464,7 +1543,11 @@ enum cb_regs {
 };
 
 enum cb_ops {
-	CB_OP_BIT = 1, CB_OP_RES = 2, CB_OP_SET = 3
+	CB_OP_RLC = 0, CB_OP_RRC = 1,
+	CB_OP_RL = 2, CB_OP_RR = 3,
+	CB_OP_SLA = 4, CB_OP_SRA = 5,
+	CB_OP_SWAP = 6, CB_OP_SRL = 7,
+	CB_OP_BIT = 8, CB_OP_RES = 9, CB_OP_SET = 10
 };
 
 /*!
@@ -1504,17 +1587,22 @@ void retz(emulator_state *state)
 void cb_dispatch(emulator_state *state)
 {
 	uint8_t opcode = mem_read8(state, ++state->pc);
+	uint8_t *write_to;
+	uint8_t maybe_temp;
+	uint8_t bit_number;
+	enum cb_regs reg = (opcode & 0x7);
+	enum cb_ops op;
 
 	if(likely(opcode >= 0x40))
 	{
-		uint8_t bit_number = (opcode & 0x38) >> 3;
-		enum cb_regs reg = (opcode & 0x7);
-		enum cb_ops op = (opcode & 0xC0) >> 6;
-		uint8_t *write_to;
-		uint8_t maybe_temp;
+		bit_number = (opcode & 0x38) >> 3;
+		op = ((opcode & 0xC0) >> 7) + 8;
+	} else {
+		op = opcode >> 3;
+	}
 
-		switch(reg)
-		{
+	switch(reg)
+	{
 		case CB_REG_B:
 			write_to = REG_B(state); break;
 		case CB_REG_C:
@@ -1531,42 +1619,109 @@ void cb_dispatch(emulator_state *state)
 			write_to = &maybe_temp; break;
 		case CB_REG_A:
 			write_to = REG_A(state); break;
-		}
+	}
 
-		uint8_t val = (1 << bit_number);
+	uint8_t val = (1 << bit_number);
 
-		if(reg == CB_REG_HL)
-		{
-			maybe_temp = mem_read8(state, state->hl);
-		}
+	if(reg == CB_REG_HL)
+	{
+		maybe_temp = mem_read8(state, state->hl);
+	}
 
-		switch(op)
-		{
+	switch(op)
+	{
+		case CB_OP_RLC:
+			if(*write_to & 0x80) state->flag_reg = FLAG_C;
+			else state->flag_reg = 0x00;
+
+			*write_to <<= 1;
+			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
+		case CB_OP_RRC:
+			if(*write_to & 0x01) state->flag_reg = FLAG_C;
+			else state->flag_reg = 0x00;
+
+			*write_to >>= 1;
+			if(state->flag_reg & FLAG_C) *write_to |= 0x80;
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
+		case CB_OP_RL:
+			/* abusing FLAG_H as a temp var. */
+			if(*write_to & 0x80) state->flag_reg = FLAG_H;
+			else state->flag_reg = 0x00;
+
+			*write_to <<= 1;
+			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+
+			if(state->flag_reg & FLAG_H) state->flag_reg = FLAG_C;
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
+		case CB_OP_RR:
+			/* same as above */
+			if(*write_to & 0x01) state->flag_reg = FLAG_H;
+			else state->flag_reg = 0x00;
+
+			*write_to >>= 1;
+			*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+
+			if(state->flag_reg & FLAG_H) state->flag_reg = FLAG_C;
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
+		case CB_OP_SLA:
+			if(*write_to & 0x80) state->flag_reg = FLAG_C;
+			else state->flag_reg = 0x00;
+
+			*write_to <<= 1;
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
+		case CB_OP_SRA:
+			if(*write_to & 0x01) state->flag_reg = FLAG_C;
+			else state->flag_reg = 0x00;
+
+			*write_to = (*write_to & 0x80) | (*write_to >> 1);
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
+		case CB_OP_SRL:
+			if(*write_to & 0x01) state->flag_reg = FLAG_C;
+			else state->flag_reg = 0x00;
+
+			*write_to >>= 1;
+
+			if(*write_to == 0) state->flag_reg |= FLAG_Z;
+
+			break;
 		case CB_OP_RES:
-			// reset bit <bit_number> of register <reg>
-			//debug("reset bit %d of reg %d", bit_number, reg);
-			*write_to &= !val; break;
+			/* reset bit <bit_number> of register <reg> */
+			*write_to &= ~val; break;
 		case CB_OP_SET:
-			// set bit <bit_number> of register <reg>
-			//debug("set bit %d of reg %d", bit_number, reg);
+			/* set bit <bit_number> of register <reg> */
 			*write_to |= val;  break;
 		case CB_OP_BIT:
-			// test bit <bit_number> of register <reg>
-			//debug("test bit %d of reg %d", bit_number, reg);
+			/* test bit <bit_number> of register <reg> */
 			dump_flags(state);
 			state->flag_reg |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
 			state->flag_reg |= FLAG_H;
 			state->flag_reg &= !FLAG_N;
 			dump_flags(state);
 			break;
-		}
+	}
 
-		if(reg == CB_REG_HL)
-		{
-			mem_write8(state, state->hl, maybe_temp);
-		}
-	} else {
-		debug("IGNORING CB op %02X", opcode);
+	if(reg == CB_REG_HL)
+	{
+		mem_write8(state, state->hl, maybe_temp);
 	}
 
 	state->pc++;
@@ -1617,6 +1772,15 @@ void push_de(emulator_state *state)
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->de);
 	state->pc++;
+}
+
+/*!
+ * @brief SUB n (0xD6)
+ * @result A -= n; Z if A = 0, H if no borrow from bit 4, C if no borrow
+ */
+void sub_imm8(emulator_state *state)
+{
+	sub_common(state, mem_read8(state, ++state->pc));
 }
 
 /*!
@@ -1693,6 +1857,15 @@ void and_imm8(emulator_state *state)
 {
 	uint8_t nn = mem_read8(state, ++state->pc);
 	and_common(state, nn);
+}
+
+/*!
+ * @brief JP HL (0xE9)
+ * @result pc = HL
+ */
+void jp_hl(emulator_state *state)
+{
+	state->pc = state->hl;
 }
 
 /*!
@@ -1847,7 +2020,7 @@ opcode_t handlers[0x100] = {
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
 	/* 0x80 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x88 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x90 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x90 */ sub_b, sub_c, sub_d, sub_e, sub_h, sub_l, sub_hl, sub_a,
 	/* 0x98 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, and_hl, and_a,
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
@@ -1855,10 +2028,10 @@ opcode_t handlers[0x100] = {
 	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xC0 */ retnz, pop_bc, NULL, jp_imm16, NULL, push_bc, NULL, NULL,
 	/* 0xC8 */ retz, ret, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
-	/* 0xD0 */ retnc, pop_de, NULL, NULL, NULL, push_de, NULL, NULL,
+	/* 0xD0 */ retnc, pop_de, NULL, NULL, NULL, push_de, sub_imm8, NULL,
 	/* 0xD8 */ retc, reti, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, NULL, NULL, push_hl, and_imm8, NULL,
-	/* 0xE8 */ NULL, NULL, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
+	/* 0xE8 */ NULL, jp_hl, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
 	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, NULL, push_af, NULL, NULL,
 	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, NULL, NULL, cp_imm8, NULL
 };
