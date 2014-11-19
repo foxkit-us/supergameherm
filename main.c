@@ -7,6 +7,7 @@
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
 #include "memory.h"	/* offsets, emulator_state */
+#include "serio.h"	// serial_tick
 #include "timer.h"	// init_clock
 
 void init_emulator(emulator_state *state)
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
 		if((++cycles % 8400000) == 0) printf("GBC seconds: %ld\n", cycles / 8400000);
 		execute(&state);
 		lcdc_tick(&state);
+		serial_tick(&state);
 		//clock_tick(&state);
 
 	} while (true);
