@@ -316,11 +316,10 @@ void mem_write8(emulator_state *state, uint16_t location, uint8_t data)
 {
 	//if(location < 0xC000 || location >= 0xFE00)
 	//	fatal("invalid memory write at %04X (%02X)", location, data);
-	if(location < 0xE000 ||
+	if((location >= 0xC000 && location < 0xE000) ||
 		(location >= 0xFE80 && location < 0xFF00) ||
 		(location >= 0xFF80 && location <= 0xFFFF))
 	{
-		debug("wrote %02X to %04X", data, location);
 		state->memory[location] = data;
 		return;
 	}
