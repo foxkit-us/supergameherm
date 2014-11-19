@@ -98,12 +98,150 @@ void ld_a_imm8(emulator_state *state)
 }
 
 /*!
+ * @brief LD B,B (0x40)
+ * @result B = B
+ */
+void ld_b_b(emulator_state *state)
+{
+	state->pc++;
+}
+
+/*!
+ * @brief LD B,C (0x41)
+ * @result B = C
+ */
+void ld_b_c(emulator_state *state)
+{
+	*REG_B(state) = *REG_C(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD B,D (0x42)
+ * @result B = D
+ */
+void ld_b_d(emulator_state *state)
+{
+	*REG_B(state) = *REG_D(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD B,E (0x43)
+ * @result B = E
+ */
+void ld_b_e(emulator_state *state)
+{
+	*REG_B(state) = *REG_E(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD B,H (0x44)
+ * @result B = H
+ */
+void ld_b_h(emulator_state *state)
+{
+	*REG_B(state) = *REG_H(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD B,L (0x45)
+ * @result B = L
+ */
+void ld_b_l(emulator_state *state)
+{
+	*REG_B(state) = *REG_L(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD B,(HL) (0x46)
+ * @result B = contents of memory at HL
+ */
+void ld_b_hl(emulator_state *state)
+{
+	*REG_B(state) = mem_read8(state, state->hl);
+	state->pc++;
+}
+
+/*!
  * @brief LD B,A (0x47)
  * @result B = A
  */
 void ld_b_a(emulator_state *state)
 {
 	*REG_B(state) = *REG_A(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,B (0x48)
+ * @result C = B
+ */
+void ld_c_b(emulator_state *state)
+{
+	*REG_C(state) = *REG_B(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,C (0x49)
+ * @result C = C
+ */
+void ld_c_c(emulator_state *state)
+{
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,D (0x4A)
+ * @result C = D
+ */
+void ld_c_d(emulator_state *state)
+{
+	*REG_C(state) = *REG_D(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,E (0x4B)
+ * @result C = E
+ */
+void ld_c_e(emulator_state *state)
+{
+	*REG_C(state) = *REG_E(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,H (0x4C)
+ * @result C = H
+ */
+void ld_c_h(emulator_state *state)
+{
+	*REG_C(state) = *REG_H(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,L (0x4D)
+ * @result C = L
+ */
+void ld_c_l(emulator_state *state)
+{
+	*REG_C(state) = *REG_L(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,(HL) (0x4E)
+ * @result C = contents of memory at HL
+ */
+void ld_c_hl(emulator_state *state)
+{
+	*REG_C(state) = mem_read8(state, state->hl);
 	state->pc++;
 }
 
@@ -118,12 +256,150 @@ void ld_c_a(emulator_state *state)
 }
 
 /*!
+ * @brief LD D,B (0x50)
+ * @result D = B
+ */
+void ld_d_b(emulator_state *state)
+{
+	*REG_D(state) = *REG_B(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD D,C (0x51)
+ * @result D = C
+ */
+void ld_d_c(emulator_state *state)
+{
+	*REG_D(state) = *REG_C(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD D,D (0x52)
+ * @result D = D
+ */
+void ld_d_d(emulator_state *state)
+{
+	state->pc++;
+}
+
+/*!
+ * @brief LD D,E (0x53)
+ * @result D = E
+ */
+void ld_d_e(emulator_state *state)
+{
+	*REG_D(state) = *REG_E(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD D,H (0x54)
+ * @result D = H
+ */
+void ld_d_h(emulator_state *state)
+{
+	*REG_D(state) = *REG_H(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD D,L (0x55)
+ * @result D = L
+ */
+void ld_d_l(emulator_state *state)
+{
+	*REG_D(state) = *REG_L(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD D,(HL) (0x56)
+ * @result D = contents of memory at HL
+ */
+void ld_d_hl(emulator_state *state)
+{
+	*REG_D(state) = mem_read8(state, state->hl);
+	state->pc++;
+}
+
+/*!
  * @brief LD D,A (0x57)
  * @result D = A
  */
 void ld_d_a(emulator_state *state)
 {
 	*REG_D(state) = *REG_A(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,B (0x58)
+ * @result E = B
+ */
+void ld_e_b(emulator_state *state)
+{
+	*REG_E(state) = *REG_B(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,C (0x59)
+ * @result E = C
+ */
+void ld_e_c(emulator_state *state)
+{
+	*REG_E(state) = *REG_C(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,D (0x5A)
+ * @result E = D
+ */
+void ld_e_d(emulator_state *state)
+{
+	*REG_E(state) = *REG_D(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,E (0x5B)
+ * @result E = E
+ */
+void ld_e_e(emulator_state *state)
+{
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,H (0x5C)
+ * @result E = H
+ */
+void ld_e_h(emulator_state *state)
+{
+	*REG_E(state) = *REG_H(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,L (0x5D)
+ * @result E = L
+ */
+void ld_e_l(emulator_state *state)
+{
+	*REG_E(state) = *REG_L(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,(HL) (0x5E)
+ * @result E = contents of memory at HL
+ */
+void ld_e_hl(emulator_state *state)
+{
+	*REG_E(state) = mem_read8(state, state->hl);
 	state->pc++;
 }
 
@@ -138,12 +414,150 @@ void ld_e_a(emulator_state *state)
 }
 
 /*!
+ * @brief LD H,B (0x60)
+ * @result H = B
+ */
+void ld_h_b(emulator_state *state)
+{
+	*REG_H(state) = *REG_B(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD H,C (0x61)
+ * @result H = C
+ */
+void ld_h_c(emulator_state *state)
+{
+	*REG_H(state) = *REG_C(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD H,D (0x62)
+ * @result H = D
+ */
+void ld_h_d(emulator_state *state)
+{
+	*REG_H(state) = *REG_D(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD H,E (0x63)
+ * @result H = E
+ */
+void ld_h_e(emulator_state *state)
+{
+	*REG_H(state) = *REG_E(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD H,H (0x64)
+ * @result H = H
+ */
+void ld_h_h(emulator_state *state)
+{
+	state->pc++;
+}
+
+/*!
+ * @brief LD H,L (0x65)
+ * @result H = L
+ */
+void ld_h_l(emulator_state *state)
+{
+	*REG_H(state) = *REG_L(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD H,(HL) (0x66)
+ * @result H = contents of memory at HL
+ */
+void ld_h_hl(emulator_state *state)
+{
+	*REG_H(state) = mem_read8(state, state->hl);
+	state->pc++;
+}
+
+/*!
  * @brief LD H,A (0x67)
  * @result H = A
  */
 void ld_h_a(emulator_state *state)
 {
 	*REG_H(state) = *REG_A(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,B (0x68)
+ * @result L = B
+ */
+void ld_l_b(emulator_state *state)
+{
+	*REG_L(state) = *REG_B(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,C (0x69)
+ * @result L = C
+ */
+void ld_l_c(emulator_state *state)
+{
+	*REG_L(state) = *REG_C(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,D (0x6A)
+ * @result L = D
+ */
+void ld_l_d(emulator_state *state)
+{
+	*REG_L(state) = *REG_D(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,E (0x6B)
+ * @result L = E
+ */
+void ld_l_e(emulator_state *state)
+{
+	*REG_L(state) = *REG_E(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,H (0x6C)
+ * @result L = H
+ */
+void ld_l_h(emulator_state *state)
+{
+	*REG_L(state) = *REG_H(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,L (0x6D)
+ * @result L = L
+ */
+void ld_l_l(emulator_state *state)
+{
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,(HL) (0x6E)
+ * @result L = contents of memory at HL
+ */
+void ld_l_hl(emulator_state *state)
+{
+	*REG_L(state) = mem_read8(state, state->hl);
 	state->pc++;
 }
 
@@ -164,6 +578,155 @@ static inline void and_common(emulator_state *state, uint8_t to_and)
 	state->flag_reg = FLAG_H;
 	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
 
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),B (0x70)
+ * @result contents of memory at HL = B
+ */
+void ld_hl_b(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_B(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),C (0x71)
+ * @result contents of memory at HL = C
+ */
+void ld_hl_c(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_C(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),D (0x72)
+ * @result contents of memory at HL = D
+ */
+void ld_hl_d(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_D(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),E (0x73)
+ * @result contents of memory at HL = E
+ */
+void ld_hl_e(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_E(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),H (0x74)
+ * @result contents of memory at HL = H
+ */
+void ld_hl_h(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_H(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),L (0x75)
+ * @result contents of memory at HL = L
+ */
+void ld_hl_l(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_L(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD (HL),A (0x77)
+ * @result contents of memory at HL = A
+ */
+void ld_hl_a(emulator_state *state)
+{
+	mem_write8(state, state->hl, *REG_A(state));
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,B (0x78)
+ * @result A = B
+ */
+void ld_a_b(emulator_state *state)
+{
+	*REG_A(state) = *REG_B(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,C (0x79)
+ * @result A = C
+ */
+void ld_a_c(emulator_state *state)
+{
+	*REG_A(state) = *REG_C(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,D (0x7A)
+ * @result A = D
+ */
+void ld_a_d(emulator_state *state)
+{
+	*REG_A(state) = *REG_D(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,E (0x7B)
+ * @result A = E
+ */
+void ld_a_e(emulator_state *state)
+{
+	*REG_A(state) = *REG_E(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,H (0x7C)
+ * @result A = H
+ */
+void ld_a_h(emulator_state *state)
+{
+	*REG_A(state) = *REG_H(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,L (0x7D)
+ * @result A = L
+ */
+void ld_a_l(emulator_state *state)
+{
+	*REG_A(state) = *REG_L(state);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,(HL) (0x7E)
+ * @result A = contents of memory at HL
+ */
+void ld_a_hl(emulator_state *state)
+{
+	*REG_A(state) = mem_read8(state, state->hl);
+	state->pc++;
+}
+
+/*!
+ * @brief LD A,A (0x7F)
+ * @result A = A
+ */
+void ld_a_a(emulator_state *state)
+{
 	state->pc++;
 }
 
@@ -535,14 +1098,14 @@ opcode_t handlers[0x100] = {
 	/* 0x28 */ jr_z_imm8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x30 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x38 */ NULL, NULL, NULL, NULL, NULL, NULL, ld_a_imm8, NULL,
-	/* 0x40 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_b_a,
-	/* 0x48 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_c_a,
-	/* 0x50 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_d_a,
-	/* 0x58 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_e_a,
-	/* 0x60 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_h_a,
-	/* 0x68 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, ld_l_a,
-	/* 0x70 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0x78 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
+	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
+	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
+	/* 0x58 */ ld_e_b, ld_e_c, ld_e_d, ld_e_e, ld_e_h, ld_e_l, ld_e_hl, ld_e_a,
+	/* 0x60 */ ld_h_b, ld_h_c, ld_h_d, ld_h_e, ld_h_h, ld_h_l, ld_e_hl, ld_h_a,
+	/* 0x68 */ ld_l_b, ld_l_c, ld_l_d, ld_l_e, ld_l_h, ld_l_l, ld_l_hl, ld_l_a,
+	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, NULL, ld_hl_a,
+	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
 	/* 0x80 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x88 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x90 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
