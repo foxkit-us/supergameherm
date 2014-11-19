@@ -4,9 +4,10 @@
 #include <string.h>	// memset
 
 #include "ctl_unit.h"	// init_ctl, execute
+#include "lcdc.h"	// lcdc_tick
+#include "memory.h"	/* offsets, emulator_state */
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
-#include "memory.h"	/* offsets, emulator_state */
 #include "serio.h"	// serial_tick
 #include "timer.h"	// init_clock
 
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
 		execute(&state);
 		lcdc_tick(&state);
 		serial_tick(&state);
+		timer_tick(&state);
 		//clock_tick(&state);
 
 	} while (true);
