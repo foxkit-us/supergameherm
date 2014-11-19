@@ -82,10 +82,13 @@ static inline void inc_r8(emulator_state *state, uint8_t *reg)
 {
 	uint8_t old = *reg;
 
+	if(*reg ^ 0x0F) state->flag_reg &= ~FLAG_H;
+	else state->flag_reg |= FLAG_H;
+
 	*reg += 1;
 
-	if(*reg & 0x08 && !(old & 0x08)) state->flag_reg |= FLAG_H;
 	if(*reg == 0) state->flag_reg |= FLAG_Z;
+
 	state->flag_reg &= ~FLAG_N;
 
 	state->pc++;
@@ -104,10 +107,13 @@ static inline void dec_r8(emulator_state *state, uint8_t *reg)
 {
 	uint8_t old = *reg;
 
+	if(*reg & 0x0F) state->flag_reg &= ~FLAG_H;
+	else state->flag_reg |= FLAG_H;
+
 	*reg -= 1;
 
-	if(!(*reg & 0x10) && old & 0x10) state->flag_reg |= FLAG_H;
 	if(*reg == 0) state->flag_reg |= FLAG_Z;
+
 	state->flag_reg |= FLAG_N;
 
 	state->pc++;
