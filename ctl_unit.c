@@ -158,7 +158,7 @@ void inc_c(emulator_state *state)
 }
 
 /*!
- * @brief DEC C (0x0C)
+ * @brief DEC C (0x0D)
  * @result 1 is subtracted from C; Z if C is now zero, H if bit 4 underflow
  */
 void dec_c(emulator_state *state)
