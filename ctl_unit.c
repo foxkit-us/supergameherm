@@ -78,6 +78,50 @@ void inc_bc(emulator_state *state)
 	state->pc++;
 }
 
+static inline void inc_r8(emulator_state *state, uint8_t *reg)
+{
+	uint8_t old = *reg;
+
+	*reg += 1;
+
+	if(*reg & 0x08 && !(old & 0x08)) state->flag_reg |= FLAG_H;
+	if(*reg == 0) state->flag_reg |= FLAG_Z;
+	state->flag_reg &= ~FLAG_N;
+
+	state->pc++;
+}
+
+/*!
+ * @brief INC B (0x04)
+ * @result 1 is added to B; Z if B is now zero, H if bit 3 overflow
+ */
+void inc_b(emulator_state *state)
+{
+	inc_r8(state, REG_B(state));
+}
+
+static inline void dec_r8(emulator_state *state, uint8_t *reg)
+{
+	uint8_t old = *reg;
+
+	*reg -= 1;
+
+	if(!(*reg & 0x10) && old & 0x10) state->flag_reg |= FLAG_H;
+	if(*reg == 0) state->flag_reg |= FLAG_Z;
+	state->flag_reg |= FLAG_N;
+
+	state->pc++;
+}
+
+/*!
+ * @brief DEC B (0x05)
+ * @result 1 is subtracted from B; Z if B is now zero, H if bit 4 underflow
+ */
+void dec_b(emulator_state *state)
+{
+	dec_r8(state, REG_B(state));
+}
+
 /*!
  * @brief LD B,n (0x06)
  * @result B = n
@@ -96,6 +140,24 @@ void dec_bc(emulator_state *state)
 {
 	state->bc--;
 	state->pc++;
+}
+
+/*!
+ * @brief INC C (0x0C)
+ * @result 1 is added to C; Z if C is now zero, H if bit 3 overflow
+ */
+void inc_c(emulator_state *state)
+{
+	inc_r8(state, REG_C(state));
+}
+
+/*!
+ * @brief DEC C (0x0C)
+ * @result 1 is subtracted from C; Z if C is now zero, H if bit 4 underflow
+ */
+void dec_c(emulator_state *state)
+{
+	dec_r8(state, REG_C(state));
 }
 
 /*!
@@ -133,6 +195,24 @@ void inc_de(emulator_state *state)
 }
 
 /*!
+ * @brief INC D (0x14)
+ * @result 1 is added to D; Z if D is now zero, H if bit 3 overflow
+ */
+void inc_d(emulator_state *state)
+{
+	inc_r8(state, REG_D(state));
+}
+
+/*!
+ * @brief DEC D (0x15)
+ * @result 1 is subtracted from D; Z if D is now zero, H if bit 4 underflow
+ */
+void dec_d(emulator_state *state)
+{
+	dec_r8(state, REG_D(state));
+}
+
+/*!
  * @brief LD D,n (0x16)
  * @result D = n
  */
@@ -161,6 +241,24 @@ void dec_de(emulator_state *state)
 {
 	state->de--;
 	state->pc++;
+}
+
+/*!
+ * @brief INC E (0x1C)
+ * @result 1 is added to E; Z if E is now zero, H if bit 3 overflow
+ */
+void inc_e(emulator_state *state)
+{
+	inc_r8(state, REG_E(state));
+}
+
+/*!
+ * @brief DEC E (0x1D)
+ * @result 1 is subtracted from E; Z if E is now zero, H if bit 4 underflow
+ */
+void dec_e(emulator_state *state)
+{
+	dec_r8(state, REG_E(state));
 }
 
 /*!
@@ -219,6 +317,24 @@ void inc_hl(emulator_state *state)
 }
 
 /*!
+ * @brief INC H (0x24)
+ * @result 1 is added to H; Z if H is now zero, H if bit 3 overflow
+ */
+void inc_h(emulator_state *state)
+{
+	inc_r8(state, REG_H(state));
+}
+
+/*!
+ * @brief DEC H (0x25)
+ * @result 1 is subtracted from H; Z if H is now zero, H if bit 4 underflow
+ */
+void dec_h(emulator_state *state)
+{
+	dec_r8(state, REG_H(state));
+}
+
+/*!
  * @brief LD H,n (0x26)
  * @result H = n
  */
@@ -257,6 +373,24 @@ void dec_hl(emulator_state *state)
 {
 	state->hl--;
 	state->pc++;
+}
+
+/*!
+ * @brief INC L (0x2C)
+ * @result 1 is added to L; Z if L is now zero, H if bit 3 overflow
+ */
+void inc_l(emulator_state *state)
+{
+	inc_r8(state, REG_L(state));
+}
+
+/*!
+ * @brief DEC L (0x2D)
+ * @result 1 is subtracted from L; Z if L is now zero, H if bit 4 underflow
+ */
+void dec_l(emulator_state *state)
+{
+	dec_r8(state, REG_L(state));
 }
 
 /*!
@@ -332,6 +466,24 @@ void dec_sp(emulator_state *state)
 {
 	state->sp--;
 	state->pc++;
+}
+
+/*!
+ * @brief INC A (0x3C)
+ * @result 1 is added to A; Z if A is now zero, H if bit 3 overflow
+ */
+void inc_a(emulator_state *state)
+{
+	inc_r8(state, REG_A(state));
+}
+
+/*!
+ * @brief DEC A (0x3D)
+ * @result 1 is subtracted from A; Z if A is now zero, H if bit 4 underflow
+ */
+void dec_a(emulator_state *state)
+{
+	dec_r8(state, REG_A(state));
 }
 
 /*!
@@ -1584,14 +1736,14 @@ void cp_imm8(emulator_state *state)
 typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] = {
-	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, NULL, NULL, ld_b_imm8, NULL,
-	/* 0x08 */ NULL, NULL, NULL, dec_bc, NULL, NULL, ld_c_imm8, NULL,
-	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, NULL, NULL, ld_d_imm8, NULL,
-	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, NULL, NULL, ld_e_imm8, NULL,
-	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, NULL, NULL, ld_h_imm8, NULL,
-	/* 0x28 */ jr_z_imm8, NULL, ldi_a_hl, dec_hl, NULL, NULL, ld_l_imm8, NULL,
-	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, NULL, NULL, ld_hl_imm8, NULL,
-	/* 0x38 */ NULL, NULL, ldd_a_hl, dec_sp, NULL, NULL, ld_a_imm8, NULL,
+	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
+	/* 0x08 */ NULL, NULL, NULL, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
+	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
+	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
+	/* 0x28 */ jr_z_imm8, NULL, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
+	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, NULL,
+	/* 0x38 */ NULL, NULL, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
