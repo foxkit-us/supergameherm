@@ -27,6 +27,7 @@ uint8_t timer_read(emulator_state *state, uint16_t reg)
 	 * TAC - timer control
 	 */
 	case 0xFF07:
+	{
 		uint8_t res = 0;
 
 		if(state->timer_state.enabled) res |= 0x04;
@@ -45,6 +46,7 @@ uint8_t timer_read(emulator_state *state, uint16_t reg)
 		}
 
 		return res;
+	}
 	default:
 		error("timer: unrecognised register %04X (R)", reg);
 		return -1;
@@ -55,9 +57,9 @@ void timer_write(emulator_state *state, uint16_t reg, uint8_t data)
 {
 	switch(reg)
 	{
-		/*
-		 * DIV - any write to this immediately resets to 0.
-		 */
+	/*
+	 * DIV - any write to this immediately resets to 0.
+	 */
 	case 0xFF04:
 		/* nope, data is ignored.  reset to 0. */
 		state->timer_state.div = 0;
@@ -80,12 +82,14 @@ void timer_write(emulator_state *state, uint16_t reg, uint8_t data)
 	 * TAC - timer control
 	 */
 	case 0xFF07:
-		uint8_t ticks[4] = { 1024, 16, 64, 128 };
+	{
+		uint16_t ticks[4] = { 1024, 16, 64, 128 };
 
 		state->timer_state.enabled = (data & 0x04);
 		state->timer_state.ticks_per_tima = ticks[(data & 3)];
 
 		return;
+	}
 	default:
 		error("timer: unrecognised register %04X (W)", reg);
 	}
