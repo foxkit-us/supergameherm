@@ -5,6 +5,7 @@
 #include "lcdc.h"	// lcdc_read
 #include "ctl_unit.h"	// int_flag_*
 #include "serio.h"	// serial_*
+#include "timer.h"	// timer_*
 
 
 /***********************************************************************
@@ -35,11 +36,10 @@ mem_read_fn hw_reg_read[0x80] = {
 	serial_read, /* 01 - SB - serial data */
 	serial_read, /* 02 - SC - serial control */
 	no_hardware, /* 03 - NO HARDWARE */
-	no_hardware, /* 04 - DIV - this is a CPU register.. ok there is
-			definitely hardware here.. */
-	no_hardware, /* 05 - TIMA - timer step */
-	no_hardware, /* 06 - TMA - timer count */
-	no_hardware, /* 07 - TAC - timer frequency / enable */
+	timer_read,  /* 04 - DIV */
+	timer_read,  /* 05 - TIMA - timer step */
+	timer_read,  /* 06 - TMA - timer count */
+	timer_read,  /* 07 - TAC - timer frequency / enable */
 
 	/* 08..0E - NO HARDWARE */
 	no_hardware, no_hardware, no_hardware, no_hardware,
@@ -236,10 +236,10 @@ mem_write8_fn hw_reg_write[0x80] = {
 	serial_write, /* 01 - SB - serial data */
 	serial_write, /* 02 - SC - serial control */
 	doofus_write, /* 03 - NO HARDWARE */
-	doofus_write, /* 04 - DIV - CPU register */
-	doofus_write, /* 05 - TIMA - timer step */
-	doofus_write, /* 06 - TMA - timer count */
-	doofus_write, /* 07 - TAC - timer control */
+	timer_write,  /* 04 - DIV - CPU register */
+	timer_write,  /* 05 - TIMA - timer step */
+	timer_write,  /* 06 - TMA - timer count */
+	timer_write,  /* 07 - TAC - timer control */
 
 	/* 08..0E - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write, doofus_write,
