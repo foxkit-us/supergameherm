@@ -79,12 +79,32 @@ void inc_bc(emulator_state *state)
 }
 
 /*!
+ * @brief LD B,n (0x06)
+ * @result B = n
+ */
+void ld_b_imm8(emulator_state *state)
+{
+	*REG_B(state) = mem_read8(state, ++state->pc);
+	state->pc++;
+}
+
+/*!
  * @brief DEC BC (0x0B)
  * @result 1 is subtracted from BC (possibly wrapping)
  */
 void dec_bc(emulator_state *state)
 {
 	state->bc--;
+	state->pc++;
+}
+
+/*!
+ * @brief LD C,n (0x0E)
+ * @result C = n
+ */
+void ld_c_imm8(emulator_state *state)
+{
+	*REG_C(state) = mem_read8(state, ++state->pc);
 	state->pc++;
 }
 
@@ -113,6 +133,16 @@ void inc_de(emulator_state *state)
 }
 
 /*!
+ * @brief LD D,n (0x16)
+ * @result D = n
+ */
+void ld_d_imm8(emulator_state *state)
+{
+	*REG_D(state) = mem_read8(state, ++state->pc);
+	state->pc++;
+}
+
+/*!
  * @brief JR n (0x18)
  * @result add n to pc
  */
@@ -130,6 +160,16 @@ void jr_imm8(emulator_state *state)
 void dec_de(emulator_state *state)
 {
 	state->de--;
+	state->pc++;
+}
+
+/*!
+ * @brief LD E,n (0x1E)
+ * @result E = n
+ */
+void ld_e_imm8(emulator_state *state)
+{
+	*REG_E(state) = mem_read8(state, ++state->pc);
 	state->pc++;
 }
 
@@ -179,6 +219,16 @@ void inc_hl(emulator_state *state)
 }
 
 /*!
+ * @brief LD H,n (0x26)
+ * @result H = n
+ */
+void ld_h_imm8(emulator_state *state)
+{
+	*REG_H(state) = mem_read8(state, ++state->pc);
+	state->pc++;
+}
+
+/*!
  * @brief JR Z,n (0x28)
  * @result add n to pc if Z (zero) flag set
  */
@@ -206,6 +256,16 @@ void ldi_a_hl(emulator_state *state)
 void dec_hl(emulator_state *state)
 {
 	state->hl--;
+	state->pc++;
+}
+
+/*!
+ * @brief LD L,n (0x2E)
+ * @result L = n
+ */
+void ld_l_imm8(emulator_state *state)
+{
+	*REG_L(state) = mem_read8(state, ++state->pc);
 	state->pc++;
 }
 
@@ -1524,12 +1584,12 @@ void cp_imm8(emulator_state *state)
 typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] = {
-	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, NULL, NULL, NULL, NULL,
-	/* 0x08 */ NULL, NULL, NULL, dec_bc, NULL, NULL, NULL, NULL,
-	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, NULL, NULL, NULL, NULL,
-	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, NULL, NULL, NULL, NULL,
-	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, NULL, NULL, NULL, NULL,
-	/* 0x28 */ jr_z_imm8, NULL, ldi_a_hl, dec_hl, NULL, NULL, NULL, NULL,
+	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, NULL, NULL, ld_b_imm8, NULL,
+	/* 0x08 */ NULL, NULL, NULL, dec_bc, NULL, NULL, ld_c_imm8, NULL,
+	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, NULL, NULL, ld_d_imm8, NULL,
+	/* 0x18 */ jr_imm8, NULL, NULL, dec_de, NULL, NULL, ld_e_imm8, NULL,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, NULL, NULL, ld_h_imm8, NULL,
+	/* 0x28 */ jr_z_imm8, NULL, ldi_a_hl, dec_hl, NULL, NULL, ld_l_imm8, NULL,
 	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, NULL, NULL, ld_hl_imm8, NULL,
 	/* 0x38 */ NULL, NULL, ldd_a_hl, dec_sp, NULL, NULL, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
