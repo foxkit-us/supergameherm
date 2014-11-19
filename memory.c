@@ -31,7 +31,8 @@ uint8_t ugh_sound(emulator_state *state, uint16_t location)
 }
 
 /*! a table of hardware register read methods */
-mem_read_fn hw_reg_read[0x80] = {
+mem_read_fn hw_reg_read[0x80] =
+{
 	no_hardware, /* 00 - P1 - joypad */
 	serial_read, /* 01 - SB - serial data */
 	serial_read, /* 02 - SC - serial control */
@@ -155,7 +156,8 @@ uint8_t f_read(emulator_state *state, uint16_t location)
 	return direct_read(state, location);
 }
 
-mem_read_fn readers[0x10] = {
+mem_read_fn readers[0x10] =
+{
 	/* ROM bank #0 - 0x0000..0x3FFF */
 	direct_read, direct_read, direct_read, direct_read,
 	/* switchable bank - 0x4000..0x7FFF */
@@ -231,7 +233,8 @@ void doofus_write(emulator_state *state, uint16_t location, uint8_t data)
 	      data, location);
 }
 
-mem_write8_fn hw_reg_write[0x80] = {
+mem_write8_fn hw_reg_write[0x80] =
+{
 	doofus_write, /* 00 - P1 - joypad */
 	serial_write, /* 01 - SB - serial data */
 	serial_write, /* 02 - SC - serial control */
@@ -317,8 +320,8 @@ void mem_write8(emulator_state *state, uint16_t location, uint8_t data)
 	//if(location < 0xC000 || location >= 0xFE00)
 	//	fatal("invalid memory write at %04X (%02X)", location, data);
 	if((location >= 0xC000 && location < 0xE000) ||
-		(location >= 0xFE80 && location < 0xFF00) ||
-		(location >= 0xFF80 && location <= 0xFFFF))
+			(location >= 0xFE80 && location < 0xFF00) ||
+			(location >= 0xFF80 && location <= 0xFFFF))
 	{
 		state->memory[location] = data;
 		return;

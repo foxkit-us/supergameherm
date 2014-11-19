@@ -79,8 +79,11 @@ void lcdc_tick(emulator_state *state)
 		break;
 	case 1:
 		/* v-blank */
-		if(*clk % 456 == 0) { *ly += 1; };
-		
+		if(*clk % 456 == 0)
+		{
+			*ly += 1;
+		};
+
 		if(*ly == 153)
 		{
 			*clk = 0;

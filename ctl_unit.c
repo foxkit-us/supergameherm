@@ -1561,12 +1561,14 @@ void push_bc(emulator_state *state)
 	state->pc++;
 }
 
-enum cb_regs {
+enum cb_regs
+{
 	CB_REG_B = 0, CB_REG_C, CB_REG_D, CB_REG_E, CB_REG_H, CB_REG_L,
 	CB_REG_HL, CB_REG_A
 };
 
-enum cb_ops {
+enum cb_ops
+{
 	CB_OP_RLC = 0, CB_OP_RRC = 1,
 	CB_OP_RL = 2, CB_OP_RR = 3,
 	CB_OP_SLA = 4, CB_OP_SRA = 5,
@@ -1823,10 +1825,12 @@ void cb_dispatch(emulator_state *state)
 		break;
 	case CB_OP_RES:
 		/* reset bit <bit_number> of register <reg> */
-		*write_to &= ~val; break;
+		*write_to &= ~val;
+		break;
 	case CB_OP_SET:
 		/* set bit <bit_number> of register <reg> */
-		*write_to |= val;  break;
+		*write_to |= val;
+		break;
 	case CB_OP_BIT:
 		/* test bit <bit_number> of register <reg> */
 		dump_flags(state);
@@ -2135,7 +2139,8 @@ void cp_imm8(emulator_state *state)
 
 typedef void (*opcode_t)(emulator_state *state);
 
-opcode_t handlers[0x100] = {
+opcode_t handlers[0x100] =
+{
 	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
 	/* 0x08 */ NULL, add_hl_bc, NULL, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
 	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
@@ -2170,7 +2175,8 @@ opcode_t handlers[0x100] = {
 	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, NULL, NULL, cp_imm8, NULL
 };
 
-char cycles[0x100] = {
+char cycles[0x100] =
+{
 	/* 0x00 */ 4, 12, 8, 8, 4, 4, 8, 4,
 	/* 0x08 */ 20, 8, 8, 8, 4, 4, 8, 4,
 	/* 0x10 */ 4, 12, 8, 8, 4, 4, 8, 4,

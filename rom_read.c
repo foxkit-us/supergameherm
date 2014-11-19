@@ -7,7 +7,8 @@
 #include "print.h"	// fatal, error, debug
 #include "memory.h"	// offsets, emulator_state
 
-static const unsigned char graphic_expected[] = {
+static const unsigned char graphic_expected[] =
+{
 	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73, 0x00, 0x83,
 	0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
 	0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63,
@@ -41,7 +42,8 @@ typedef enum
 	CART_CAMERA = 0x1F
 } cart_types;
 
-const char *friendly_cart_names[0x20] = {
+const char *friendly_cart_names[0x20] =
+{
 	"ROM only", "MBC1", "MBC1 with RAM", "MBC1 with RAM (Battery)",
 	"unused", "MBC2", "MBC2 (Battery)", "unused", "RAM",
 	"RAM (Battery)", "unused", "MMM01", "MMM01 with SRAM",
@@ -55,7 +57,7 @@ const char *friendly_cart_names[0x20] = {
 };
 
 bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
-		system_types *system)
+		   system_types *system)
 {
 	long size_in_bytes, actual_size;
 	int8_t checksum = 0;
@@ -99,7 +101,7 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 
 	*header = (cart_header *)(state->cart_data + (size_t)begin);
 	if(unlikely(memcmp((*header)->graphic, graphic_expected,
-				sizeof(graphic_expected)) != 0))
+			   sizeof(graphic_expected)) != 0))
 	{
 #ifdef NDEBUG
 		error("invalid nintendo graphic (don't care)");
@@ -117,9 +119,9 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 	{
 		/* Game boy color[sic] */
 		strncpy(title, (*header)->gbc_title.title,
-				sizeof((*header)->gbc_title.title));
+			sizeof((*header)->gbc_title.title));
 		strncpy(publisher, (*header)->gbc_title.publisher,
-						sizeof((*header)->gbc_title.publisher));
+			sizeof((*header)->gbc_title.publisher));
 
 		*system = SYSTEM_GBC;
 	}

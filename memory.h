@@ -154,6 +154,6 @@ void mem_write8(emulator_state *state, uint16_t location, uint8_t data);
 void mem_write16(emulator_state *state, uint16_t location, uint16_t data);
 
 bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
-		system_types *type);
+		   system_types *type);
 
 #endif /*!__MEMORY_H_*/

@@ -70,7 +70,9 @@ void serial_tick(emulator_state *state)
 	if(state->ser_state.use_internal)
 	{
 		ticks = 512;
-	} else {
+	}
+	else
+	{
 		error("trying to use an external clock; not supported");
 	}
 

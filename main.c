@@ -60,7 +60,8 @@ int main(int argc, char *argv[])
 		timer_tick(&state);
 		//clock_tick(&state);
 
-	} while (true);
+	}
+	while (true);
 
 	return EXIT_SUCCESS;
 }
