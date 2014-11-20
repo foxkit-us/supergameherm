@@ -154,8 +154,6 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 	for(i = 0x134; i <= 0x14d; ++i)
 		checksum += state->cart_data[i] + 1;
 
-	printf("%d\n", checksum);
-
 	if(checksum != 1)
 	{
 #ifdef NDEBUG
