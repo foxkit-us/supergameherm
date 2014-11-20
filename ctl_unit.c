@@ -512,6 +512,16 @@ static inline void ld_l_imm8(emulator_state *state)
 }
 
 /*!
+ * @brief CPL (0x2F)
+ * @result all bits of A are negated
+ */
+static inline void cpl(emulator_state *state)
+{
+	*REG_A(state) ^= ~(*REG_A(state));
+	state->pc++;
+}
+
+/*!
  * @brief JR NC,n (0x30)
  * @result add n to pc if C (carry) flag clear
  */
@@ -564,6 +574,16 @@ static inline void ld_hl_imm8(emulator_state *state)
 {
 	uint8_t n = mem_read8(state, ++state->pc);
 	mem_write8(state, state->hl, n);
+	state->pc++;
+}
+
+/*!
+ * @brief SCF (0x37)
+ * @result C flag set
+ */
+static inline void scf(emulator_state *state)
+{
+	state->flag_reg |= FLAG_C;
 	state->pc++;
 }
 
@@ -632,6 +652,16 @@ static inline void dec_a(emulator_state *state)
 static inline void ld_a_imm8(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, ++state->pc);
+	state->pc++;
+}
+
+/*!
+ * @brief CCF (0x3F)
+ * @result C flag inverted
+ */
+static inline void ccf(emulator_state *state)
+{
+	state->flag_reg ^= ~FLAG_C;
 	state->pc++;
 }
 
@@ -2025,6 +2055,15 @@ static inline void add_imm8(emulator_state *state)
 	add_common(state, mem_read8(state, ++state->pc));
 }
 
+static inline void reset_common(emulator_state *state)
+{
+	uint16_t to = mem_read8(state, state->pc) - 0xC7;
+
+	state->sp -= 2;
+	mem_write16(state, state->sp, ++state->pc);
+	state->pc = to;
+}
+
 /*!
  * @brief RET (0xC9) - return from CALL
  * @result pop two bytes from the stack and jump to that location
@@ -2602,9 +2641,9 @@ opcode_t handlers[0x100] =
 	/* 0x10 */ NULL, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
 	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
 	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
-	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
-	/* 0x30 */ jr_nc_imm8, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, NULL,
-	/* 0x38 */ jr_c_imm8, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, NULL,
+	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, cpl,
+	/* 0x30 */ jr_nc_imm8, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, scf,
+	/* 0x38 */ jr_c_imm8, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, ccf,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
@@ -2621,14 +2660,14 @@ opcode_t handlers[0x100] =
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
 	/* 0xB8 */ cp_b, cp_c, cp_d, cp_e, cp_h, cp_l, cp_hl, cp_a,
-	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, add_imm8, NULL,
-	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, NULL, call_imm16, NULL, NULL,
-	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, NULL, push_de, sub_imm8, NULL,
-	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, NULL, invalid, NULL, NULL,
-	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, invalid, invalid, push_hl, and_imm8, NULL,
-	/* 0xE8 */ NULL, jp_hl, ld_d16_a, invalid, invalid, invalid, NULL, NULL,
-	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, NULL, NULL,
-	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, invalid, invalid, cp_imm8, NULL
+	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, add_imm8, reset_common,
+	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, NULL, call_imm16, NULL, reset_common,
+	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, NULL, push_de, sub_imm8, reset_common,
+	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, NULL, invalid, NULL, reset_common,
+	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, invalid, invalid, push_hl, and_imm8, reset_common,
+	/* 0xE8 */ NULL, jp_hl, ld_d16_a, invalid, invalid, invalid, NULL, reset_common,
+	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, NULL, reset_common,
+	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, invalid, invalid, cp_imm8, reset_common
 };
 
 static char cycles[0x100] =
