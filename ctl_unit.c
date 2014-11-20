@@ -2,28 +2,12 @@
 #include <stdint.h>	// integer types
 #include <stdlib.h>	// NULL
 
+#include "sgherm.h"	// emulator_state, REG_*, etc
+#include "ctl_unit.h"	// constants
 #include "memory.h"	// mem_[read|write][8|16]
 #include "params.h"	// system_types
 #include "print.h"	// fatal
-#include "sgherm.h"	// emulator_state, REG_*, etc
 
-
-#define WAIT_CYCLE(state, cycles, handler) \
-if(state->wait == 0) {\
-handler;\
-state->wait = cycles;\
-}\
-state->wait--;
-
-
-/*! Zero Flag */
-#define FLAG_Z 0x80
-/*! Subtract Flag */
-#define FLAG_N 0x40
-/*! Half-Carry Flag */
-#define FLAG_H 0x20
-/*! Carry Flag */
-#define FLAG_C 0x10
 
 void dump_flags(emulator_state *state)
 {
@@ -2046,21 +2030,6 @@ void add_imm8(emulator_state *state)
 	add_common(state, mem_read8(state, ++state->pc));
 }
 
-enum cb_regs
-{
-	CB_REG_B = 0, CB_REG_C, CB_REG_D, CB_REG_E, CB_REG_H, CB_REG_L,
-	CB_REG_HL, CB_REG_A
-};
-
-enum cb_ops
-{
-	CB_OP_RLC = 0, CB_OP_RRC = 1,
-	CB_OP_RL = 2, CB_OP_RR = 3,
-	CB_OP_SLA = 4, CB_OP_SRA = 5,
-	CB_OP_SWAP = 6, CB_OP_SRL = 7,
-	CB_OP_BIT = 8, CB_OP_RES = 9, CB_OP_SET = 10
-};
-
 /*!
  * @brief RET (0xC9) - return from CALL
  * @result pop two bytes from the stack and jump to that location
@@ -2125,8 +2094,8 @@ void cb_dispatch(emulator_state *state)
 	uint8_t *write_to;
 	uint8_t maybe_temp;
 	uint8_t bit_number;
-	enum cb_regs reg = (opcode & 0x7);
-	enum cb_ops op;
+	cb_regs reg = (opcode & 0x7);
+	cb_ops op;
 
 	if(likely(opcode >= 0x40))
 	{

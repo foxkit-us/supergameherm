@@ -5,7 +5,8 @@
 
 #include "ctl_unit.h"	// init_ctl, execute
 #include "lcdc.h"	// lcdc_tick
-#include "memory.h"	/* offsets, emulator_state */
+#include "sgherm.h"	// emulator_state
+#include "rom_read.h"	// offsets
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
 #include "serio.h"	// serial_tick
