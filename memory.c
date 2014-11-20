@@ -20,20 +20,22 @@ typedef uint8_t (*mem_read_fn)(emulator_state*, uint16_t);
  * @result emulation stopped because some doofus read from a non-existant
  * 	   device.
  */
-uint8_t no_hardware(emulator_state *state, uint16_t location)
+static inline uint8_t no_hardware(emulator_state *state, uint16_t location)
 {
 	fatal("no device present at %04X (emulator bug?  incompatible GB?)",
 	      location);
 	/* NOTREACHED */
+	return -1;
 }
 
-uint8_t ugh_sound(emulator_state *state, uint16_t location)
+static inline uint8_t ugh_sound(emulator_state *state, uint16_t location)
 {
 	fatal("ask greaser or aji to write a sound module for this thing");
+	return -1;
 }
 
 /*! a table of hardware register read methods */
-mem_read_fn hw_reg_read[0x80] =
+static mem_read_fn hw_reg_read[0x80] =
 {
 	joypad_read, /* 00 - P1 - joypad */
 	serial_read, /* 01 - SB - serial data */
@@ -101,40 +103,42 @@ mem_read_fn hw_reg_read[0x80] =
 };
 
 /*! directly read from a location in memory */
-uint8_t direct_read(emulator_state *state, uint16_t location)
+static inline uint8_t direct_read(emulator_state *state, uint16_t location)
 {
 	return state->memory[location];
 }
 
 /*! read from the switchable ROM bank space */
-uint8_t rom_bank_read(emulator_state *state, uint16_t location)
+static inline uint8_t rom_bank_read(emulator_state *state, uint16_t location)
 {
 	uint32_t addr = (state->bank - 1) * 0x4000;
 	return state->cart_data[addr + location];
 }
 
-uint8_t not_impl(emulator_state *state, uint16_t location)
+static inline uint8_t not_impl(emulator_state *state, uint16_t location)
 {
 	fatal("reading from %04X is not yet implemented", location);
 	/* NOTREACHED */
+	return -1;
 }
 
 /*! read from the switchable RAM bank space */
-uint8_t ram_bank_read(emulator_state *state, uint16_t location)
+static inline uint8_t ram_bank_read(emulator_state *state, uint16_t location)
 {
 	fatal("RAM bank switching not yet implemented");
 	/* NOTREACHED */
+	return -1;
 }
 
 /*! read from shadow RAM area */
-uint8_t shadow_read(emulator_state *state, uint16_t location)
+static inline uint8_t shadow_read(emulator_state *state, uint16_t location)
 {
 	/* Shadow is offset */
 	return state->memory[location - 0x2000];
 }
 
 /*! read from an address in the F segment */
-uint8_t f_read(emulator_state *state, uint16_t location)
+static inline uint8_t f_read(emulator_state *state, uint16_t location)
 {
 	/* who knows?  the SHADOW knows! */
 	if(location < 0xFE00)
@@ -142,23 +146,25 @@ uint8_t f_read(emulator_state *state, uint16_t location)
 		return shadow_read(state, location);
 	}
 	/* OAM */
-	if(location < 0xFEA0)
+	else if(location < 0xFEA0)
 	{
 		fatal("OAM not yet implemented");
+		return -1;
 	}
 	/* invalid */
-	if(location < 0xFF00)
+	else if(location < 0xFF00)
 	{
 		fatal("invalid memory read at %04X", location);
+		return -1;
 	}
-	if(location < 0xFF80)
+	else if(location < 0xFF80)
 	{
 		return hw_reg_read[location - 0xFF00](state, location);
 	}
 	return direct_read(state, location);
 }
 
-mem_read_fn readers[0x10] =
+static mem_read_fn readers[0x10] =
 {
 	/* ROM bank #0 - 0x0000..0x3FFF */
 	direct_read, direct_read, direct_read, direct_read,
@@ -219,7 +225,7 @@ typedef void (*mem_write8_fn)(emulator_state *, uint16_t, uint8_t);
  * @brief silly name, decent intent
  * @result emulation terminates because some doofus wrote to a r/o reg
  */
-void readonly_reg_write(emulator_state *state, uint16_t location, uint8_t data)
+static inline void readonly_reg_write(emulator_state *state, uint16_t location, uint8_t data)
 {
 	fatal("attempted write of %02X to read-only register %04X",
 	      data, location);
@@ -229,13 +235,13 @@ void readonly_reg_write(emulator_state *state, uint16_t location, uint8_t data)
  * @brief what happens when you poke around randomly
  * @result emulation terminates because some doofus wrote to a device not there
  */
-void doofus_write(emulator_state *state, uint16_t location, uint8_t data)
+static inline void doofus_write(emulator_state *state, uint16_t location, uint8_t data)
 {
 	fatal("attempted doofus write of %02X to non-existant device at %04X",
 	      data, location);
 }
 
-mem_write8_fn hw_reg_write[0x80] =
+static mem_write8_fn hw_reg_write[0x80] =
 {
 	joypad_write, /* 00 - P1 - joypad */
 	serial_write, /* 01 - SB - serial data */
