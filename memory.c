@@ -191,13 +191,7 @@ static mem_read_fn readers[0x10] =
  */
 uint8_t mem_read8(emulator_state *state, uint16_t location)
 {
-	char reader = location >> 12;
-
-	if(location > 0xFFFF)
-	{
-		fatal("invalid memory access - out of bounds");
-	}
-
+	unsigned char reader = location >> 12;
 	return readers[reader](state, location);
 }
 
