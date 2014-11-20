@@ -1366,19 +1366,16 @@ static inline void sub_common(emulator_state *state, uint8_t to_sub)
 	if(temp == 0)
 	{
 		state->flags_reg |= FLAG_Z;
-		state->flags_reg &= ~FLAG_H & ~FLAG_C;
 	}
-	else
-	{
-		if(*REG_A(state) < to_sub)
-		{
-			state->flags_reg |= FLAG_C;
-		}
 
-		if((*REG_A(state) & 0x0f) < (to_sub & 0x0f))
-		{
-			state->flags_reg |= FLAG_H;
-		}
+	if(*REG_A(state) < to_sub)
+	{
+		state->flags_reg |= FLAG_C;
+	}
+
+	if((*REG_A(state) & 0x0f) < (to_sub & 0x0f))
+	{
+		state->flags_reg |= FLAG_H;
 	}
 
 	state->pc++;
