@@ -1360,6 +1360,8 @@ void and_a(emulator_state *state)
 {
 	state->flag_reg = FLAG_H;
 	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+
+	state->pc++;
 }
 
 static inline void xor_common(emulator_state *state, char to_xor)
