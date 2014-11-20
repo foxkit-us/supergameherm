@@ -1274,7 +1274,7 @@ static inline void add_common(emulator_state *state, uint8_t to_add)
 		}
 
 		// Half carry
-		if(((*REG_A(state) & 0x0f) + (*REG_B(state) & 0x0f)) > 0x0f)
+		if(((*REG_A(state) & 0x0f) + (to_add & 0x0f)) > 0x0f)
 		{
 			state->flag_reg |= FLAG_H;
 		}
@@ -1359,10 +1359,27 @@ void add_a(emulator_state *state)
 	add_common(state, *REG_A(state));
 }
 
-void sub_common(emulator_state *state, uint8_t to_sub)
+static inline void sub_common(emulator_state *state, uint8_t to_sub)
 {
-	/* TODO flags */
-	*REG_A(state) -= to_sub;
+	uint32_t temp = *REG_A(state) - to_sub;
+
+	if(temp == 0)
+	{
+		state->flags_reg |= FLAG_Z;
+		state->flags_reg &= ~FLAG_H & ~FLAG_C;
+	}
+	else
+	{
+		if(*REG_A(state) < to_sub)
+		{
+			state->flags_reg |= FLAG_C;
+		}
+
+		if((*REG_A(state) & 0x0f) < (to_sub & 0x0f))
+		{
+			state->flags_reg |= FLAG_H;
+		}
+	}
 
 	state->pc++;
 }
