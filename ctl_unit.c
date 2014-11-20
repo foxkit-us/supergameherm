@@ -2244,7 +2244,7 @@ void retc(emulator_state *state)
  */
 void reti(emulator_state *state)
 {
-	state->toggle_int_on_next = true;
+	state->enable_int_on_next = true;
 	ret(state);
 }
 
@@ -2380,7 +2380,7 @@ void ld_a_ff00_c(emulator_state *state)
  */
 void di(emulator_state *state)
 {
-	state->toggle_int_on_next = true;
+	state->disable_int_on_next = true;
 
 	state->pc++;
 }
@@ -2418,7 +2418,7 @@ void ld_a_d16(emulator_state *state)
  */
 void ei(emulator_state *state)
 {
-	state->toggle_int_on_next = true;
+	state->enable_int_on_next = true;
 
 	state->pc++;
 }
@@ -2547,7 +2547,8 @@ bool execute(emulator_state *state)
 {
 	unsigned char opcode = mem_read8(state, state->pc);
 	opcode_t handler = handlers[opcode];
-	bool toggle = state->toggle_int_on_next;
+	bool enable = state->enable_int_on_next;
+	bool disable = state->disable_int_on_next;
 
 	if(unlikely(handler == NULL))
 	{
@@ -2556,10 +2557,21 @@ bool execute(emulator_state *state)
 
 	WAIT_CYCLE(state, cycles[opcode], handler(state));
 
-	if(toggle)
+	if(unlikely(enable && disable))
 	{
-		state->toggle_int_on_next = false;
-		state->interrupts = !state->interrupts;
+		error("somehow conflicting flags are set; expect brokenness");
+	}
+
+	if(unlikely(enable))
+	{
+		state->enable_int_on_next = false;
+		state->interrupts = true;
+	}
+
+	if(unlikely(disable))
+	{
+		state->disable_int_on_next = false;
+		state->interrupts = false;
 	}
 
 	return true;

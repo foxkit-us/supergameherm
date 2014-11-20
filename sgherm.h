@@ -13,7 +13,8 @@ typedef struct _emulator_state
 	unsigned char *cart_data;		/*! Loaded cart data */
 	uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
 	char flag_reg;
-	bool toggle_int_on_next;
+	bool disable_int_on_next;
+	bool enable_int_on_next;
 	bool interrupts;			/* Initalise to 1! */
 	uint8_t wait;				/* number of clocks */
 	struct _lcdc_state
