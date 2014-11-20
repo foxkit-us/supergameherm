@@ -146,8 +146,7 @@ static inline uint8_t shadow_read(emulator_state *state, uint16_t location)
  */
 uint8_t mem_read8(emulator_state *state, uint16_t location)
 {
-	unsigned char reader = location >> 4;
-	switch(reader)
+	switch(location >> 4)
 	{
 	case 0x400:
 	case 0x500:
