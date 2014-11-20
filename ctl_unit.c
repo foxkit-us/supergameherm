@@ -1232,8 +1232,90 @@ void ld_a_a(emulator_state *state)
 	state->pc++;
 }
 
+static inline void add_common(emulator_state *state, uint8_t to_add)
+{
+	/* TODO flags */
+	*REG_A(state) += to_add;
+	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+
+	state->pc++;
+}
+
+/*!
+ * @brief ADD B (0x80)
+ * @result A += B
+ */
+void add_b(emulator_state *state)
+{
+	add_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief ADD C (0x81)
+ * @result A += C
+ */
+void add_c(emulator_state *state)
+{
+	add_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief ADD D (0x82)
+ * @result A += D
+ */
+void add_d(emulator_state *state)
+{
+	add_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief ADD E (0x83)
+ * @result A += E
+ */
+void add_e(emulator_state *state)
+{
+	add_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief ADD H (0x84)
+ * @result A += H
+ */
+void add_h(emulator_state *state)
+{
+	add_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief ADD L (0x85)
+ * @result A += L
+ */
+void add_l(emulator_state *state)
+{
+	add_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief ADD (HL) (0x86)
+ * @result A += contents of memory at HL
+ */
+void add_hl(emulator_state *state)
+{
+	add_common(state, mem_read8(state, state->hl));
+}
+
+/*!
+ * @brief ADD A (0x87)
+ * @result A += A
+ */
+void add_a(emulator_state *state)
+{
+	add_common(state, *REG_A(state));
+}
+
 void sub_common(emulator_state *state, uint8_t to_sub)
 {
+	/* TODO flags */
 	*REG_A(state) -= to_sub;
 
 	state->pc++;
@@ -1695,6 +1777,15 @@ void push_bc(emulator_state *state)
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->bc);
 	state->pc++;
+}
+
+/*!
+ * @brief ADD n (0xC6)
+ * @result A += immediate (n)
+ */
+void add_imm8(emulator_state *state)
+{
+	add_common(state, mem_read8(state, ++state->pc));
 }
 
 enum cb_regs
@@ -2301,7 +2392,7 @@ opcode_t handlers[0x100] =
 	/* 0x68 */ ld_l_b, ld_l_c, ld_l_d, ld_l_e, ld_l_h, ld_l_l, ld_l_hl, ld_l_a,
 	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, NULL, ld_hl_a,
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
-	/* 0x80 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x80 */ add_b, add_c, add_d, add_e, add_h, add_l, add_hl, add_a,
 	/* 0x88 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	/* 0x90 */ sub_b, sub_c, sub_d, sub_e, sub_h, sub_l, sub_hl, sub_a,
 	/* 0x98 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -2309,7 +2400,7 @@ opcode_t handlers[0x100] =
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
 	/* 0xB8 */ cp_b, cp_c, cp_d, cp_e, cp_h, cp_l, cp_hl, cp_a,
-	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, NULL, NULL,
+	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, add_imm8, NULL,
 	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, NULL, call_imm16, NULL, NULL,
 	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, NULL, NULL, push_de, sub_imm8, NULL,
 	/* 0xD8 */ retc, reti, jp_c_imm16, NULL, NULL, NULL, NULL, NULL,
