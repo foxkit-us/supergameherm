@@ -33,7 +33,7 @@ void int_flag_write(emulator_state *state, uint16_t location, uint8_t data)
  * @brief Invalid opcode (multiple values)
  * @result Terminates emulator
  */
-void invalid(emulator_state *state)
+static inline void invalid(emulator_state *state)
 {
 	fatal("Invalid opcode");
 }
@@ -42,7 +42,7 @@ void invalid(emulator_state *state)
  * @brief NOP (0x00)
  * @result Nothing.
  */
-void nop(emulator_state *state)
+static inline void nop(emulator_state *state)
 {
 	state->pc++;
 }
@@ -51,7 +51,7 @@ void nop(emulator_state *state)
  * @brief LD BC,nn (0x01)
  * @result BC = nn
  */
-void ld_bc_imm16(emulator_state *state)
+static inline void ld_bc_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -65,7 +65,7 @@ void ld_bc_imm16(emulator_state *state)
  * @brief LD (BC),A (0x02)
  * @result contents of memory at BC = A
  */
-void ld_bc_a(emulator_state *state)
+static inline void ld_bc_a(emulator_state *state)
 {
 	mem_write8(state, state->bc, *REG_A(state));
 
@@ -76,7 +76,7 @@ void ld_bc_a(emulator_state *state)
  * @brief INC BC (0x03)
  * @result 1 is added to BC (possibly wrapping)
  */
-void inc_bc(emulator_state *state)
+static inline void inc_bc(emulator_state *state)
 {
 	state->bc++;
 	state->pc++;
@@ -108,7 +108,7 @@ static inline void inc_r8(emulator_state *state, uint8_t *reg)
  * @brief INC B (0x04)
  * @result 1 is added to B; Z if B is now zero, H if bit 3 overflow
  */
-void inc_b(emulator_state *state)
+static inline void inc_b(emulator_state *state)
 {
 	inc_r8(state, REG_B(state));
 }
@@ -139,7 +139,7 @@ static inline void dec_r8(emulator_state *state, uint8_t *reg)
  * @brief DEC B (0x05)
  * @result 1 is subtracted from B; Z if B is now zero, H if bit 4 underflow
  */
-void dec_b(emulator_state *state)
+static inline void dec_b(emulator_state *state)
 {
 	dec_r8(state, REG_B(state));
 }
@@ -148,7 +148,7 @@ void dec_b(emulator_state *state)
  * @brief LD B,n (0x06)
  * @result B = n
  */
-void ld_b_imm8(emulator_state *state)
+static inline void ld_b_imm8(emulator_state *state)
 {
 	*REG_B(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -185,7 +185,7 @@ static inline void add_to_hl(emulator_state *state, uint16_t to_add)
  * @brief ADD HL,BC (0x09)
  * @result HL += BC; N flag reset, H if carry from bit 11, C if overflow
  */
-void add_hl_bc(emulator_state *state)
+static inline void add_hl_bc(emulator_state *state)
 {
 	add_to_hl(state, state->bc);
 }
@@ -194,7 +194,7 @@ void add_hl_bc(emulator_state *state)
  * @brief LD A,(BC) (0x0A)
  * @result A = contents of memory at BC
  */
-void ld_a_bc(emulator_state *state)
+static inline void ld_a_bc(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, state->bc);
 	state->pc++;
@@ -204,7 +204,7 @@ void ld_a_bc(emulator_state *state)
  * @brief DEC BC (0x0B)
  * @result 1 is subtracted from BC (possibly wrapping)
  */
-void dec_bc(emulator_state *state)
+static inline void dec_bc(emulator_state *state)
 {
 	state->bc--;
 	state->pc++;
@@ -214,7 +214,7 @@ void dec_bc(emulator_state *state)
  * @brief INC C (0x0C)
  * @result 1 is added to C; Z if C is now zero, H if bit 3 overflow
  */
-void inc_c(emulator_state *state)
+static inline void inc_c(emulator_state *state)
 {
 	inc_r8(state, REG_C(state));
 }
@@ -223,7 +223,7 @@ void inc_c(emulator_state *state)
  * @brief DEC C (0x0D)
  * @result 1 is subtracted from C; Z if C is now zero, H if bit 4 underflow
  */
-void dec_c(emulator_state *state)
+static inline void dec_c(emulator_state *state)
 {
 	dec_r8(state, REG_C(state));
 }
@@ -232,7 +232,7 @@ void dec_c(emulator_state *state)
  * @brief LD C,n (0x0E)
  * @result C = n
  */
-void ld_c_imm8(emulator_state *state)
+static inline void ld_c_imm8(emulator_state *state)
 {
 	*REG_C(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -242,7 +242,7 @@ void ld_c_imm8(emulator_state *state)
  * @brief LD DE,nn (0x11)
  * @result DE = nn
  */
-void ld_de_imm16(emulator_state *state)
+static inline void ld_de_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -256,7 +256,7 @@ void ld_de_imm16(emulator_state *state)
  * @brief LD (DE),A (0x12)
  * @result contents of memory at DE = A
  */
-void ld_de_a(emulator_state *state)
+static inline void ld_de_a(emulator_state *state)
 {
 	mem_write8(state, state->de, *REG_A(state));
 
@@ -267,7 +267,7 @@ void ld_de_a(emulator_state *state)
  * @brief INC DE (0x13)
  * @result 1 is added to DE (possibly wrapping)
  */
-void inc_de(emulator_state *state)
+static inline void inc_de(emulator_state *state)
 {
 	state->de++;
 	state->pc++;
@@ -277,7 +277,7 @@ void inc_de(emulator_state *state)
  * @brief INC D (0x14)
  * @result 1 is added to D; Z if D is now zero, H if bit 3 overflow
  */
-void inc_d(emulator_state *state)
+static inline void inc_d(emulator_state *state)
 {
 	inc_r8(state, REG_D(state));
 }
@@ -286,7 +286,7 @@ void inc_d(emulator_state *state)
  * @brief DEC D (0x15)
  * @result 1 is subtracted from D; Z if D is now zero, H if bit 4 underflow
  */
-void dec_d(emulator_state *state)
+static inline void dec_d(emulator_state *state)
 {
 	dec_r8(state, REG_D(state));
 }
@@ -295,7 +295,7 @@ void dec_d(emulator_state *state)
  * @brief LD D,n (0x16)
  * @result D = n
  */
-void ld_d_imm8(emulator_state *state)
+static inline void ld_d_imm8(emulator_state *state)
 {
 	*REG_D(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -305,7 +305,7 @@ void ld_d_imm8(emulator_state *state)
  * @brief JR n (0x18)
  * @result add n to pc
  */
-void jr_imm8(emulator_state *state)
+static inline void jr_imm8(emulator_state *state)
 {
 	int8_t to_add = mem_read8(state, ++state->pc);
 
@@ -316,7 +316,7 @@ void jr_imm8(emulator_state *state)
  * @brief ADD HL,DE (0x19)
  * @result HL += DE; N flag reset, H if carry from bit 11, C if overflow
  */
-void add_hl_de(emulator_state *state)
+static inline void add_hl_de(emulator_state *state)
 {
 	add_to_hl(state, state->de);
 }
@@ -325,7 +325,7 @@ void add_hl_de(emulator_state *state)
  * @brief LD A,(DE) (0x1A)
  * @result A = contents of memory at (DE)
  */
-void ld_a_de(emulator_state *state)
+static inline void ld_a_de(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, state->de);
 
@@ -336,7 +336,7 @@ void ld_a_de(emulator_state *state)
  * @brief DEC DE (0x1B)
  * @result 1 is subtracted from DE (possibly wrapping)
  */
-void dec_de(emulator_state *state)
+static inline void dec_de(emulator_state *state)
 {
 	state->de--;
 	state->pc++;
@@ -346,7 +346,7 @@ void dec_de(emulator_state *state)
  * @brief INC E (0x1C)
  * @result 1 is added to E; Z if E is now zero, H if bit 3 overflow
  */
-void inc_e(emulator_state *state)
+static inline void inc_e(emulator_state *state)
 {
 	inc_r8(state, REG_E(state));
 }
@@ -355,7 +355,7 @@ void inc_e(emulator_state *state)
  * @brief DEC E (0x1D)
  * @result 1 is subtracted from E; Z if E is now zero, H if bit 4 underflow
  */
-void dec_e(emulator_state *state)
+static inline void dec_e(emulator_state *state)
 {
 	dec_r8(state, REG_E(state));
 }
@@ -364,7 +364,7 @@ void dec_e(emulator_state *state)
  * @brief LD E,n (0x1E)
  * @result E = n
  */
-void ld_e_imm8(emulator_state *state)
+static inline void ld_e_imm8(emulator_state *state)
 {
 	*REG_E(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -374,7 +374,7 @@ void ld_e_imm8(emulator_state *state)
  * @brief JR NZ,n (0x20)
  * @result add n to pc if Z (zero) flag clear
  */
-void jr_nz_imm8(emulator_state *state)
+static inline void jr_nz_imm8(emulator_state *state)
 {
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
@@ -385,7 +385,7 @@ void jr_nz_imm8(emulator_state *state)
  * @brief LD HL,nn (0x21)
  * @result HL = nn
  */
-void ld_hl_imm16(emulator_state *state)
+static inline void ld_hl_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -399,7 +399,7 @@ void ld_hl_imm16(emulator_state *state)
  * @brief LD (HL+),A (0x22)
  * @result contents of memory at HL = A; HL incremented 1
  */
-void ldi_hl_a(emulator_state *state)
+static inline void ldi_hl_a(emulator_state *state)
 {
 	mem_write8(state, state->hl++, *REG_A(state));
 	state->pc++;
@@ -409,7 +409,7 @@ void ldi_hl_a(emulator_state *state)
 * @brief INC HL (0x23)
 * @result 1 is added to HL (possibly wrapping)
 */
-void inc_hl(emulator_state *state)
+static inline void inc_hl(emulator_state *state)
 {
 	state->hl++;
 	state->pc++;
@@ -419,7 +419,7 @@ void inc_hl(emulator_state *state)
  * @brief INC H (0x24)
  * @result 1 is added to H; Z if H is now zero, H if bit 3 overflow
  */
-void inc_h(emulator_state *state)
+static inline void inc_h(emulator_state *state)
 {
 	inc_r8(state, REG_H(state));
 }
@@ -428,7 +428,7 @@ void inc_h(emulator_state *state)
  * @brief DEC H (0x25)
  * @result 1 is subtracted from H; Z if H is now zero, H if bit 4 underflow
  */
-void dec_h(emulator_state *state)
+static inline void dec_h(emulator_state *state)
 {
 	dec_r8(state, REG_H(state));
 }
@@ -437,7 +437,7 @@ void dec_h(emulator_state *state)
  * @brief LD H,n (0x26)
  * @result H = n
  */
-void ld_h_imm8(emulator_state *state)
+static inline void ld_h_imm8(emulator_state *state)
 {
 	*REG_H(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -447,7 +447,7 @@ void ld_h_imm8(emulator_state *state)
  * @brief JR Z,n (0x28)
  * @result add n to pc if Z (zero) flag set
  */
-void jr_z_imm8(emulator_state *state)
+static inline void jr_z_imm8(emulator_state *state)
 {
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
@@ -458,7 +458,7 @@ void jr_z_imm8(emulator_state *state)
  * @brief ADD HL,HL (0x29)
  * @result HL += HL; N flag reset, H if carry from bit 11, C if overflow
  */
-void add_hl_hl(emulator_state *state)
+static inline void add_hl_hl(emulator_state *state)
 {
 	add_to_hl(state, state->hl);
 }
@@ -467,7 +467,7 @@ void add_hl_hl(emulator_state *state)
  * @brief LD A,(HL+) (0x2A)
  * @result A = contents of memory at HL; HL incremented 1
  */
-void ldi_a_hl(emulator_state *state)
+static inline void ldi_a_hl(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, state->hl++);
 	state->pc++;
@@ -477,7 +477,7 @@ void ldi_a_hl(emulator_state *state)
  * @brief DEC HL (0x2B)
  * @result 1 is subtracted from HL (possibly wrapping)
  */
-void dec_hl(emulator_state *state)
+static inline void dec_hl(emulator_state *state)
 {
 	state->hl--;
 	state->pc++;
@@ -487,7 +487,7 @@ void dec_hl(emulator_state *state)
  * @brief INC L (0x2C)
  * @result 1 is added to L; Z if L is now zero, H if bit 3 overflow
  */
-void inc_l(emulator_state *state)
+static inline void inc_l(emulator_state *state)
 {
 	inc_r8(state, REG_L(state));
 }
@@ -496,7 +496,7 @@ void inc_l(emulator_state *state)
  * @brief DEC L (0x2D)
  * @result 1 is subtracted from L; Z if L is now zero, H if bit 4 underflow
  */
-void dec_l(emulator_state *state)
+static inline void dec_l(emulator_state *state)
 {
 	dec_r8(state, REG_L(state));
 }
@@ -505,7 +505,7 @@ void dec_l(emulator_state *state)
  * @brief LD L,n (0x2E)
  * @result L = n
  */
-void ld_l_imm8(emulator_state *state)
+static inline void ld_l_imm8(emulator_state *state)
 {
 	*REG_L(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -515,7 +515,7 @@ void ld_l_imm8(emulator_state *state)
  * @brief JR NC,n (0x30)
  * @result add n to pc if C (carry) flag clear
  */
-void jr_nc_imm8(emulator_state *state)
+static inline void jr_nc_imm8(emulator_state *state)
 {
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
@@ -526,7 +526,7 @@ void jr_nc_imm8(emulator_state *state)
  * @brief LD SP,nn (0x31)
  * @result SP = nn
  */
-void ld_sp_imm16(emulator_state *state)
+static inline void ld_sp_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -540,7 +540,7 @@ void ld_sp_imm16(emulator_state *state)
  * @brief LD (HL-),A (0x32)
  * @result contents of memory at HL = A; HL decremented 1
  */
-void ldd_hl_a(emulator_state *state)
+static inline void ldd_hl_a(emulator_state *state)
 {
 	mem_write8(state, state->hl--, *REG_A(state));
 	state->pc++;
@@ -550,7 +550,7 @@ void ldd_hl_a(emulator_state *state)
  * @brief INC SP (0x33)
  * @result 1 is added to SP (possibly wrapping)
  */
-void inc_sp(emulator_state *state)
+static inline void inc_sp(emulator_state *state)
 {
 	state->sp++;
 	state->pc++;
@@ -560,7 +560,7 @@ void inc_sp(emulator_state *state)
  * @brief LD (HL),n (0x36)
  * @result contents of memory at HL = n
  */
-void ld_hl_imm8(emulator_state *state)
+static inline void ld_hl_imm8(emulator_state *state)
 {
 	uint8_t n = mem_read8(state, ++state->pc);
 	mem_write8(state, state->hl, n);
@@ -571,7 +571,7 @@ void ld_hl_imm8(emulator_state *state)
  * @brief JR C,n (0x38)
  * @result add n to pc if C (carry) flag set
  */
-void jr_c_imm8(emulator_state *state)
+static inline void jr_c_imm8(emulator_state *state)
 {
 	int8_t to_add = mem_read8(state, ++state->pc) + 1;
 
@@ -582,7 +582,7 @@ void jr_c_imm8(emulator_state *state)
  * @brief ADD HL,SP (0x39)
  * @result HL += SP; N flag reset, H if carry from bit 11, C if overflow
  */
-void add_hl_sp(emulator_state *state)
+static inline void add_hl_sp(emulator_state *state)
 {
 	add_to_hl(state, state->sp);
 }
@@ -591,7 +591,7 @@ void add_hl_sp(emulator_state *state)
  * @brief LD A,(HL-) (0x3A)
  * @result A = contents of memory at HL; HL decremented 1
  */
-void ldd_a_hl(emulator_state *state)
+static inline void ldd_a_hl(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, state->hl--);
 	state->pc++;
@@ -601,7 +601,7 @@ void ldd_a_hl(emulator_state *state)
  * @brief DEC SP (0x3B)
  * @result 1 is subtracted from SP (possibly wrapping)
  */
-void dec_sp(emulator_state *state)
+static inline void dec_sp(emulator_state *state)
 {
 	state->sp--;
 	state->pc++;
@@ -611,7 +611,7 @@ void dec_sp(emulator_state *state)
  * @brief INC A (0x3C)
  * @result 1 is added to A; Z if A is now zero, H if bit 3 overflow
  */
-void inc_a(emulator_state *state)
+static inline void inc_a(emulator_state *state)
 {
 	inc_r8(state, REG_A(state));
 }
@@ -620,7 +620,7 @@ void inc_a(emulator_state *state)
  * @brief DEC A (0x3D)
  * @result 1 is subtracted from A; Z if A is now zero, H if bit 4 underflow
  */
-void dec_a(emulator_state *state)
+static inline void dec_a(emulator_state *state)
 {
 	dec_r8(state, REG_A(state));
 }
@@ -629,7 +629,7 @@ void dec_a(emulator_state *state)
  * @brief LD A,n (0x3E)
  * @result A = n
  */
-void ld_a_imm8(emulator_state *state)
+static inline void ld_a_imm8(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, ++state->pc);
 	state->pc++;
@@ -639,7 +639,7 @@ void ld_a_imm8(emulator_state *state)
  * @brief LD B,B (0x40)
  * @result B = B
  */
-void ld_b_b(emulator_state *state)
+static inline void ld_b_b(emulator_state *state)
 {
 	state->pc++;
 }
@@ -648,7 +648,7 @@ void ld_b_b(emulator_state *state)
  * @brief LD B,C (0x41)
  * @result B = C
  */
-void ld_b_c(emulator_state *state)
+static inline void ld_b_c(emulator_state *state)
 {
 	*REG_B(state) = *REG_C(state);
 	state->pc++;
@@ -658,7 +658,7 @@ void ld_b_c(emulator_state *state)
  * @brief LD B,D (0x42)
  * @result B = D
  */
-void ld_b_d(emulator_state *state)
+static inline void ld_b_d(emulator_state *state)
 {
 	*REG_B(state) = *REG_D(state);
 	state->pc++;
@@ -668,7 +668,7 @@ void ld_b_d(emulator_state *state)
  * @brief LD B,E (0x43)
  * @result B = E
  */
-void ld_b_e(emulator_state *state)
+static inline void ld_b_e(emulator_state *state)
 {
 	*REG_B(state) = *REG_E(state);
 	state->pc++;
@@ -678,7 +678,7 @@ void ld_b_e(emulator_state *state)
  * @brief LD B,H (0x44)
  * @result B = H
  */
-void ld_b_h(emulator_state *state)
+static inline void ld_b_h(emulator_state *state)
 {
 	*REG_B(state) = *REG_H(state);
 	state->pc++;
@@ -688,7 +688,7 @@ void ld_b_h(emulator_state *state)
  * @brief LD B,L (0x45)
  * @result B = L
  */
-void ld_b_l(emulator_state *state)
+static inline void ld_b_l(emulator_state *state)
 {
 	*REG_B(state) = *REG_L(state);
 	state->pc++;
@@ -698,7 +698,7 @@ void ld_b_l(emulator_state *state)
  * @brief LD B,(HL) (0x46)
  * @result B = contents of memory at HL
  */
-void ld_b_hl(emulator_state *state)
+static inline void ld_b_hl(emulator_state *state)
 {
 	*REG_B(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -708,7 +708,7 @@ void ld_b_hl(emulator_state *state)
  * @brief LD B,A (0x47)
  * @result B = A
  */
-void ld_b_a(emulator_state *state)
+static inline void ld_b_a(emulator_state *state)
 {
 	*REG_B(state) = *REG_A(state);
 	state->pc++;
@@ -718,7 +718,7 @@ void ld_b_a(emulator_state *state)
  * @brief LD C,B (0x48)
  * @result C = B
  */
-void ld_c_b(emulator_state *state)
+static inline void ld_c_b(emulator_state *state)
 {
 	*REG_C(state) = *REG_B(state);
 	state->pc++;
@@ -728,7 +728,7 @@ void ld_c_b(emulator_state *state)
  * @brief LD C,C (0x49)
  * @result C = C
  */
-void ld_c_c(emulator_state *state)
+static inline void ld_c_c(emulator_state *state)
 {
 	state->pc++;
 }
@@ -737,7 +737,7 @@ void ld_c_c(emulator_state *state)
  * @brief LD C,D (0x4A)
  * @result C = D
  */
-void ld_c_d(emulator_state *state)
+static inline void ld_c_d(emulator_state *state)
 {
 	*REG_C(state) = *REG_D(state);
 	state->pc++;
@@ -747,7 +747,7 @@ void ld_c_d(emulator_state *state)
  * @brief LD C,E (0x4B)
  * @result C = E
  */
-void ld_c_e(emulator_state *state)
+static inline void ld_c_e(emulator_state *state)
 {
 	*REG_C(state) = *REG_E(state);
 	state->pc++;
@@ -757,7 +757,7 @@ void ld_c_e(emulator_state *state)
  * @brief LD C,H (0x4C)
  * @result C = H
  */
-void ld_c_h(emulator_state *state)
+static inline void ld_c_h(emulator_state *state)
 {
 	*REG_C(state) = *REG_H(state);
 	state->pc++;
@@ -767,7 +767,7 @@ void ld_c_h(emulator_state *state)
  * @brief LD C,L (0x4D)
  * @result C = L
  */
-void ld_c_l(emulator_state *state)
+static inline void ld_c_l(emulator_state *state)
 {
 	*REG_C(state) = *REG_L(state);
 	state->pc++;
@@ -777,7 +777,7 @@ void ld_c_l(emulator_state *state)
  * @brief LD C,(HL) (0x4E)
  * @result C = contents of memory at HL
  */
-void ld_c_hl(emulator_state *state)
+static inline void ld_c_hl(emulator_state *state)
 {
 	*REG_C(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -787,7 +787,7 @@ void ld_c_hl(emulator_state *state)
  * @brief LD C,A (0x4F)
  * @result C = A
  */
-void ld_c_a(emulator_state *state)
+static inline void ld_c_a(emulator_state *state)
 {
 	*REG_C(state) = *REG_A(state);
 	state->pc++;
@@ -797,7 +797,7 @@ void ld_c_a(emulator_state *state)
  * @brief LD D,B (0x50)
  * @result D = B
  */
-void ld_d_b(emulator_state *state)
+static inline void ld_d_b(emulator_state *state)
 {
 	*REG_D(state) = *REG_B(state);
 	state->pc++;
@@ -807,7 +807,7 @@ void ld_d_b(emulator_state *state)
  * @brief LD D,C (0x51)
  * @result D = C
  */
-void ld_d_c(emulator_state *state)
+static inline void ld_d_c(emulator_state *state)
 {
 	*REG_D(state) = *REG_C(state);
 	state->pc++;
@@ -817,7 +817,7 @@ void ld_d_c(emulator_state *state)
  * @brief LD D,D (0x52)
  * @result D = D
  */
-void ld_d_d(emulator_state *state)
+static inline void ld_d_d(emulator_state *state)
 {
 	state->pc++;
 }
@@ -826,7 +826,7 @@ void ld_d_d(emulator_state *state)
  * @brief LD D,E (0x53)
  * @result D = E
  */
-void ld_d_e(emulator_state *state)
+static inline void ld_d_e(emulator_state *state)
 {
 	*REG_D(state) = *REG_E(state);
 	state->pc++;
@@ -836,7 +836,7 @@ void ld_d_e(emulator_state *state)
  * @brief LD D,H (0x54)
  * @result D = H
  */
-void ld_d_h(emulator_state *state)
+static inline void ld_d_h(emulator_state *state)
 {
 	*REG_D(state) = *REG_H(state);
 	state->pc++;
@@ -846,7 +846,7 @@ void ld_d_h(emulator_state *state)
  * @brief LD D,L (0x55)
  * @result D = L
  */
-void ld_d_l(emulator_state *state)
+static inline void ld_d_l(emulator_state *state)
 {
 	*REG_D(state) = *REG_L(state);
 	state->pc++;
@@ -856,7 +856,7 @@ void ld_d_l(emulator_state *state)
  * @brief LD D,(HL) (0x56)
  * @result D = contents of memory at HL
  */
-void ld_d_hl(emulator_state *state)
+static inline void ld_d_hl(emulator_state *state)
 {
 	*REG_D(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -866,7 +866,7 @@ void ld_d_hl(emulator_state *state)
  * @brief LD D,A (0x57)
  * @result D = A
  */
-void ld_d_a(emulator_state *state)
+static inline void ld_d_a(emulator_state *state)
 {
 	*REG_D(state) = *REG_A(state);
 	state->pc++;
@@ -876,7 +876,7 @@ void ld_d_a(emulator_state *state)
  * @brief LD E,B (0x58)
  * @result E = B
  */
-void ld_e_b(emulator_state *state)
+static inline void ld_e_b(emulator_state *state)
 {
 	*REG_E(state) = *REG_B(state);
 	state->pc++;
@@ -886,7 +886,7 @@ void ld_e_b(emulator_state *state)
  * @brief LD E,C (0x59)
  * @result E = C
  */
-void ld_e_c(emulator_state *state)
+static inline void ld_e_c(emulator_state *state)
 {
 	*REG_E(state) = *REG_C(state);
 	state->pc++;
@@ -896,7 +896,7 @@ void ld_e_c(emulator_state *state)
  * @brief LD E,D (0x5A)
  * @result E = D
  */
-void ld_e_d(emulator_state *state)
+static inline void ld_e_d(emulator_state *state)
 {
 	*REG_E(state) = *REG_D(state);
 	state->pc++;
@@ -906,7 +906,7 @@ void ld_e_d(emulator_state *state)
  * @brief LD E,E (0x5B)
  * @result E = E
  */
-void ld_e_e(emulator_state *state)
+static inline void ld_e_e(emulator_state *state)
 {
 	state->pc++;
 }
@@ -915,7 +915,7 @@ void ld_e_e(emulator_state *state)
  * @brief LD E,H (0x5C)
  * @result E = H
  */
-void ld_e_h(emulator_state *state)
+static inline void ld_e_h(emulator_state *state)
 {
 	*REG_E(state) = *REG_H(state);
 	state->pc++;
@@ -925,7 +925,7 @@ void ld_e_h(emulator_state *state)
  * @brief LD E,L (0x5D)
  * @result E = L
  */
-void ld_e_l(emulator_state *state)
+static inline void ld_e_l(emulator_state *state)
 {
 	*REG_E(state) = *REG_L(state);
 	state->pc++;
@@ -935,7 +935,7 @@ void ld_e_l(emulator_state *state)
  * @brief LD E,(HL) (0x5E)
  * @result E = contents of memory at HL
  */
-void ld_e_hl(emulator_state *state)
+static inline void ld_e_hl(emulator_state *state)
 {
 	*REG_E(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -945,7 +945,7 @@ void ld_e_hl(emulator_state *state)
  * @brief LD E,A (0x5F)
  * @result E = A
  */
-void ld_e_a(emulator_state *state)
+static inline void ld_e_a(emulator_state *state)
 {
 	*REG_E(state) = *REG_A(state);
 	state->pc++;
@@ -955,7 +955,7 @@ void ld_e_a(emulator_state *state)
  * @brief LD H,B (0x60)
  * @result H = B
  */
-void ld_h_b(emulator_state *state)
+static inline void ld_h_b(emulator_state *state)
 {
 	*REG_H(state) = *REG_B(state);
 	state->pc++;
@@ -965,7 +965,7 @@ void ld_h_b(emulator_state *state)
  * @brief LD H,C (0x61)
  * @result H = C
  */
-void ld_h_c(emulator_state *state)
+static inline void ld_h_c(emulator_state *state)
 {
 	*REG_H(state) = *REG_C(state);
 	state->pc++;
@@ -975,7 +975,7 @@ void ld_h_c(emulator_state *state)
  * @brief LD H,D (0x62)
  * @result H = D
  */
-void ld_h_d(emulator_state *state)
+static inline void ld_h_d(emulator_state *state)
 {
 	*REG_H(state) = *REG_D(state);
 	state->pc++;
@@ -985,7 +985,7 @@ void ld_h_d(emulator_state *state)
  * @brief LD H,E (0x63)
  * @result H = E
  */
-void ld_h_e(emulator_state *state)
+static inline void ld_h_e(emulator_state *state)
 {
 	*REG_H(state) = *REG_E(state);
 	state->pc++;
@@ -995,7 +995,7 @@ void ld_h_e(emulator_state *state)
  * @brief LD H,H (0x64)
  * @result H = H
  */
-void ld_h_h(emulator_state *state)
+static inline void ld_h_h(emulator_state *state)
 {
 	state->pc++;
 }
@@ -1004,7 +1004,7 @@ void ld_h_h(emulator_state *state)
  * @brief LD H,L (0x65)
  * @result H = L
  */
-void ld_h_l(emulator_state *state)
+static inline void ld_h_l(emulator_state *state)
 {
 	*REG_H(state) = *REG_L(state);
 	state->pc++;
@@ -1014,7 +1014,7 @@ void ld_h_l(emulator_state *state)
  * @brief LD H,(HL) (0x66)
  * @result H = contents of memory at HL
  */
-void ld_h_hl(emulator_state *state)
+static inline void ld_h_hl(emulator_state *state)
 {
 	*REG_H(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -1024,7 +1024,7 @@ void ld_h_hl(emulator_state *state)
  * @brief LD H,A (0x67)
  * @result H = A
  */
-void ld_h_a(emulator_state *state)
+static inline void ld_h_a(emulator_state *state)
 {
 	*REG_H(state) = *REG_A(state);
 	state->pc++;
@@ -1034,7 +1034,7 @@ void ld_h_a(emulator_state *state)
  * @brief LD L,B (0x68)
  * @result L = B
  */
-void ld_l_b(emulator_state *state)
+static inline void ld_l_b(emulator_state *state)
 {
 	*REG_L(state) = *REG_B(state);
 	state->pc++;
@@ -1044,7 +1044,7 @@ void ld_l_b(emulator_state *state)
  * @brief LD L,C (0x69)
  * @result L = C
  */
-void ld_l_c(emulator_state *state)
+static inline void ld_l_c(emulator_state *state)
 {
 	*REG_L(state) = *REG_C(state);
 	state->pc++;
@@ -1054,7 +1054,7 @@ void ld_l_c(emulator_state *state)
  * @brief LD L,D (0x6A)
  * @result L = D
  */
-void ld_l_d(emulator_state *state)
+static inline void ld_l_d(emulator_state *state)
 {
 	*REG_L(state) = *REG_D(state);
 	state->pc++;
@@ -1064,7 +1064,7 @@ void ld_l_d(emulator_state *state)
  * @brief LD L,E (0x6B)
  * @result L = E
  */
-void ld_l_e(emulator_state *state)
+static inline void ld_l_e(emulator_state *state)
 {
 	*REG_L(state) = *REG_E(state);
 	state->pc++;
@@ -1074,7 +1074,7 @@ void ld_l_e(emulator_state *state)
  * @brief LD L,H (0x6C)
  * @result L = H
  */
-void ld_l_h(emulator_state *state)
+static inline void ld_l_h(emulator_state *state)
 {
 	*REG_L(state) = *REG_H(state);
 	state->pc++;
@@ -1084,7 +1084,7 @@ void ld_l_h(emulator_state *state)
  * @brief LD L,L (0x6D)
  * @result L = L
  */
-void ld_l_l(emulator_state *state)
+static inline void ld_l_l(emulator_state *state)
 {
 	state->pc++;
 }
@@ -1093,7 +1093,7 @@ void ld_l_l(emulator_state *state)
  * @brief LD L,(HL) (0x6E)
  * @result L = contents of memory at HL
  */
-void ld_l_hl(emulator_state *state)
+static inline void ld_l_hl(emulator_state *state)
 {
 	*REG_L(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -1103,7 +1103,7 @@ void ld_l_hl(emulator_state *state)
  * @brief LD L,A (0x6F)
  * @result L = A
  */
-void ld_l_a(emulator_state *state)
+static inline void ld_l_a(emulator_state *state)
 {
 	*REG_L(state) = *REG_A(state);
 	state->pc++;
@@ -1123,7 +1123,7 @@ static inline void and_common(emulator_state *state, uint8_t to_and)
  * @brief LD (HL),B (0x70)
  * @result contents of memory at HL = B
  */
-void ld_hl_b(emulator_state *state)
+static inline void ld_hl_b(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_B(state));
 	state->pc++;
@@ -1133,7 +1133,7 @@ void ld_hl_b(emulator_state *state)
  * @brief LD (HL),C (0x71)
  * @result contents of memory at HL = C
  */
-void ld_hl_c(emulator_state *state)
+static inline void ld_hl_c(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_C(state));
 	state->pc++;
@@ -1143,7 +1143,7 @@ void ld_hl_c(emulator_state *state)
  * @brief LD (HL),D (0x72)
  * @result contents of memory at HL = D
  */
-void ld_hl_d(emulator_state *state)
+static inline void ld_hl_d(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_D(state));
 	state->pc++;
@@ -1153,7 +1153,7 @@ void ld_hl_d(emulator_state *state)
  * @brief LD (HL),E (0x73)
  * @result contents of memory at HL = E
  */
-void ld_hl_e(emulator_state *state)
+static inline void ld_hl_e(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_E(state));
 	state->pc++;
@@ -1163,7 +1163,7 @@ void ld_hl_e(emulator_state *state)
  * @brief LD (HL),H (0x74)
  * @result contents of memory at HL = H
  */
-void ld_hl_h(emulator_state *state)
+static inline void ld_hl_h(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_H(state));
 	state->pc++;
@@ -1173,7 +1173,7 @@ void ld_hl_h(emulator_state *state)
  * @brief LD (HL),L (0x75)
  * @result contents of memory at HL = L
  */
-void ld_hl_l(emulator_state *state)
+static inline void ld_hl_l(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_L(state));
 	state->pc++;
@@ -1183,7 +1183,7 @@ void ld_hl_l(emulator_state *state)
  * @brief LD (HL),A (0x77)
  * @result contents of memory at HL = A
  */
-void ld_hl_a(emulator_state *state)
+static inline void ld_hl_a(emulator_state *state)
 {
 	mem_write8(state, state->hl, *REG_A(state));
 	state->pc++;
@@ -1193,7 +1193,7 @@ void ld_hl_a(emulator_state *state)
  * @brief LD A,B (0x78)
  * @result A = B
  */
-void ld_a_b(emulator_state *state)
+static inline void ld_a_b(emulator_state *state)
 {
 	*REG_A(state) = *REG_B(state);
 	state->pc++;
@@ -1203,7 +1203,7 @@ void ld_a_b(emulator_state *state)
  * @brief LD A,C (0x79)
  * @result A = C
  */
-void ld_a_c(emulator_state *state)
+static inline void ld_a_c(emulator_state *state)
 {
 	*REG_A(state) = *REG_C(state);
 	state->pc++;
@@ -1213,7 +1213,7 @@ void ld_a_c(emulator_state *state)
  * @brief LD A,D (0x7A)
  * @result A = D
  */
-void ld_a_d(emulator_state *state)
+static inline void ld_a_d(emulator_state *state)
 {
 	*REG_A(state) = *REG_D(state);
 	state->pc++;
@@ -1223,7 +1223,7 @@ void ld_a_d(emulator_state *state)
  * @brief LD A,E (0x7B)
  * @result A = E
  */
-void ld_a_e(emulator_state *state)
+static inline void ld_a_e(emulator_state *state)
 {
 	*REG_A(state) = *REG_E(state);
 	state->pc++;
@@ -1233,7 +1233,7 @@ void ld_a_e(emulator_state *state)
  * @brief LD A,H (0x7C)
  * @result A = H
  */
-void ld_a_h(emulator_state *state)
+static inline void ld_a_h(emulator_state *state)
 {
 	*REG_A(state) = *REG_H(state);
 	state->pc++;
@@ -1243,7 +1243,7 @@ void ld_a_h(emulator_state *state)
  * @brief LD A,L (0x7D)
  * @result A = L
  */
-void ld_a_l(emulator_state *state)
+static inline void ld_a_l(emulator_state *state)
 {
 	*REG_A(state) = *REG_L(state);
 	state->pc++;
@@ -1253,7 +1253,7 @@ void ld_a_l(emulator_state *state)
  * @brief LD A,(HL) (0x7E)
  * @result A = contents of memory at HL
  */
-void ld_a_hl(emulator_state *state)
+static inline void ld_a_hl(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, state->hl);
 	state->pc++;
@@ -1263,7 +1263,7 @@ void ld_a_hl(emulator_state *state)
  * @brief LD A,A (0x7F)
  * @result A = A
  */
-void ld_a_a(emulator_state *state)
+static inline void ld_a_a(emulator_state *state)
 {
 	state->pc++;
 }
@@ -1307,7 +1307,7 @@ static inline void add_common(emulator_state *state, uint8_t to_add)
  * @brief ADD B (0x80)
  * @result A += B
  */
-void add_b(emulator_state *state)
+static inline void add_b(emulator_state *state)
 {
 	add_common(state, *REG_B(state));
 }
@@ -1316,7 +1316,7 @@ void add_b(emulator_state *state)
  * @brief ADD C (0x81)
  * @result A += C
  */
-void add_c(emulator_state *state)
+static inline void add_c(emulator_state *state)
 {
 	add_common(state, *REG_C(state));
 }
@@ -1325,7 +1325,7 @@ void add_c(emulator_state *state)
  * @brief ADD D (0x82)
  * @result A += D
  */
-void add_d(emulator_state *state)
+static inline void add_d(emulator_state *state)
 {
 	add_common(state, *REG_D(state));
 }
@@ -1334,7 +1334,7 @@ void add_d(emulator_state *state)
  * @brief ADD E (0x83)
  * @result A += E
  */
-void add_e(emulator_state *state)
+static inline void add_e(emulator_state *state)
 {
 	add_common(state, *REG_E(state));
 }
@@ -1343,7 +1343,7 @@ void add_e(emulator_state *state)
  * @brief ADD H (0x84)
  * @result A += H
  */
-void add_h(emulator_state *state)
+static inline void add_h(emulator_state *state)
 {
 	add_common(state, *REG_H(state));
 }
@@ -1352,7 +1352,7 @@ void add_h(emulator_state *state)
  * @brief ADD L (0x85)
  * @result A += L
  */
-void add_l(emulator_state *state)
+static inline void add_l(emulator_state *state)
 {
 	add_common(state, *REG_L(state));
 }
@@ -1361,7 +1361,7 @@ void add_l(emulator_state *state)
  * @brief ADD (HL) (0x86)
  * @result A += contents of memory at HL
  */
-void add_hl(emulator_state *state)
+static inline void add_hl(emulator_state *state)
 {
 	add_common(state, mem_read8(state, state->hl));
 }
@@ -1370,7 +1370,7 @@ void add_hl(emulator_state *state)
  * @brief ADD A (0x87)
  * @result A += A
  */
-void add_a(emulator_state *state)
+static inline void add_a(emulator_state *state)
 {
 	add_common(state, *REG_A(state));
 }
@@ -1389,7 +1389,7 @@ static inline void adc_common(emulator_state *state, uint8_t to_add)
  * @brief ADC B (0x88)
  * @result A += B (+1 if C flag set)
  */
-void adc_b(emulator_state *state)
+static inline void adc_b(emulator_state *state)
 {
 	adc_common(state, *REG_B(state));
 }
@@ -1398,7 +1398,7 @@ void adc_b(emulator_state *state)
  * @brief ADC C (0x89)
  * @result A += C (+1 if C flag set)
  */
-void adc_c(emulator_state *state)
+static inline void adc_c(emulator_state *state)
 {
 	adc_common(state, *REG_C(state));
 }
@@ -1407,7 +1407,7 @@ void adc_c(emulator_state *state)
  * @brief ADC D (0x8A)
  * @result A += D (+1 if C flag set)
  */
-void adc_d(emulator_state *state)
+static inline void adc_d(emulator_state *state)
 {
 	adc_common(state, *REG_D(state));
 }
@@ -1416,7 +1416,7 @@ void adc_d(emulator_state *state)
  * @brief ADC E (0x8B)
  * @result A += E (+1 if C flag set)
  */
-void adc_e(emulator_state *state)
+static inline void adc_e(emulator_state *state)
 {
 	adc_common(state, *REG_E(state));
 }
@@ -1425,7 +1425,7 @@ void adc_e(emulator_state *state)
  * @brief ADC H (0x8C)
  * @result A += H (+1 if C flag set)
  */
-void adc_h(emulator_state *state)
+static inline void adc_h(emulator_state *state)
 {
 	adc_common(state, *REG_H(state));
 }
@@ -1434,7 +1434,7 @@ void adc_h(emulator_state *state)
  * @brief ADC L (0x8D)
  * @result A += L (+1 if C flag set)
  */
-void adc_l(emulator_state *state)
+static inline void adc_l(emulator_state *state)
 {
 	adc_common(state, *REG_L(state));
 }
@@ -1443,7 +1443,7 @@ void adc_l(emulator_state *state)
  * @brief ADC (HL) (0x8E)
  * @result A += contents of memory at HL (+1 if C flag set)
  */
-void adc_hl(emulator_state *state)
+static inline void adc_hl(emulator_state *state)
 {
 	adc_common(state, mem_read8(state, state->hl));
 }
@@ -1452,7 +1452,7 @@ void adc_hl(emulator_state *state)
  * @brief ADC A (0x8F)
  * @result A += A (+1 if C flag set)
  */
-void adc_a(emulator_state *state)
+static inline void adc_a(emulator_state *state)
 {
 	adc_common(state, *REG_A(state));
 }
@@ -1484,7 +1484,7 @@ static inline void sub_common(emulator_state *state, uint8_t to_sub)
  * @brief SUB B (0x90)
  * @result A -= B; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_b(emulator_state *state)
+static inline void sub_b(emulator_state *state)
 {
 	sub_common(state, *REG_B(state));
 }
@@ -1493,7 +1493,7 @@ void sub_b(emulator_state *state)
  * @brief SUB C (0x91)
  * @result A -= C; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_c(emulator_state *state)
+static inline void sub_c(emulator_state *state)
 {
 	sub_common(state, *REG_C(state));
 }
@@ -1502,7 +1502,7 @@ void sub_c(emulator_state *state)
  * @brief SUB D (0x92)
  * @result A -= D; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_d(emulator_state *state)
+static inline void sub_d(emulator_state *state)
 {
 	sub_common(state, *REG_D(state));
 }
@@ -1511,7 +1511,7 @@ void sub_d(emulator_state *state)
  * @brief SUB E (0x93)
  * @result A -= E; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_e(emulator_state *state)
+static inline void sub_e(emulator_state *state)
 {
 	sub_common(state, *REG_E(state));
 }
@@ -1520,7 +1520,7 @@ void sub_e(emulator_state *state)
  * @brief SUB H (0x94)
  * @result A -= H; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_h(emulator_state *state)
+static inline void sub_h(emulator_state *state)
 {
 	sub_common(state, *REG_H(state));
 }
@@ -1529,7 +1529,7 @@ void sub_h(emulator_state *state)
  * @brief SUB L (0x95)
  * @result A -= L; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_l(emulator_state *state)
+static inline void sub_l(emulator_state *state)
 {
 	sub_common(state, *REG_L(state));
 }
@@ -1538,7 +1538,7 @@ void sub_l(emulator_state *state)
  * @brief SUB (HL) (0x96)
  * @result A -= contents of memory at HL
  */
-void sub_hl(emulator_state *state)
+static inline void sub_hl(emulator_state *state)
 {
 	sub_common(state, mem_read8(state, state->hl));
 }
@@ -1547,7 +1547,7 @@ void sub_hl(emulator_state *state)
  * @brief SUB A (0x97)
  * @result A = 0; Z set, H if no borrow from bit 4, C if no borrow
  */
-void sub_a(emulator_state *state)
+static inline void sub_a(emulator_state *state)
 {
 	sub_common(state, *REG_A(state));
 }
@@ -1567,7 +1567,7 @@ static inline void sbc_common(emulator_state *state, uint8_t to_sub)
  * @brief SBC B (0x98)
  * @result A -= B (+1 if C flag set)
  */
-void sbc_b(emulator_state *state)
+static inline void sbc_b(emulator_state *state)
 {
 	sbc_common(state, *REG_B(state));
 }
@@ -1576,7 +1576,7 @@ void sbc_b(emulator_state *state)
  * @brief SBC C (0x99)
  * @result A -= C (+1 if C flag set)
  */
-void sbc_c(emulator_state *state)
+static inline void sbc_c(emulator_state *state)
 {
 	sbc_common(state, *REG_C(state));
 }
@@ -1585,7 +1585,7 @@ void sbc_c(emulator_state *state)
  * @brief SBC D (0x9A)
  * @result A -= D (+1 if C flag set)
  */
-void sbc_d(emulator_state *state)
+static inline void sbc_d(emulator_state *state)
 {
 	sbc_common(state, *REG_D(state));
 }
@@ -1594,7 +1594,7 @@ void sbc_d(emulator_state *state)
  * @brief SBC E (0x9B)
  * @result A -= E (+1 if C flag set)
  */
-void sbc_e(emulator_state *state)
+static inline void sbc_e(emulator_state *state)
 {
 	sbc_common(state, *REG_E(state));
 }
@@ -1603,7 +1603,7 @@ void sbc_e(emulator_state *state)
  * @brief SBC H (0x9C)
  * @result A -= H (+1 if C flag set)
  */
-void sbc_h(emulator_state *state)
+static inline void sbc_h(emulator_state *state)
 {
 	sbc_common(state, *REG_H(state));
 }
@@ -1612,7 +1612,7 @@ void sbc_h(emulator_state *state)
  * @brief SBC L (0x9D)
  * @result A -= L (+1 if C flag set)
  */
-void sbc_l(emulator_state *state)
+static inline void sbc_l(emulator_state *state)
 {
 	sbc_common(state, *REG_L(state));
 }
@@ -1621,7 +1621,7 @@ void sbc_l(emulator_state *state)
  * @brief SBC (HL) (0x9E)
  * @result A -= contents of memory at HL (+1 if C flag set)
  */
-void sbc_hl(emulator_state *state)
+static inline void sbc_hl(emulator_state *state)
 {
 	sbc_common(state, mem_read8(state, state->hl));
 }
@@ -1630,7 +1630,7 @@ void sbc_hl(emulator_state *state)
  * @brief SBC A (0x9F)
  * @result A -= A (+1 if C flag set)
  */
-void sbc_a(emulator_state *state)
+static inline void sbc_a(emulator_state *state)
 {
 	sbc_common(state, *REG_A(state));
 }
@@ -1639,7 +1639,7 @@ void sbc_a(emulator_state *state)
  * @brief AND B (0xA0)
  * @result A &= B; Z flag set if A is now zero
  */
-void and_b(emulator_state *state)
+static inline void and_b(emulator_state *state)
 {
 	and_common(state, *REG_B(state));
 }
@@ -1648,7 +1648,7 @@ void and_b(emulator_state *state)
  * @brief AND C (0xA1)
  * @result A &= C; Z flag set if A is now zero
  */
-void and_c(emulator_state *state)
+static inline void and_c(emulator_state *state)
 {
 	and_common(state, *REG_C(state));
 }
@@ -1657,7 +1657,7 @@ void and_c(emulator_state *state)
  * @brief AND D (0xA2)
  * @result A &= D; Z flag set if A is now zero
  */
-void and_d(emulator_state *state)
+static inline void and_d(emulator_state *state)
 {
 	and_common(state, *REG_D(state));
 }
@@ -1666,7 +1666,7 @@ void and_d(emulator_state *state)
  * @brief AND E (0xA3)
  * @result A &= E; Z flag set if A is now zero
  */
-void and_e(emulator_state *state)
+static inline void and_e(emulator_state *state)
 {
 	and_common(state, *REG_E(state));
 }
@@ -1675,7 +1675,7 @@ void and_e(emulator_state *state)
  * @brief AND H (0xA4)
  * @result A &= H; Z flag set if A is now zero
  */
-void and_h(emulator_state *state)
+static inline void and_h(emulator_state *state)
 {
 	and_common(state, *REG_H(state));
 }
@@ -1684,7 +1684,7 @@ void and_h(emulator_state *state)
  * @brief AND L (0xA5)
  * @result A &= L; Z flag set if A is now zero
  */
-void and_l(emulator_state *state)
+static inline void and_l(emulator_state *state)
 {
 	and_common(state, *REG_L(state));
 }
@@ -1693,7 +1693,7 @@ void and_l(emulator_state *state)
  * @brief AND (HL) (0xA6)
  * @result A &= contents of memory at AL; Z flag set if A is now zero
  */
-void and_hl(emulator_state *state)
+static inline void and_hl(emulator_state *state)
 {
 	and_common(state, mem_read8(state, state->hl));
 }
@@ -1702,7 +1702,7 @@ void and_hl(emulator_state *state)
  * @brief AND A (0xA7)
  * @result Z flag set if A is now zero
  */
-void and_a(emulator_state *state)
+static inline void and_a(emulator_state *state)
 {
 	state->flag_reg = FLAG_H;
 	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
@@ -1724,7 +1724,7 @@ static inline void xor_common(emulator_state *state, char to_xor)
  * @brief XOR B (0xA8)
  * @result A ^= B; Z flag set if A is now zero
  */
-void xor_b(emulator_state *state)
+static inline void xor_b(emulator_state *state)
 {
 	xor_common(state, *REG_B(state));
 }
@@ -1733,7 +1733,7 @@ void xor_b(emulator_state *state)
  * @brief XOR C (0xA9)
  * @result A ^= C; Z flag set if A is now zero
  */
-void xor_c(emulator_state *state)
+static inline void xor_c(emulator_state *state)
 {
 	xor_common(state, *REG_C(state));
 }
@@ -1742,7 +1742,7 @@ void xor_c(emulator_state *state)
  * @brief XOR D (0xAA)
  * @result A ^= D; Z flag set if A is now zero
  */
-void xor_d(emulator_state *state)
+static inline void xor_d(emulator_state *state)
 {
 	xor_common(state, *REG_D(state));
 }
@@ -1751,7 +1751,7 @@ void xor_d(emulator_state *state)
  * @brief XOR E (0xAB)
  * @result A ^= E; Z flag set if A is now zero
  */
-void xor_e(emulator_state *state)
+static inline void xor_e(emulator_state *state)
 {
 	xor_common(state, *REG_E(state));
 }
@@ -1760,7 +1760,7 @@ void xor_e(emulator_state *state)
  * @brief XOR H (0xAC)
  * @result A ^= H; Z flag set if A is now zero
  */
-void xor_h(emulator_state *state)
+static inline void xor_h(emulator_state *state)
 {
 	xor_common(state, *REG_H(state));
 }
@@ -1769,7 +1769,7 @@ void xor_h(emulator_state *state)
  * @brief XOR L (0xAD)
  * @result A ^= L; Z flag set if A is now zero
  */
-void xor_l(emulator_state *state)
+static inline void xor_l(emulator_state *state)
 {
 	xor_common(state, *REG_L(state));
 }
@@ -1778,7 +1778,7 @@ void xor_l(emulator_state *state)
  * @brief XOR (HL) (0xAE)
  * @result A ^= contents of memory at HL; Z flag set if A is now zero
  */
-void xor_hl(emulator_state *state)
+static inline void xor_hl(emulator_state *state)
 {
 	xor_common(state, mem_read8(state, state->hl));
 }
@@ -1787,7 +1787,7 @@ void xor_hl(emulator_state *state)
  * @brief XOR A (0xAF)
  * @result A = 0; Z flag set
  */
-void xor_a(emulator_state *state)
+static inline void xor_a(emulator_state *state)
 {
 	*REG_A(state) = 0;
 	state->flag_reg = FLAG_Z;
@@ -1807,7 +1807,7 @@ static inline void or_common(emulator_state *state, uint8_t to_or)
  * @brief OR B (0xB0)
  * @result A |= B; Z flag set if A is zero
  */
-void or_b(emulator_state *state)
+static inline void or_b(emulator_state *state)
 {
 	or_common(state, *REG_B(state));
 }
@@ -1816,7 +1816,7 @@ void or_b(emulator_state *state)
  * @brief OR C (0xB1)
  * @result A |= C; Z flag set if A is zero
  */
-void or_c(emulator_state *state)
+static inline void or_c(emulator_state *state)
 {
 	or_common(state, *REG_C(state));
 }
@@ -1825,7 +1825,7 @@ void or_c(emulator_state *state)
  * @brief OR D (0xB2)
  * @result A |= D; Z flag set if A is zero
  */
-void or_d(emulator_state *state)
+static inline void or_d(emulator_state *state)
 {
 	or_common(state, *REG_D(state));
 }
@@ -1834,7 +1834,7 @@ void or_d(emulator_state *state)
  * @brief OR E (0xB3)
  * @result A |= E; Z flag set if A is zero
  */
-void or_e(emulator_state *state)
+static inline void or_e(emulator_state *state)
 {
 	or_common(state, *REG_E(state));
 }
@@ -1843,7 +1843,7 @@ void or_e(emulator_state *state)
  * @brief OR H (0xB4)
  * @result A |= H; Z flag set if A is zero
  */
-void or_h(emulator_state *state)
+static inline void or_h(emulator_state *state)
 {
 	or_common(state, *REG_H(state));
 }
@@ -1852,7 +1852,7 @@ void or_h(emulator_state *state)
  * @brief OR L (0xB5)
  * @result A |= L; Z flag set if A is zero
  */
-void or_l(emulator_state *state)
+static inline void or_l(emulator_state *state)
 {
 	or_common(state, *REG_L(state));
 }
@@ -1861,7 +1861,7 @@ void or_l(emulator_state *state)
  * @brief OR (HL) (0xB6)
  * @result A |= contents of memory at HL; Z flag set if A is zero
  */
-void or_hl(emulator_state *state)
+static inline void or_hl(emulator_state *state)
 {
 	or_common(state, mem_read8(state, state->hl));
 }
@@ -1870,12 +1870,12 @@ void or_hl(emulator_state *state)
  * @brief OR A (0xB7)
  * @result A |= A; Z flag set if A is zero
  */
-void or_a(emulator_state *state)
+static inline void or_a(emulator_state *state)
 {
 	or_common(state, *REG_A(state));
 }
 
-void cp_common(emulator_state *state, uint8_t cmp)
+static inline void cp_common(emulator_state *state, uint8_t cmp)
 {
 	/*debug("flags = %s%s%s%s; cmp = %d; A = %d",
 	 ( stat*e->flag_reg & FLAG_Z) ? "Z":"z",
@@ -1907,7 +1907,7 @@ void cp_common(emulator_state *state, uint8_t cmp)
  * @brief CP B (0xB8)
  * @result flags set based on how equivalent B is to A
  */
-void cp_b(emulator_state *state)
+static inline void cp_b(emulator_state *state)
 {
 	cp_common(state, *REG_B(state));
 }
@@ -1916,7 +1916,7 @@ void cp_b(emulator_state *state)
  * @brief CP C (0xB9)
  * @result flags set based on how equivalent C is to A
  */
-void cp_c(emulator_state *state)
+static inline void cp_c(emulator_state *state)
 {
 	cp_common(state, *REG_C(state));
 }
@@ -1925,7 +1925,7 @@ void cp_c(emulator_state *state)
  * @brief CP D (0xBA)
  * @result flags set based on how equivalent D is to A
  */
-void cp_d(emulator_state *state)
+static inline void cp_d(emulator_state *state)
 {
 	cp_common(state, *REG_D(state));
 }
@@ -1934,7 +1934,7 @@ void cp_d(emulator_state *state)
  * @brief CP E (0xBB)
  * @result flags set based on how equivalent E is to A
  */
-void cp_e(emulator_state *state)
+static inline void cp_e(emulator_state *state)
 {
 	cp_common(state, *REG_E(state));
 }
@@ -1943,7 +1943,7 @@ void cp_e(emulator_state *state)
  * @brief CP H (0xBC)
  * @result flags set based on how equivalent H is to A
  */
-void cp_h(emulator_state *state)
+static inline void cp_h(emulator_state *state)
 {
 	cp_common(state, *REG_H(state));
 }
@@ -1952,7 +1952,7 @@ void cp_h(emulator_state *state)
  * @brief CP L (0xBD)
  * @result flags set based on how equivalent L is to A
  */
-void cp_l(emulator_state *state)
+static inline void cp_l(emulator_state *state)
 {
 	cp_common(state, *REG_L(state));
 }
@@ -1961,7 +1961,7 @@ void cp_l(emulator_state *state)
  * @brief CP (HL) (0xBE)
  * @result flags set based on how equivalent contents of memory at HL are to A
  */
-void cp_hl(emulator_state *state)
+static inline void cp_hl(emulator_state *state)
 {
 	cp_common(state, mem_read8(state, state->hl));
 }
@@ -1970,7 +1970,7 @@ void cp_hl(emulator_state *state)
  * @brief CP A (0xBF)
  * @result flags set based on how equivalent A is to A... wait.. really?
  */
-void cp_a(emulator_state *state)
+static inline void cp_a(emulator_state *state)
 {
 	cp_common(state, *REG_A(state));
 }
@@ -1979,7 +1979,7 @@ void cp_a(emulator_state *state)
  * @brief POP BC (0xC1)
  * @result BC = memory at SP; SP incremented 2
  */
-void pop_bc(emulator_state *state)
+static inline void pop_bc(emulator_state *state)
 {
 	state->bc = mem_read16(state, state->sp);
 	state->sp += 2;
@@ -1990,7 +1990,7 @@ void pop_bc(emulator_state *state)
  * @brief JP NZ,nn (0xC2)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if Z flag is not set
  */
-void jp_nz_imm16(emulator_state *state)
+static inline void jp_nz_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2002,7 +2002,7 @@ void jp_nz_imm16(emulator_state *state)
  * @brief JP nn (0xC3)
  * @result pc is set to 16-bit immediate value (LSB, MSB)
  */
-void jp_imm16(emulator_state *state)
+static inline void jp_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2014,7 +2014,7 @@ void jp_imm16(emulator_state *state)
  * @brief PUSH BC (0xC5)
  * @result contents of memory at SP = BC; SP decremented 2
  */
-void push_bc(emulator_state *state)
+static inline void push_bc(emulator_state *state)
 {
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->bc);
@@ -2025,7 +2025,7 @@ void push_bc(emulator_state *state)
  * @brief ADD n (0xC6)
  * @result A += immediate (n)
  */
-void add_imm8(emulator_state *state)
+static inline void add_imm8(emulator_state *state)
 {
 	add_common(state, mem_read8(state, ++state->pc));
 }
@@ -2034,7 +2034,7 @@ void add_imm8(emulator_state *state)
  * @brief RET (0xC9) - return from CALL
  * @result pop two bytes from the stack and jump to that location
  */
-void ret(emulator_state *state)
+static inline void ret(emulator_state *state)
 {
 	state->pc = mem_read16(state, state->sp);
 	state->sp += 2;
@@ -2044,7 +2044,7 @@ void ret(emulator_state *state)
  * @brief RETNZ (0xC0) - return from CALL if Z flag not set
  * @result RET, if Z flag not set, otherwise nothing.
  */
-void retnz(emulator_state *state)
+static inline void retnz(emulator_state *state)
 {
 	if(!(state->flag_reg & FLAG_Z))
 	{
@@ -2060,7 +2060,7 @@ void retnz(emulator_state *state)
  * @brief RETZ (0xC8) - return from CALL if Z flag set
  * @result RET, if Z flag is set, otherwise nothing.
  */
-void retz(emulator_state *state)
+static inline void retz(emulator_state *state)
 {
 	if(state->flag_reg & FLAG_Z)
 	{
@@ -2076,7 +2076,7 @@ void retz(emulator_state *state)
  * @brief JP Z,nn (0xCA)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if Z flag is set
  */
-void jp_z_imm16(emulator_state *state)
+static inline void jp_z_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2088,7 +2088,7 @@ void jp_z_imm16(emulator_state *state)
  * @brief CB ..
  * @note this is just a dispatch function for SWAP/BIT/etc
  */
-void cb_dispatch(emulator_state *state)
+static inline void cb_dispatch(emulator_state *state)
 {
 	uint8_t opcode = mem_read8(state, ++state->pc);
 	uint8_t *write_to;
@@ -2319,7 +2319,7 @@ void cb_dispatch(emulator_state *state)
  * @brief CALL nn (0xCD)
  * @result next pc stored in stack; jump to nn
  */
-void call_imm16(emulator_state *state)
+static inline void call_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2334,7 +2334,7 @@ void call_imm16(emulator_state *state)
  * @brief RETNC (0xD0) - return from CALL if C flag not set
  * @result RET, if C flag not set, otherwise nothing.
  */
-void retnc(emulator_state *state)
+static inline void retnc(emulator_state *state)
 {
 	if(!(state->flag_reg & FLAG_C))
 	{
@@ -2350,7 +2350,7 @@ void retnc(emulator_state *state)
  * @brief POP DE (0xD1)
  * @result DE = memory at SP; SP incremented 2
  */
-void pop_de(emulator_state *state)
+static inline void pop_de(emulator_state *state)
 {
 	state->de = mem_read16(state, state->sp);
 	state->sp += 2;
@@ -2361,7 +2361,7 @@ void pop_de(emulator_state *state)
  * @brief JP NC,nn (0xD2)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if C flag is not set
  */
-void jp_nc_imm16(emulator_state *state)
+static inline void jp_nc_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2373,7 +2373,7 @@ void jp_nc_imm16(emulator_state *state)
  * @brief PUSH DE (0xD5)
  * @result contents of memory at SP = DE; SP decremented 2
  */
-void push_de(emulator_state *state)
+static inline void push_de(emulator_state *state)
 {
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->de);
@@ -2384,7 +2384,7 @@ void push_de(emulator_state *state)
  * @brief SUB n (0xD6)
  * @result A -= n; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-void sub_imm8(emulator_state *state)
+static inline void sub_imm8(emulator_state *state)
 {
 	sub_common(state, mem_read8(state, ++state->pc));
 }
@@ -2393,7 +2393,7 @@ void sub_imm8(emulator_state *state)
  * @brief RETC (0xD8) - return from CALL if C flag set
  * @result RET, if C flag is set, otherwise nothing.
  */
-void retc(emulator_state *state)
+static inline void retc(emulator_state *state)
 {
 	if(state->flag_reg & FLAG_C)
 	{
@@ -2409,7 +2409,7 @@ void retc(emulator_state *state)
  * @brief RETI (0xD9) - return from CALL and enable interrupts
  * @result RET + EI
  */
-void reti(emulator_state *state)
+static inline void reti(emulator_state *state)
 {
 	state->enable_int_on_next = true;
 	ret(state);
@@ -2419,7 +2419,7 @@ void reti(emulator_state *state)
  * @brief JP C,nn (0xDA)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if C flag is set
  */
-void jp_c_imm16(emulator_state *state)
+static inline void jp_c_imm16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2431,7 +2431,7 @@ void jp_c_imm16(emulator_state *state)
  * @brief LDH n,A (0xE0) - write A to 0xff00+n
  * @result the I/O register n will contain the value of A
  */
-void ldh_imm8_a(emulator_state *state)
+static inline void ldh_imm8_a(emulator_state *state)
 {
 	uint16_t write = mem_read8(state, ++state->pc);
 	write += 0xFF00;
@@ -2445,7 +2445,7 @@ void ldh_imm8_a(emulator_state *state)
  * @brief POP HL (0xE1)
  * @result HL = memory at SP; SP incremented 2
  */
-void pop_hl(emulator_state *state)
+static inline void pop_hl(emulator_state *state)
 {
 	state->hl = mem_read16(state, state->sp);
 	state->sp += 2;
@@ -2456,7 +2456,7 @@ void pop_hl(emulator_state *state)
  * @brief LD (C),A (0xE2)
  * @result contents of memory at 0xFF00 + C = A
  */
-void ld_ff00_c_a(emulator_state *state)
+static inline void ld_ff00_c_a(emulator_state *state)
 {
 	mem_write8(state, 0xFF00 + *REG_C(state), *REG_A(state));
 	state->pc++;
@@ -2466,7 +2466,7 @@ void ld_ff00_c_a(emulator_state *state)
  * @brief PUSH HL (0xE5)
  * @result contents of memory at SP = HL; SP decremented 2
  */
-void push_hl(emulator_state *state)
+static inline void push_hl(emulator_state *state)
 {
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->hl);
@@ -2477,7 +2477,7 @@ void push_hl(emulator_state *state)
  * @brief AND nn (0xE6)
  * @result A &= nn
  */
-void and_imm8(emulator_state *state)
+static inline void and_imm8(emulator_state *state)
 {
 	uint8_t nn = mem_read8(state, ++state->pc);
 	and_common(state, nn);
@@ -2487,7 +2487,7 @@ void and_imm8(emulator_state *state)
  * @brief JP HL (0xE9)
  * @result pc = HL
  */
-void jp_hl(emulator_state *state)
+static inline void jp_hl(emulator_state *state)
 {
 	state->pc = state->hl;
 }
@@ -2496,7 +2496,7 @@ void jp_hl(emulator_state *state)
  * @brief LD (nn),A (0xEA) - write A to *nn
  * @result the memory at address nn will contain the value of A
  */
-void ld_d16_a(emulator_state *state)
+static inline void ld_d16_a(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2512,7 +2512,7 @@ void ld_d16_a(emulator_state *state)
  * @brief LDH A,nn (0xF0) - read 0xff00+n to A
  * @result A will contain the value of the I/O register n
  */
-void ldh_a_imm8(emulator_state *state)
+static inline void ldh_a_imm8(emulator_state *state)
 {
 	uint8_t loc = mem_read8(state, ++state->pc);
 	*REG_A(state) = mem_read8(state, 0xFF00 + loc);
@@ -2524,7 +2524,7 @@ void ldh_a_imm8(emulator_state *state)
  * @brief POP AF (0xF1)
  * @result AF = memory at SP; SP incremented 2
  */
-void pop_af(emulator_state *state)
+static inline void pop_af(emulator_state *state)
 {
 	state->af = mem_read16(state, state->sp);
 	state->sp += 2;
@@ -2535,7 +2535,7 @@ void pop_af(emulator_state *state)
  * @brief LD A,(C) (0xF2)
  * @result A = contents of memory at 0xFF00 + C
  */
-void ld_a_ff00_c(emulator_state *state)
+static inline void ld_a_ff00_c(emulator_state *state)
 {
 	*REG_A(state) = mem_read8(state, 0xFF00 + *REG_C(state));
 	state->pc++;
@@ -2545,7 +2545,7 @@ void ld_a_ff00_c(emulator_state *state)
  * @brief DI (0xF3) - disable interrupts
  * @result interrupts will be disabled the instruction AFTER this one
  */
-void di(emulator_state *state)
+static inline void di(emulator_state *state)
 {
 	state->disable_int_on_next = true;
 
@@ -2556,7 +2556,7 @@ void di(emulator_state *state)
  * @brief PUSH AF (0xF5)
  * @result contents of memory at SP = AF; SP decremented 2
  */
-void push_af(emulator_state *state)
+static inline void push_af(emulator_state *state)
 {
 	state->sp -= 2;
 	mem_write16(state, state->sp, state->af);
@@ -2567,7 +2567,7 @@ void push_af(emulator_state *state)
  * @brief LD A,(nn) (0xFA) - write *nn to A
  * @result A will contain the value of memory at address nn
  */
-void ld_a_d16(emulator_state *state)
+static inline void ld_a_d16(emulator_state *state)
 {
 	uint8_t lsb = mem_read8(state, ++state->pc);
 	uint8_t msb = mem_read8(state, ++state->pc);
@@ -2583,7 +2583,7 @@ void ld_a_d16(emulator_state *state)
  * @brief EI (0xFB) - enable interrupts
  * @result interrupts will be enabled the instruction AFTER this one
  */
-void ei(emulator_state *state)
+static inline void ei(emulator_state *state)
 {
 	state->enable_int_on_next = true;
 
@@ -2594,13 +2594,12 @@ void ei(emulator_state *state)
  * @brief CP n (0xFE) - compare A with 8-bit immediate value
  * @result flags register modified based on result
  */
-void cp_imm8(emulator_state *state)
+static inline void cp_imm8(emulator_state *state)
 {
 	cp_common(state, mem_read8(state, ++state->pc));
 }
 
-typedef void (*opcode_t)(emulator_state *state);
-
+// XXX this is exported for main
 opcode_t handlers[0x100] =
 {
 	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
@@ -2637,7 +2636,7 @@ opcode_t handlers[0x100] =
 	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, invalid, invalid, cp_imm8, NULL
 };
 
-char cycles[0x100] =
+static char cycles[0x100] =
 {
 	/* 0x00 */ 4, 12, 8, 8, 4, 4, 8, 4,
 	/* 0x08 */ 20, 8, 8, 8, 4, 4, 8, 4,

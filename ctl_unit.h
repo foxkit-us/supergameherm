@@ -51,6 +51,10 @@ typedef enum
 	CB_OP_SET = 10
 } cb_ops;
 
+
+typedef void (*opcode_t)(emulator_state *state);
+
+
 void init_ctl(emulator_state *state, system_types type);
 bool execute(emulator_state *);
 
