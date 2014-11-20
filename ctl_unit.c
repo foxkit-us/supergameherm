@@ -2124,7 +2124,7 @@ static inline void jp_z_imm16(emulator_state *state)
  */
 static inline void cb_dispatch(emulator_state *state)
 {
-	uint8_t opcode = mem_read8(state, ++state->pc);
+	int8_t opcode = mem_read8(state, ++state->pc);
 	uint8_t *write_to;
 	uint8_t maybe_temp;
 	uint8_t bit_number;
@@ -2745,7 +2745,7 @@ void init_ctl(emulator_state *state, system_types type)
 /*! the emulated CU for the 'z80-ish' CPU */
 bool execute(emulator_state *state)
 {
-	unsigned char opcode = mem_read8(state, state->pc);
+	uint8_t opcode = mem_read8(state, state->pc);
 	opcode_t handler = handlers[opcode];
 	bool enable = state->enable_int_on_next;
 	bool disable = state->disable_int_on_next;
@@ -2757,13 +2757,14 @@ bool execute(emulator_state *state)
 
 	WAIT_CYCLE(state, cycles[opcode], handler(state));
 
-	if(unlikely(enable && disable))
-	{
-		error("somehow conflicting flags are set; expect brokenness");
-	}
-
 	if(unlikely(enable))
 	{
+		if(unlikely(disable))
+		{
+			error("somehow conflicting flags are set; expect brokenness");
+		}
+
+
 		state->enable_int_on_next = false;
 		state->interrupts = true;
 	}
