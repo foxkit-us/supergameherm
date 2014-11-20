@@ -528,6 +528,17 @@ void ld_l_imm8(emulator_state *state)
 }
 
 /*!
+ * @brief JR NC,n (0x30)
+ * @result add n to pc if C (carry) flag clear
+ */
+void jr_nc_imm8(emulator_state *state)
+{
+	int8_t to_add = mem_read8(state, ++state->pc) + 1;
+
+	state->pc += (state->flag_reg & FLAG_C) ? 1 : to_add;
+}
+
+/*!
  * @brief LD SP,nn (0x31)
  * @result SP = nn
  */
@@ -570,6 +581,17 @@ void ld_hl_imm8(emulator_state *state)
 	uint8_t n = mem_read8(state, ++state->pc);
 	mem_write8(state, state->hl, n);
 	state->pc++;
+}
+
+/*!
+ * @brief JR C,n (0x38)
+ * @result add n to pc if C (carry) flag set
+ */
+void jr_c_imm8(emulator_state *state)
+{
+	int8_t to_add = mem_read8(state, ++state->pc) + 1;
+
+	state->pc += (state->flag_reg & FLAG_C) ? to_add : 1;
 }
 
 /*!
@@ -2618,8 +2640,8 @@ opcode_t handlers[0x100] =
 	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
 	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
 	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
-	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, NULL,
-	/* 0x38 */ NULL, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, NULL,
+	/* 0x30 */ jr_nc_imm8, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, NULL,
+	/* 0x38 */ jr_c_imm8, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, NULL,
 	/* 0x40 */ ld_b_b, ld_b_c, ld_b_d, ld_b_e, ld_b_h, ld_b_l, ld_b_hl, ld_b_a,
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
