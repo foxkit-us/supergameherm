@@ -1272,10 +1272,11 @@ static inline void add_common(emulator_state *state, uint8_t to_add)
 {
 	uint32_t temp = *REG_A(state) + to_add;
 
+	state->flag_reg = 0;
+
 	if(temp == 0)
 	{
 		state->flag_reg |= FLAG_Z;
-		state->flag_reg &= ~FLAG_H & ~FLAG_C;
 	}
 	else
 	{
@@ -1283,19 +1284,11 @@ static inline void add_common(emulator_state *state, uint8_t to_add)
 		{
 			state->flag_reg |= FLAG_C;
 		}
-		else
-		{
-			state->flag_reg &= ~FLAG_C;
-		}
 
 		// Half carry
-		if(((*REG_A(state) & 0x0f) + (to_add & 0x0f)) > 0x0f)
+		if(((*REG_A(state) & 0x0F) + (to_add & 0x0F)) > 0x0F)
 		{
 			state->flag_reg |= FLAG_H;
-		}
-		else
-		{
-			state->flag_reg &= ~FLAG_H;
 		}
 	}
 
