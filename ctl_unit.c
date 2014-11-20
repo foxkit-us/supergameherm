@@ -319,6 +319,17 @@ void add_hl_de(emulator_state *state)
 }
 
 /*!
+ * @brief LD A,(DE) (0x1A)
+ * @result contents of memory at A = (DE)
+ */
+void ld_a_de(emulator_state *state)
+{
+	*REG_A(state) = mem_read8(state, state->de);
+
+	state->pc++;
+}
+
+/*!
  * @brief DEC DE (0x1B)
  * @result 1 is subtracted from DE (possibly wrapping)
  */
@@ -2379,7 +2390,7 @@ opcode_t handlers[0x100] =
 	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
 	/* 0x08 */ NULL, add_hl_bc, NULL, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
 	/* 0x10 */ NULL, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
-	/* 0x18 */ jr_imm8, add_hl_de, NULL, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
+	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
 	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
 	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
 	/* 0x30 */ NULL, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, NULL,
