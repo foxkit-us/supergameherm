@@ -12,26 +12,6 @@
 #include "serio.h"	// serial_tick
 #include "timer.h"	// init_clock
 
-typedef void (*opcode_t)(emulator_state *state);
-extern opcode_t handlers[0x100];
-
-uint8_t count_unimplemented(void)
-{
-	uint8_t c = 0;
-	int i;
-
-	for(i = 0x0; i < 0x100; i++)
-	{
-		if(handlers[i] == NULL)
-		{
-			debug("Opcode %x unimplemented", i);
-			c++;
-		}
-	}
-
-	return c;
-}
-
 void init_emulator(emulator_state *state)
 {
 	memset(state, 0, sizeof(emulator_state));
@@ -57,23 +37,21 @@ int main(int argc, char *argv[])
 
 	init_emulator(&state);
 
-	rom = fopen(argv[1], "rb");
-	if(rom == NULL)
+	if(unlikely((rom = fopen(argv[1], "rb")) == NULL))
 	{
 		perror("open rom");
 		fatal("Can't open ROM file %s", argv[1]);
 	}
 
-	if(!read_rom_data(&state, rom, &header, &system))
+	if(unlikely(!read_rom_data(&state, rom, &header, &system)))
 	{
 		fatal("can't read ROM data (ROM is corrupt)?");
 	}
 
 	fclose(rom);
 
-	printf("Unimplemented instructions: %d\n", count_unimplemented());
-
 	init_ctl(&state, system);
+
 	do
 	{
 		if((++cycles % 8400000) == 0) printf("GBC seconds: %ld\n", cycles / 8400000);
@@ -84,7 +62,7 @@ int main(int argc, char *argv[])
 		//clock_tick(&state);
 
 	}
-	while (true);
+	while (likely(true));
 
 	return EXIT_SUCCESS;
 }

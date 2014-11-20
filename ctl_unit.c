@@ -2634,7 +2634,7 @@ static inline void cp_imm8(emulator_state *state)
 }
 
 // XXX this is exported for main
-opcode_t handlers[0x100] =
+static const opcode_t handlers[0x100] =
 {
 	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
 	/* 0x08 */ NULL, add_hl_bc, ld_a_bc, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
@@ -2670,7 +2670,7 @@ opcode_t handlers[0x100] =
 	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, invalid, invalid, cp_imm8, reset_common
 };
 
-static char cycles[0x100] =
+static const char cycles[0x100] =
 {
 	/* 0x00 */ 4, 12, 8, 8, 4, 4, 8, 4,
 	/* 0x08 */ 20, 8, 8, 8, 4, 4, 8, 4,
