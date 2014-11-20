@@ -46,6 +46,15 @@ void int_flag_write(emulator_state *state, uint16_t location, uint8_t data)
 }
 
 /*!
+ * @brief Invalid opcode (multiple values)
+ * @result Terminates emulator
+ */
+void invalid(emulator_state *state)
+{
+	fatal("Invalid opcode");
+}
+
+/*!
  * @brief NOP (0x00)
  * @result Nothing.
  */
@@ -2462,12 +2471,12 @@ opcode_t handlers[0x100] =
 	/* 0xB8 */ cp_b, cp_c, cp_d, cp_e, cp_h, cp_l, cp_hl, cp_a,
 	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, add_imm8, NULL,
 	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, NULL, call_imm16, NULL, NULL,
-	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, NULL, NULL, push_de, sub_imm8, NULL,
-	/* 0xD8 */ retc, reti, jp_c_imm16, NULL, NULL, NULL, NULL, NULL,
-	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, NULL, NULL, push_hl, and_imm8, NULL,
-	/* 0xE8 */ NULL, jp_hl, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
-	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, NULL, push_af, NULL, NULL,
-	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, NULL, NULL, cp_imm8, NULL
+	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, NULL, push_de, sub_imm8, NULL,
+	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, NULL, invalid, NULL, NULL,
+	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, invalid, invalid, push_hl, and_imm8, NULL,
+	/* 0xE8 */ NULL, jp_hl, ld_d16_a, invalid, invalid, invalid, NULL, NULL,
+	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, NULL, NULL,
+	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, invalid, invalid, cp_imm8, NULL
 };
 
 char cycles[0x100] =
@@ -2552,7 +2561,7 @@ bool execute(emulator_state *state)
 
 	if(unlikely(handler == NULL))
 	{
-		fatal("invalid opcode %02X at %04X", opcode, state->pc);
+		fatal("Unimplemented opcode %02X at %04X", opcode, state->pc);
 	}
 
 	WAIT_CYCLE(state, cycles[opcode], handler(state));
