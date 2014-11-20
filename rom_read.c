@@ -2,7 +2,13 @@
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// malloc
 #include <string.h>	// memcmp
-#include <byteswap.h>	// __bswap_16
+#ifndef _MSC_VER
+/*
+ * surprisingly, MSVC++ includes __bswap_16 natively, without header...
+ * (and byteswap.h does not exist on it)
+ */
+#	include <byteswap.h>	// __bswap_16
+#endif
 
 #include "sgherm.h"	// emulator_state
 #include "print.h"	// fatal, error, debug
@@ -39,6 +45,7 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
 	const offsets begin = OFF_GRAPHIC_BEGIN;
 	bool err = true;
+	size_t i;
 
 	/* Initalise */
 	*header = NULL;
@@ -144,7 +151,7 @@ bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
 		goto close_rom;
 	}
 
-	for(size_t i = 0x134; i <= 0x14d; ++i)
+	for(i = 0x134; i <= 0x14d; ++i)
 		checksum += state->cart_data[i] + 1;
 
 	printf("%d\n", checksum);
