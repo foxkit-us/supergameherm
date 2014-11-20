@@ -2128,17 +2128,17 @@ static inline void cb_dispatch(emulator_state *state)
 	uint8_t *write_to;
 	uint8_t maybe_temp;
 	uint8_t bit_number;
-	cb_regs reg = (opcode & 0x7);
+	cb_regs reg = (cb_regs)(opcode & 0x7);
 	cb_ops op;
 
 	if(likely(opcode >= 0x40))
 	{
 		bit_number = (opcode & 0x38) >> 3;
-		op = ((opcode & 0xC0) >> 7) + 8;
+		op = (cb_ops)(((opcode & 0xC0) >> 7) + 8);
 	}
 	else
 	{
-		op = opcode >> 3;
+		op = (cb_ops)(opcode >> 3);
 	}
 
 	switch(reg)
