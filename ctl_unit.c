@@ -69,6 +69,17 @@ void ld_bc_imm16(emulator_state *state)
 }
 
 /*!
+ * @brief LD (BC),A (0x02)
+ * @result contents of memory at BC = A
+ */
+void ld_bc_a(emulator_state *state)
+{
+	mem_write8(state, state->bc, *REG_A(state));
+
+	state->pc++;
+}
+
+/*!
  * @brief INC BC (0x03)
  * @result 1 is added to BC (possibly wrapping)
  */
@@ -234,6 +245,17 @@ void ld_de_imm16(emulator_state *state)
 	uint8_t msb = mem_read8(state, ++state->pc);
 
 	state->de = (msb<<8)|lsb;
+
+	state->pc++;
+}
+
+/*!
+ * @brief LD (DE),A (0x12)
+ * @result contents of memory at DE = A
+ */
+void ld_de_a(emulator_state *state)
+{
+	mem_write8(state, state->de, *REG_A(state));
 
 	state->pc++;
 }
@@ -1529,6 +1551,106 @@ void or_a(emulator_state *state)
 	or_common(state, *REG_A(state));
 }
 
+void cp_common(emulator_state *state, uint8_t cmp)
+{
+	/*debug("flags = %s%s%s%s; cmp = %d; A = %d",
+	 ( stat*e->flag_reg & FLAG_Z) ? "Z":"z",
+	 (state->flag_reg & FLAG_N) ? "N":"n",
+	 (state->flag_reg & FLAG_H) ? "H":"h",
+	 (state->flag_reg & FLAG_C) ? "C":"c", cmp, *REG_A(state));*/
+	state->flag_reg = FLAG_N;
+	if(*REG_A(state) == cmp)
+	{
+		state->flag_reg |= FLAG_Z;
+	}
+	else
+	{
+		if(*REG_A(state) < cmp)
+		{
+			state->flag_reg |= FLAG_C;
+		}
+		else
+		{
+			state->flag_reg |= FLAG_H;
+		}
+	}
+	/* dump_flags(state); */
+
+	state->pc++;
+}
+
+/*!
+ * @brief CP B (0xB8)
+ * @result flags set based on how equivalent B is to A
+ */
+void cp_b(emulator_state *state)
+{
+	cp_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief CP C (0xB9)
+ * @result flags set based on how equivalent C is to A
+ */
+void cp_c(emulator_state *state)
+{
+	cp_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief CP D (0xBA)
+ * @result flags set based on how equivalent D is to A
+ */
+void cp_d(emulator_state *state)
+{
+	cp_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief CP E (0xBB)
+ * @result flags set based on how equivalent E is to A
+ */
+void cp_e(emulator_state *state)
+{
+	cp_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief CP H (0xBC)
+ * @result flags set based on how equivalent H is to A
+ */
+void cp_h(emulator_state *state)
+{
+	cp_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief CP L (0xBD)
+ * @result flags set based on how equivalent L is to A
+ */
+void cp_l(emulator_state *state)
+{
+	cp_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief CP (HL) (0xBE)
+ * @result flags set based on how equivalent contents of memory at HL are to A
+ */
+void cp_hl(emulator_state *state)
+{
+	cp_common(state, mem_read8(state, state->hl));
+}
+
+/*!
+ * @brief CP A (0xBF)
+ * @result flags set based on how equivalent A is to A... wait.. really?
+ */
+void cp_a(emulator_state *state)
+{
+	cp_common(state, *REG_A(state));
+}
+
 /*!
  * @brief POP BC (0xC1)
  * @result BC = memory at SP; SP incremented 2
@@ -1538,6 +1660,18 @@ void pop_bc(emulator_state *state)
 	state->bc = mem_read16(state, state->sp);
 	state->sp += 2;
 	state->pc++;
+}
+
+/*!
+ * @brief JP NZ,nn (0xC2)
+ * @result pc is set to 16-bit immediate value (LSB, MSB) if Z flag is not set
+ */
+void jp_nz_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->pc = (state->flag_reg & FLAG_Z) ? state->pc+1 : (msb<<8 | lsb);
 }
 
 /*!
@@ -1618,6 +1752,18 @@ void retz(emulator_state *state)
 	{
 		state->pc++;
 	}
+}
+
+/*!
+ * @brief JP Z,nn (0xCA)
+ * @result pc is set to 16-bit immediate value (LSB, MSB) if Z flag is set
+ */
+void jp_z_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->pc = (state->flag_reg & FLAG_Z) ? (msb<<8 | lsb) : state->pc+1;
 }
 
 /*!
@@ -1894,6 +2040,18 @@ void pop_de(emulator_state *state)
 }
 
 /*!
+ * @brief JP NC,nn (0xD2)
+ * @result pc is set to 16-bit immediate value (LSB, MSB) if C flag is not set
+ */
+void jp_nc_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->pc = (state->flag_reg & FLAG_C) ? state->pc+1 : (msb<<8 | lsb);
+}
+
+/*!
  * @brief PUSH DE (0xD5)
  * @result contents of memory at SP = DE; SP decremented 2
  */
@@ -1937,6 +2095,18 @@ void reti(emulator_state *state)
 {
 	state->toggle_int_on_next = true;
 	ret(state);
+}
+
+/*!
+ * @brief JP C,nn (0xDA)
+ * @result pc is set to 16-bit immediate value (LSB, MSB) if C flag is set
+ */
+void jp_c_imm16(emulator_state *state)
+{
+	uint8_t lsb = mem_read8(state, ++state->pc);
+	uint8_t msb = mem_read8(state, ++state->pc);
+
+	state->pc = (state->flag_reg & FLAG_C) ? (msb<<8 | lsb) : state->pc+1;
 }
 
 /*!
@@ -2108,44 +2278,16 @@ void ei(emulator_state *state)
  */
 void cp_imm8(emulator_state *state)
 {
-	uint8_t cmp;
-
-	cmp = mem_read8(state, ++state->pc);
-	/*debug("flags = %s%s%s%s; cmp = %d; A = %d",
-	       (state->flag_reg & FLAG_Z) ? "Z":"z",
-	       (state->flag_reg & FLAG_N) ? "N":"n",
-	       (state->flag_reg & FLAG_H) ? "H":"h",
-	       (state->flag_reg & FLAG_C) ? "C":"c", cmp, *REG_A(state));*/
-	state->flag_reg |= FLAG_N;
-	state->flag_reg &= ~FLAG_H | ~FLAG_C;
-	if(*REG_A(state) == cmp)
-	{
-		state->flag_reg |= FLAG_Z;
-	}
-	else
-	{
-		state->flag_reg &= ~FLAG_Z;
-		if(*REG_A(state) < cmp)
-		{
-			state->flag_reg |= FLAG_C;
-		}
-		else
-		{
-			state->flag_reg |= FLAG_H;
-		}
-	}
-	/* dump_flags(state); */
-
-	state->pc++;
+	cp_common(state, mem_read8(state, ++state->pc));
 }
 
 typedef void (*opcode_t)(emulator_state *state);
 
 opcode_t handlers[0x100] =
 {
-	/* 0x00 */ nop, ld_bc_imm16, NULL, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
+	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
 	/* 0x08 */ NULL, add_hl_bc, NULL, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
-	/* 0x10 */ NULL, ld_de_imm16, NULL, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
+	/* 0x10 */ NULL, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
 	/* 0x18 */ jr_imm8, add_hl_de, NULL, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
 	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
 	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, NULL,
@@ -2166,11 +2308,11 @@ opcode_t handlers[0x100] =
 	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, and_hl, and_a,
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
-	/* 0xB8 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 0xC0 */ retnz, pop_bc, NULL, jp_imm16, NULL, push_bc, NULL, NULL,
-	/* 0xC8 */ retz, ret, NULL, cb_dispatch, NULL, call_imm16, NULL, NULL,
-	/* 0xD0 */ retnc, pop_de, NULL, NULL, NULL, push_de, sub_imm8, NULL,
-	/* 0xD8 */ retc, reti, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0xB8 */ cp_b, cp_c, cp_d, cp_e, cp_h, cp_l, cp_hl, cp_a,
+	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, NULL, NULL,
+	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, NULL, call_imm16, NULL, NULL,
+	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, NULL, NULL, push_de, sub_imm8, NULL,
+	/* 0xD8 */ retc, reti, jp_c_imm16, NULL, NULL, NULL, NULL, NULL,
 	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, NULL, NULL, push_hl, and_imm8, NULL,
 	/* 0xE8 */ NULL, jp_hl, ld_d16_a, NULL, NULL, NULL, NULL, NULL,
 	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, NULL, push_af, NULL, NULL,
