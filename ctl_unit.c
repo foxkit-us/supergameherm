@@ -1369,6 +1369,88 @@ void add_a(emulator_state *state)
 	add_common(state, *REG_A(state));
 }
 
+static inline void adc_common(emulator_state *state, uint8_t to_add)
+{
+	if(state->flag_reg & FLAG_C)
+	{
+		to_add++;
+	}
+
+	add_common(state, to_add);
+}
+
+/*!
+ * @brief ADC B (0x88)
+ * @result A += B (+1 if C flag set)
+ */
+void adc_b(emulator_state *state)
+{
+	adc_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief ADC C (0x89)
+ * @result A += C (+1 if C flag set)
+ */
+void adc_c(emulator_state *state)
+{
+	adc_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief ADC D (0x8A)
+ * @result A += D (+1 if C flag set)
+ */
+void adc_d(emulator_state *state)
+{
+	adc_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief ADC E (0x8B)
+ * @result A += E (+1 if C flag set)
+ */
+void adc_e(emulator_state *state)
+{
+	adc_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief ADC H (0x8C)
+ * @result A += H (+1 if C flag set)
+ */
+void adc_h(emulator_state *state)
+{
+	adc_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief ADC L (0x8D)
+ * @result A += L (+1 if C flag set)
+ */
+void adc_l(emulator_state *state)
+{
+	adc_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief ADC (HL) (0x8E)
+ * @result A += contents of memory at HL (+1 if C flag set)
+ */
+void adc_hl(emulator_state *state)
+{
+	adc_common(state, mem_read8(state, state->hl));
+}
+
+/*!
+ * @brief ADC A (0x8F)
+ * @result A += A (+1 if C flag set)
+ */
+void adc_a(emulator_state *state)
+{
+	adc_common(state, *REG_A(state));
+}
+
 static inline void sub_common(emulator_state *state, uint8_t to_sub)
 {
 	uint32_t temp = *REG_A(state) - to_sub;
@@ -1462,6 +1544,89 @@ void sub_hl(emulator_state *state)
 void sub_a(emulator_state *state)
 {
 	sub_common(state, *REG_A(state));
+}
+
+
+static inline void sbc_common(emulator_state *state, uint8_t to_sub)
+{
+	if(state->flag_reg & FLAG_C)
+	{
+		to_sub++;
+	}
+
+	sub_common(state, to_sub);
+}
+
+/*!
+ * @brief SBC B (0x98)
+ * @result A -= B (+1 if C flag set)
+ */
+void sbc_b(emulator_state *state)
+{
+	sbc_common(state, *REG_B(state));
+}
+
+/*!
+ * @brief SBC C (0x99)
+ * @result A -= C (+1 if C flag set)
+ */
+void sbc_c(emulator_state *state)
+{
+	sbc_common(state, *REG_C(state));
+}
+
+/*!
+ * @brief SBC D (0x9A)
+ * @result A -= D (+1 if C flag set)
+ */
+void sbc_d(emulator_state *state)
+{
+	sbc_common(state, *REG_D(state));
+}
+
+/*!
+ * @brief SBC E (0x9B)
+ * @result A -= E (+1 if C flag set)
+ */
+void sbc_e(emulator_state *state)
+{
+	sbc_common(state, *REG_E(state));
+}
+
+/*!
+ * @brief SBC H (0x9C)
+ * @result A -= H (+1 if C flag set)
+ */
+void sbc_h(emulator_state *state)
+{
+	sbc_common(state, *REG_H(state));
+}
+
+/*!
+ * @brief SBC L (0x9D)
+ * @result A -= L (+1 if C flag set)
+ */
+void sbc_l(emulator_state *state)
+{
+	sbc_common(state, *REG_L(state));
+}
+
+/*!
+ * @brief SBC (HL) (0x9E)
+ * @result A -= contents of memory at HL (+1 if C flag set)
+ */
+void sbc_hl(emulator_state *state)
+{
+	sbc_common(state, mem_read8(state, state->hl));
+}
+
+/*!
+ * @brief SBC A (0x9F)
+ * @result A -= A (+1 if C flag set)
+ */
+void sbc_a(emulator_state *state)
+{
+	sbc_common(state, *REG_A(state));
 }
 
 /*!
@@ -2464,9 +2629,9 @@ opcode_t handlers[0x100] =
 	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, NULL, ld_hl_a,
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
 	/* 0x80 */ add_b, add_c, add_d, add_e, add_h, add_l, add_hl, add_a,
-	/* 0x88 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x88 */ adc_b, adc_c, adc_d, adc_e, adc_h, adc_h, adc_hl, adc_a,
 	/* 0x90 */ sub_b, sub_c, sub_d, sub_e, sub_h, sub_l, sub_hl, sub_a,
-	/* 0x98 */ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 0x98 */ sbc_b, sbc_c, sbc_d, sbc_e, sbc_h, sbc_l, sbc_hl, sbc_a,
 	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, and_hl, and_a,
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
