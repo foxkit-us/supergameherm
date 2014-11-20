@@ -137,11 +137,34 @@ static inline uint8_t shadow_read(emulator_state *state, uint16_t location)
 	return state->memory[location - 0x2000];
 }
 
-/*! read from an address in the F segment */
-static inline uint8_t f_read(emulator_state *state, uint16_t location)
+/*!
+ * @brief	Read a byte (8 bits) out of memory.
+ * @param	state		The emulator state to use when reading.
+ * @param	location	The location in memory to read.
+ * @returns	The value of the location in memory.
+ * @result	Emulation will terminate if the memory cannot be read.
+ */
+uint8_t mem_read8(emulator_state *state, uint16_t location)
 {
-	switch(location >> 4)
+	unsigned char reader = location >> 4;
+	switch(reader)
 	{
+	case 0x400:
+	case 0x500:
+	case 0x600:
+	case 0x700:
+		// switchable bank - 0x4000..0x7FFF
+		return rom_bank_read(state, location);
+	case 0x800:
+	case 0x900:
+		// video memory - 0x8000..0x9FFF
+		return not_impl(state, location);
+	case 0xA00:
+		// switchable RAM bank - 0xA000-0xBFFF
+		return ram_bank_read(state, location);
+	case 0xE00:
+		// who knows? the SHADOW knows! - 0xE000..0xFDFF
+		return shadow_read(state, location);
 	case 0xFE0:
 		/* who knows?  the SHADOW knows! */
 		return shadow_read(state, location);
@@ -155,41 +178,6 @@ static inline uint8_t f_read(emulator_state *state, uint16_t location)
 		return -1;
 	case 0xFF8:
 		return hw_reg_read[location - 0xFF00](state, location);
-	default:
-		return direct_read(state, location);
-	}
-}
-
-/*!
- * @brief	Read a byte (8 bits) out of memory.
- * @param	state		The emulator state to use when reading.
- * @param	location	The location in memory to read.
- * @returns	The value of the location in memory.
- * @result	Emulation will terminate if the memory cannot be read.
- */
-uint8_t mem_read8(emulator_state *state, uint16_t location)
-{
-	unsigned char reader = location >> 12;
-	switch(reader)
-	{
-	case 0x40:
-	case 0x50:
-	case 0x60:
-	case 0x70:
-		// switchable bank - 0x4000..0x7FFF
-		return rom_bank_read(state, location);
-	case 0x80:
-	case 0x90:
-		// video memory - 0x8000..0x9FFF
-		return not_impl(state, location);
-	case 0xA0:
-		// switchable RAM bank - 0xA000-0xBFFF
-		return ram_bank_read(state, location);
-	case 0xE0:
-		// who knows? the SHADOW knows! - 0xE000..0xFDFF
-		return shadow_read(state, location);
-	case 0xF0:
-		return f_read(state, location);
 	default:
 		return direct_read(state, location);
 	}
