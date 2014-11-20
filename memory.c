@@ -4,6 +4,8 @@
 #include "memory.h"	// Constants and what have you */
 #include "lcdc.h"	// lcdc_read
 #include "ctl_unit.h"	// int_flag_*
+#include "input.h"	// joypad_*
+#include "rom_read.h"	// OFF_CART_TYPE
 #include "serio.h"	// serial_*
 #include "timer.h"	// timer_*
 
@@ -33,7 +35,7 @@ uint8_t ugh_sound(emulator_state *state, uint16_t location)
 /*! a table of hardware register read methods */
 mem_read_fn hw_reg_read[0x80] =
 {
-	no_hardware, /* 00 - P1 - joypad */
+	joypad_read, /* 00 - P1 - joypad */
 	serial_read, /* 01 - SB - serial data */
 	serial_read, /* 02 - SC - serial control */
 	no_hardware, /* 03 - NO HARDWARE */
@@ -235,7 +237,7 @@ void doofus_write(emulator_state *state, uint16_t location, uint8_t data)
 
 mem_write8_fn hw_reg_write[0x80] =
 {
-	doofus_write, /* 00 - P1 - joypad */
+	joypad_write, /* 00 - P1 - joypad */
 	serial_write, /* 01 - SB - serial data */
 	serial_write, /* 02 - SC - serial control */
 	doofus_write, /* 03 - NO HARDWARE */
@@ -251,25 +253,25 @@ mem_write8_fn hw_reg_write[0x80] =
 	int_flag_write, /* 0F - IF - interrupt control */
 
 	/* 10..14 - sound bank 1 */
-	doofus_write, doofus_write, doofus_write, doofus_write,
-	doofus_write,
+	timer_write, doofus_write, timer_write, doofus_write,
+	timer_write,
 
 	doofus_write, /* 15 - NO HARDWARE */
 
 	/* 16..19 - sound bank 2 */
-	doofus_write, doofus_write, doofus_write, doofus_write,
+	doofus_write, timer_write, doofus_write, timer_write,
 
 	/* 1A..1E - sound bank 3 */
-	doofus_write, doofus_write, doofus_write, doofus_write,
+	timer_write, doofus_write, timer_write, doofus_write,
 	doofus_write,
 
 	doofus_write, /* 1F - NO HARDWARE */
 
 	/* 20..23 - sound bank 4 */
-	doofus_write, doofus_write, doofus_write, doofus_write,
+	doofus_write, timer_write, doofus_write, timer_write,
 
 	/* 24..26 - sound control */
-	doofus_write, doofus_write, doofus_write,
+	timer_write, timer_write, timer_write,
 
 	/* 27..2F - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write,
@@ -317,21 +319,44 @@ mem_write8_fn hw_reg_write[0x80] =
  */
 void mem_write8(emulator_state *state, uint16_t location, uint8_t data)
 {
-	//if(location < 0xC000 || location >= 0xFE00)
-	//	fatal("invalid memory write at %04X (%02X)", location, data);
-	if((location >= 0xC000 && location < 0xE000) ||
-			(location >= 0xFE80 && location < 0xFF00) ||
-			(location >= 0xFF80 && location <= 0xFFFF))
+	if(location >= 0x2000 && location < 0x4000)
 	{
+		switch(state->cart_data[OFF_CART_TYPE])
+		{
+		case CART_ROM_ONLY:
+			fatal("invalid memory write at %04X (%02X)",
+			      location, data);
+		case CART_MBC3:
+		case CART_MBC3_RAM:
+		case CART_MBC3_RAM_BATT:
+		case CART_MBC3_TIMER_BATT:
+		case CART_MBC3_TIMER_RAM_BATT:
+			state->bank = data & 0x7F;
+			return;
+		default:
+			fatal("banks for this cart aren't done yet sorry :(");
+		}
+	}
+	else if(location >= 0xA000 && location < 0xC000)
+	{
+		/* switched RAM bank */
+		fatal("invalid memory write at %04X (%02X)", location, data);
+	}
+	else if((location >= 0x8000 && location < 0xA000) ||
+		(location >= 0xC000 && location < 0xE000) ||
+		(location >= 0xFE80 && location < 0xFF00) ||
+		(location >= 0xFF80 && location <= 0xFFFF))
+	{
+		if(location == 0xFFFF) printf("writing %02X to FFFF\n", data);
 		state->memory[location] = data;
 		return;
 	}
-	else if(location < 0xFE00)
+	else if((location >= 0xE000 && location < 0xFE00))
 	{
 		state->memory[location - 0x2000] = data;
 		return;
 	}
-	else if(location < 0xFF80)
+	else if((location >= 0xFF00 && location < 0xFF80))
 	{
 		hw_reg_write[location - 0xFF00](state, location, data);
 	}
