@@ -1454,6 +1454,8 @@ static inline void sub_common(emulator_state *state, uint8_t to_sub)
 {
 	uint32_t temp = *REG_A(state) - to_sub;
 
+	state->flag_reg = FLAG_N;
+
 	if(temp == 0)
 	{
 		state->flag_reg |= FLAG_Z;
