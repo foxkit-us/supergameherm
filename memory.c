@@ -140,47 +140,25 @@ static inline uint8_t shadow_read(emulator_state *state, uint16_t location)
 /*! read from an address in the F segment */
 static inline uint8_t f_read(emulator_state *state, uint16_t location)
 {
-	/* who knows?  the SHADOW knows! */
-	if(location < 0xFE00)
+	switch(location >> 4)
 	{
+	case 0xFE0:
+		/* who knows?  the SHADOW knows! */
 		return shadow_read(state, location);
-	}
-	/* OAM */
-	else if(location < 0xFEA0)
-	{
+	case 0xFEA:
+		/* OAM */
 		fatal("OAM not yet implemented");
 		return -1;
-	}
-	/* invalid */
-	else if(location < 0xFF00)
-	{
+	case 0xFF0:
+		/* invalid */
 		fatal("invalid memory read at %04X", location);
 		return -1;
-	}
-	else if(location < 0xFF80)
-	{
+	case 0xFF8:
 		return hw_reg_read[location - 0xFF00](state, location);
+	default:
+		return direct_read(state, location);
 	}
-	return direct_read(state, location);
 }
-
-static mem_read_fn readers[0x10] =
-{
-	/* ROM bank #0 - 0x0000..0x3FFF */
-	direct_read, direct_read, direct_read, direct_read,
-	/* switchable bank - 0x4000..0x7FFF */
-	rom_bank_read, rom_bank_read, rom_bank_read, rom_bank_read,
-	/* video memory - 0x8000..0x9FFF */
-	not_impl, not_impl,
-	/* switchable RAM bank - 0xA000..0xBFFF */
-	ram_bank_read, ram_bank_read,
-	/* internal RAM - 0xC000..0xDFFF */
-	direct_read, direct_read,
-	/* who knows? the SHADOW knows! - 0xE000..0xFDFF */
-	shadow_read,
-	/* special stuff - 0xFE00-0xFFFF */
-	f_read
-};
 
 /*!
  * @brief	Read a byte (8 bits) out of memory.
@@ -192,7 +170,29 @@ static mem_read_fn readers[0x10] =
 uint8_t mem_read8(emulator_state *state, uint16_t location)
 {
 	unsigned char reader = location >> 12;
-	return readers[reader](state, location);
+	switch(reader)
+	{
+	case 0x40:
+	case 0x50:
+	case 0x60:
+	case 0x70:
+		// switchable bank - 0x4000..0x7FFF
+		return rom_bank_read(state, location);
+	case 0x80:
+	case 0x90:
+		// video memory - 0x8000..0x9FFF
+		return not_impl(state, location);
+	case 0xA0:
+		// switchable RAM bank - 0xA000-0xBFFF
+		return ram_bank_read(state, location);
+	case 0xE0:
+		// who knows? the SHADOW knows! - 0xE000..0xFDFF
+		return shadow_read(state, location);
+	case 0xF0:
+		return f_read(state, location);
+	default:
+		return direct_read(state, location);
+	}
 }
 
 /*!
