@@ -198,8 +198,8 @@ void add_hl_bc(emulator_state *state)
 }
 
 /*!
- * @brief LD A,BC (0x0A)
- * @result contents of memory at A = (BC)
+ * @brief LD A,(BC) (0x0A)
+ * @result A = contents of memory at BC
  */
 void ld_a_bc(emulator_state *state)
 {
@@ -330,7 +330,7 @@ void add_hl_de(emulator_state *state)
 
 /*!
  * @brief LD A,(DE) (0x1A)
- * @result contents of memory at A = (DE)
+ * @result A = contents of memory at (DE)
  */
 void ld_a_de(emulator_state *state)
 {
