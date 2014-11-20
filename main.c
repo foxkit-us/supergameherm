@@ -11,6 +11,25 @@
 #include "serio.h"	// serial_tick
 #include "timer.h"	// init_clock
 
+typedef void (*opcode_t)(emulator_state *state);
+extern opcode_t *handlers;
+
+uint8_t count_unimplemented(void)
+{
+	uint8_t c = 0;
+	int i;
+
+	for(i = 0x0; i < 0x100; i++)
+	{
+		if(handlers[i] == NULL)
+		{
+			c++;
+		}
+	}
+
+	return c;
+}
+
 void init_emulator(emulator_state *state)
 {
 	memset(state, 0, sizeof(emulator_state));
@@ -49,6 +68,8 @@ int main(int argc, char *argv[])
 	}
 
 	fclose(rom);
+
+	printf("Unimplemented instructions: %d\n", count_unimplemented());
 
 	init_ctl(&state, system);
 	do
