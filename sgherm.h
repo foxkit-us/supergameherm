@@ -55,7 +55,7 @@ typedef struct _emulator_state
 #define REG_H(state) REG_HI(state, hl)
 #define REG_L(state) REG_LOW(state, hl)
 
-void init_emulator(emulator_state *state);
+void init_emulator(emulator_state *restrict state);
 
 #ifdef likely
 #	undef likely

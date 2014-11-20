@@ -10,9 +10,9 @@
 #include <stdint.h>	// uint[XX]_t
 
 
-uint8_t timer_read(emulator_state *, uint16_t);
-void timer_write(emulator_state *, uint16_t, uint8_t);
-void timer_tick(emulator_state *);
+uint8_t timer_read(emulator_state *restrict, uint16_t);
+void timer_write(emulator_state *restrict, uint16_t, uint8_t);
+void timer_tick(emulator_state *restrict);
 
 #endif /*!__TIMER_H_*/
 #warning this module is only tested on Linux; other platforms *badly* need testing

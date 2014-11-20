@@ -37,8 +37,9 @@ static const char *friendly_cart_names[0x20] =
 	"MBC5 Rumble Cart with SRAM (Battery)", "GB Pocket Camera"
 };
 
-bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
-		   system_types *system)
+bool read_rom_data(emulator_state *restrict state, FILE *restrict rom,
+		cart_header *restrict *restrict header, system_types
+		*restrict system)
 {
 	long size_in_bytes, actual_size;
 	int8_t checksum = 0;

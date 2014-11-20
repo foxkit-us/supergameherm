@@ -1,7 +1,7 @@
 #include "print.h"	// error
 #include "sgherm.h"	// emulator_state
 
-uint8_t timer_read(emulator_state *state, uint16_t reg)
+uint8_t timer_read(emulator_state *restrict state, uint16_t reg)
 {
 	switch(reg)
 	{
@@ -53,7 +53,7 @@ uint8_t timer_read(emulator_state *state, uint16_t reg)
 	}
 }
 
-void timer_write(emulator_state *state, uint16_t reg, uint8_t data)
+void timer_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
 {
 	switch(reg)
 	{
@@ -95,7 +95,7 @@ void timer_write(emulator_state *state, uint16_t reg, uint8_t data)
 	}
 }
 
-void timer_tick(emulator_state *state)
+void timer_tick(emulator_state *restrict state)
 {
 	/* DIV increases even if the timer is disabled */
 	if(++state->timer_state.curr_clk % 128 == 0)

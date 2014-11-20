@@ -12,7 +12,7 @@
 #include "serio.h"	// serial_tick
 #include "timer.h"	// init_clock
 
-void init_emulator(emulator_state *state)
+void init_emulator(emulator_state *restrict state)
 {
 	memset(state, 0, sizeof(emulator_state));
 	state->interrupts = true;
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 		//clock_tick(&state);
 
 	}
-	while (likely(true));
+	while(likely(true));
 
 	return EXIT_SUCCESS;
 }

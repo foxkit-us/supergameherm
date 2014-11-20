@@ -11,7 +11,7 @@
 #define LCDC_WINTILE_MAP_HI	0x40
 #define LCDC_ENABLE		0x80
 
-void init_lcdc(emulator_state *state)
+void init_lcdc(emulator_state *restrict state)
 {
 	state->memory[0xFF40] = LCDC_ENABLE | LCDC_BGWINDOW_TILE_LO | LCDC_BGWINDOW_SHOW;
 	state->memory[0xFF41] = 0x02;
@@ -21,7 +21,7 @@ void init_lcdc(emulator_state *state)
 	state->memory[0xFF45] = 0x00;
 }
 
-static inline void _lcdc_inc_mode(emulator_state *state)
+static inline void _lcdc_inc_mode(emulator_state *restrict state)
 {
 	uint8_t *byte = state->memory + 0xFF41;
 	if(*byte & 0x3)
@@ -34,7 +34,7 @@ static inline void _lcdc_inc_mode(emulator_state *state)
 	}
 }
 
-void lcdc_tick(emulator_state *state)
+void lcdc_tick(emulator_state *restrict state)
 {
 	uint32_t *clk = &(state->lcdc_state.curr_clk);
 	*clk += 1;
@@ -95,13 +95,13 @@ void lcdc_tick(emulator_state *state)
 	}
 }
 
-uint8_t lcdc_read(emulator_state *state, uint16_t reg)
+uint8_t lcdc_read(emulator_state *restrict state, uint16_t reg)
 {
 	/* XXX TODO FIXME */
 	return state->memory[reg];
 }
 
-void lcdc_write(emulator_state *state, uint16_t reg, uint8_t data)
+void lcdc_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
 {
 	if(reg == 0xFF44)
 	{

@@ -172,7 +172,7 @@ typedef enum
 	CART_CAMERA = 0x1F
 } cart_types;
 
-bool read_rom_data(emulator_state *state, FILE *rom, cart_header **header,
-			system_types *type);
+bool read_rom_data(emulator_state *restrict, FILE *restrict,
+	cart_header *restrict *restrict, system_types *restrict);
 
 #endif /* __ROM_READ_H__ */

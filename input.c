@@ -5,7 +5,7 @@
 #include "sgherm.h"	/* emulator_state */
 
 
-uint8_t joypad_read(emulator_state *state, uint16_t reg)
+uint8_t joypad_read(emulator_state *restrict state, uint16_t reg)
 {
 	assert(reg == 0xFF00);
 
@@ -19,7 +19,7 @@ uint8_t joypad_read(emulator_state *state, uint16_t reg)
 	return 0;
 }
 
-void joypad_write(emulator_state *state, uint16_t reg, uint8_t data)
+void joypad_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
 {
 	/* TODO see above */
 	return;
