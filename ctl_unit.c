@@ -1293,6 +1293,7 @@ static inline void add_common(emulator_state *state, uint8_t to_add)
 		}
 	}
 
+	*REG_A(state) = (uint8_t)temp;
 	state->pc++;
 }
 
@@ -1387,6 +1388,7 @@ static inline void sub_common(emulator_state *state, uint8_t to_sub)
 		state->flag_reg |= FLAG_H;
 	}
 
+	*REG_A(state) = (uint8_t)temp;
 	state->pc++;
 }
 
