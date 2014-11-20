@@ -12,7 +12,7 @@
 #include "timer.h"	// init_clock
 
 typedef void (*opcode_t)(emulator_state *state);
-extern opcode_t *handlers;
+extern opcode_t handlers[0x100];
 
 uint8_t count_unimplemented(void)
 {
@@ -23,6 +23,7 @@ uint8_t count_unimplemented(void)
 	{
 		if(handlers[i] == NULL)
 		{
+			debug("Opcode %x unimplemented", i);
 			c++;
 		}
 	}
