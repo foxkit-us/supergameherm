@@ -1255,9 +1255,34 @@ void ld_a_a(emulator_state *state)
 
 static inline void add_common(emulator_state *state, uint8_t to_add)
 {
-	/* TODO flags */
-	*REG_A(state) += to_add;
-	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+	uint32_t temp = *REG_A(state) + to_add;
+
+	if(temp == 0)
+	{
+		state->flag_reg |= FLAG_Z;
+		state->flag_reg &= ~FLAG_H & ~FLAG_C;
+	}
+	else
+	{
+		if(temp & 0x100)
+		{
+			state->flag_reg |= FLAG_C;
+		}
+		else
+		{
+			state->flag_reg &= ~FLAG_C;
+		}
+
+		// Half carry
+		if(((*REG_A(state) & 0x0f) + (*REG_B(state) & 0x0f)) > 0x0f)
+		{
+			state->flag_reg |= FLAG_H;
+		}
+		else
+		{
+			state->flag_reg &= ~FLAG_H;
+		}
+	}
 
 	state->pc++;
 }
