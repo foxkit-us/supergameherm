@@ -2752,8 +2752,7 @@ bool execute(emulator_state *restrict state)
 		fatal("Unimplemented opcode %02X at %04X", opcode, state->registers.pc);
 	}
 
-	handler(state);
-	//WAIT_CYCLE(state, cycles[opcode], handler(state));
+	WAIT_CYCLE(state, cycles[opcode], handler(state));
 
 	if(unlikely(enable))
 	{
