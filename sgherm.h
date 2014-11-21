@@ -28,7 +28,7 @@ typedef enum
 typedef struct _emu_state
 {
 	unsigned char memory[MEM_SIZE];		/*! RAM */
-	unsigned char *cart_data;		/*! Loaded cart data */
+	unsigned char *cart_data;		/*! Cartridge data */
 
 	struct _registers
 	{
@@ -40,11 +40,15 @@ typedef struct _emu_state
 		uint8_t flags;
 	} registers;
 
-	uint8_t iflags;				/* Interrupt information */
+	unsigned int iflags;			/* Interrupt information */
 
-	uint8_t wait;				/* number of clocks */
+	unsigned int wait;			/* number of clocks */
 
 	uint8_t bank;				/*! current bank */
+
+	uint64_t cycles;			/*! Present cycle count */
+	uint64_t start_time;			/*! Time started */
+	cpu_freq freq;				/*! CPU frequency */
 
 	struct _lcdc_state
 	{
@@ -69,10 +73,6 @@ typedef struct _emu_state
 		uint8_t curr_clk;		/*! ticks passed */
 		bool enabled;			/*! timer armed */
 	} timer_state;
-
-	uint64_t cycles;			/*! Present cycle count */
-	uint64_t start_time;			/*! Time started */
-	cpu_freq freq;				/*! CPU frequency */
 } emu_state;
 
 emu_state * init_emulator(void);
