@@ -130,13 +130,6 @@ static inline uint8_t ram_bank_read(emulator_state *restrict state, uint16_t loc
 	return -1;
 }
 
-/*! read from shadow RAM area */
-static inline uint8_t shadow_read(emulator_state *restrict state, uint16_t location)
-{
-	/* Shadow is offset */
-	return state->memory[location - 0x2000];
-}
-
 /*!
  * @brief	Read a byte (8 bits) out of memory.
  * @param	state		The emulator state to use when reading.
@@ -164,11 +157,6 @@ uint8_t mem_read8(emulator_state *restrict state, uint16_t location)
 		return ram_bank_read(state, location);
 	case 0xE:
 	case 0xF:
-		if(location < 0xFE00)
-		{
-			// who knows? the SHADOW knows! - 0xE000..0xFDFF
-			return shadow_read(state, location);
-		}
 		switch(location >> 8)
 		{
 		case 0xFE:
@@ -180,7 +168,13 @@ uint8_t mem_read8(emulator_state *restrict state, uint16_t location)
 			{
 				return hw_reg_read[location - 0xFF00](state, location);
 			}
-			/* fall through on purpose */
+			else
+			{
+				return direct_read(state, location);
+			}
+		default:
+			// who knows? the SHADOW knows! - 0xE000..0xFDFF
+			location -= 0x2000;
 		}
 	default:
 		return direct_read(state, location);
