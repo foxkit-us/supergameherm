@@ -1,6 +1,8 @@
 #ifndef __CTL_UNIT_H__
 #define __CTL_UNIT_H__
 
+#include "config.h"	// Macros
+
 #include <stdint.h>	// uint[XX]_t
 
 #include "sgherm.h"	// emulator_state

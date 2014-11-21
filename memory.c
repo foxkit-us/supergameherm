@@ -1,3 +1,4 @@
+#include "config.h"	// macros
 #include <stdint.h>	// uint[XX]_t
 
 #include "print.h"	// fatal

@@ -1,3 +1,5 @@
+#include "config.h"	// macros
+
 #include "print.h"	// error
 #include "sgherm.h"	// emulator_state
 

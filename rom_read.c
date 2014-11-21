@@ -1,7 +1,10 @@
+#include "config.h"	// macros
+
 #include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// malloc
 #include <string.h>	// memcmp
+
 #ifndef _MSC_VER
 /*
  * surprisingly, MSVC++ includes __bswap_16 natively, without header...

@@ -1,3 +1,4 @@
+#include "config.h"	// macros
 #include <stdbool.h>	// bool
 
 #include "print.h"	// error

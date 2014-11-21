@@ -1,3 +1,4 @@
+#include "config.h"	// macros
 #include <assert.h>	/* assert */
 #include <stdint.h>	/* uint[XX]_t */
 

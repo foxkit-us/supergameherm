@@ -1,3 +1,5 @@
+#include "config.h"	// macros
+
 #include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
@@ -10,7 +12,11 @@
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
 #include "serio.h"	// serial_tick
-#include "timer.h"	// init_clock
+#include "timer.h"	// get_clock
+#include "debug.h"	// print_cycles
+
+// XXX FIXME UGH
+static emulator_state *state_current;
 
 emulator_state * init_emulator(void)
 {
@@ -29,11 +35,17 @@ emulator_state * init_emulator(void)
 		},
 		.iflags = I_INTERRUPTS,
 		.bank = 1,
+		.freq = CPU_FREQ_GB,
 	};
 
 	memcpy(state, &state2, sizeof(emulator_state));
 
 	return state;
+}
+
+void exit_print_stats(void)
+{
+	print_cycles(state_current);
 }
 
 int main(int argc, char *argv[])
@@ -42,10 +54,6 @@ int main(int argc, char *argv[])
 	system_types system;
 	emulator_state *state;
 	cart_header *header;
-	uint64_t cycles = 0;
-
-	// Debugging purposes
-	//uint16_t cache_pc = (uint16_t)-1;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -55,7 +63,7 @@ int main(int argc, char *argv[])
 		fatal("You must specify a ROM file... -.-");
 	}
 
-	if(unlikely((state = init_emulator()) == NULL))
+	if(unlikely((state_current = state = init_emulator()) == NULL))
 	{
 		fatal("Out of memory :(");
 	}
@@ -75,12 +83,17 @@ int main(int argc, char *argv[])
 
 	init_ctl(state, system);
 
+	// Set the starting clock
+	state->start_time = get_time();
+
+	atexit(exit_print_stats);
+
 	do
 	{
-		if((++cycles % 8400000) == 0)
+		if((++state->cycles % state->freq) == 0)
 		{
-			debug("GBC seconds: %ld", cycles / 8400000);
-			if((cycles % (8400000*60)) == 0)
+			debug("GBC seconds: %ld", state->cycles / state->freq);
+			if((state->cycles % (state->freq*60)) == 0)
 			{
 				break;
 			}
@@ -91,17 +104,6 @@ int main(int argc, char *argv[])
 		serial_tick(state);
 		timer_tick(state);
 		//clock_tick(state);
-
-#if 0
-		// For debugging purposes
-		if(cache_pc != state->registers.pc)
-		{
-			debug("[%X] (af bc de hl sp %X %X %X %X %X)", state->registers.pc,
-					state->registers.af, state->registers.bc, state->registers.de,
-					state->registers.hl, state->registers.sp);
-			cache_pc = state->registers.pc;
-		}
-#endif
 	}
 	while(likely(true));
 

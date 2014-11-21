@@ -1,15 +1,29 @@
 #ifndef __SGHERM_H_
 #define __SGHERM_H_
 
+#include "config.h"	// macros
+
 #include <stdbool.h>	// bool
 #include <stdint.h>	// uint[XX]_t
 
-/* 8-bit address space */
+// 8-bit address space
 #define MEM_SIZE	0x10000
 
+// Interrupt flags
 #define I_DISABLE_INT_ON_NEXT	0x1
 #define I_ENABLE_INT_ON_NEXT	0x2
 #define I_INTERRUPTS		0x4
+
+
+// XXX this doesn't belong here but it'll have to do for now
+// (emulator_state depends on it and everything depends on that)
+typedef enum
+{
+	CPU_FREQ_GB = 4194304,
+	CPU_FREQ_SGB = 4295454,
+	CPU_FREQ_GBC = 8388608,
+} cpu_freq;
+
 
 typedef struct _emulator_state
 {
@@ -59,6 +73,10 @@ typedef struct _emulator_state
 		uint8_t curr_clk;		/*! ticks passed */
 		bool enabled;			/*! timer armed */
 	} timer_state;
+
+	uint64_t cycles;			/*! Present cycle count */
+	uint64_t start_time;			/*! Time started */
+	cpu_freq freq;				/*! CPU frequency */
 } emulator_state;
 
 emulator_state * init_emulator(void);

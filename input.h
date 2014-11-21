@@ -1,7 +1,9 @@
 #ifndef __INPUT_H_
 #define __INPUT_H_
 
-#include <stdint.h>	/* uint[XX]_t */
+#include "config.h"	// macros
+
+#include <stdint.h>	// uint[XX]_t
 
 
 uint8_t joypad_read(emulator_state *restrict, uint16_t);

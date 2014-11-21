@@ -1,12 +1,14 @@
 #ifndef __MEMORY_H_
 #define __MEMORY_H_
 
-#include <stdint.h>	/* (u)int*_t */
-#include <stdbool.h>	/* bool */
-#include <stdio.h>	/* FILE * */
+#include "config.h"	// macros
 
-#include "sgherm.h"	/* emulator_state */
-#include "params.h"	/* system_types */
+#include <stdint.h>	// (u)int*_t
+#include <stdbool.h>	// bool
+#include <stdio.h>	// FILE
+
+#include "sgherm.h"	//emulator_state
+#include "params.h"	// system_types
 
 
 uint8_t mem_read8(emulator_state *restrict, uint16_t);

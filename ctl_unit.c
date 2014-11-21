@@ -1,3 +1,5 @@
+#include "config.h"	// macros
+
 #include <stdbool.h>	// bool
 #include <stdint.h>	// integer types
 #include <stdlib.h>	// NULL
@@ -8,15 +10,6 @@
 #include "params.h"	// system_types
 #include "print.h"	// fatal
 
-
-void dump_flags(emulator_state *restrict state)
-{
-	debug("flags = %s%s%s%s",
-	      (*(state->registers.f) & FLAG_Z) ? "Z":"z",
-	      (*(state->registers.f) & FLAG_N) ? "N":"n",
-	      (*(state->registers.f) & FLAG_H) ? "H":"h",
-	      (*(state->registers.f) & FLAG_C) ? "C":"c");
-}
 
 uint8_t int_flag_read(emulator_state *restrict state, uint16_t location)
 {

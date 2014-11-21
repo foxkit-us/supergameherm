@@ -1,10 +1,12 @@
 #ifndef __ROM_READ_H__
 #define __ROM_READ_H__
 
+#include "config.h"	// macros
+
 #include <stdbool.h>	// bool
 
 #include "sgherm.h"	// emulator_state
-#include "params.h"	/* system_types */
+#include "params.h"	// system_types
 
 typedef enum
 {

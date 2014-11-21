@@ -1,6 +1,8 @@
 #ifndef __SERIO_H_
 #define __SERIO_H_
 
+#include "config.h"	// macros
+
 #include <stdint.h>	// uint[XX]_t
 
 
