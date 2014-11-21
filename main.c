@@ -43,6 +43,12 @@ emu_state * init_emulator(void)
 	return state;
 }
 
+void finish_emulator(emu_state *restrict state)
+{
+	free(state->cart_data);
+	free(state);
+}
+
 void exit_print_stats(void)
 {
 	print_cycles(state_current);
@@ -54,6 +60,7 @@ int main(int argc, char *argv[])
 	system_types system;
 	emu_state *state;
 	cart_header *header;
+	uint32_t gbc_seconds = 0;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -90,24 +97,19 @@ int main(int argc, char *argv[])
 
 	do
 	{
-		if((++state->cycles % state->freq) == 0)
+		if(unlikely(!(++state->cycles % state->freq)))
 		{
-			debug("GBC seconds: %ld", state->cycles / state->freq);
-			if((state->cycles % (state->freq*60)) == 0)
-			{
-				break;
-			}
+			debug("GBC seconds: %ld", ++gbc_seconds);
 		}
-
 		execute(state);
 		lcdc_tick(state);
 		serial_tick(state);
 		timer_tick(state);
 		//clock_tick(state);
 	}
-	while(likely(true));
+	while(true);
 
-	free(state);
+	finish_emulator(state);
 
 	return EXIT_SUCCESS;
 }
