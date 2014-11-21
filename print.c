@@ -2,6 +2,7 @@
 #include <stdio.h>	// ?fprintf
 #include <stdlib.h>	// exit
 
+#include "sgherm.h"	// unused
 
 void fatal(const char *str, ...)
 {
@@ -42,9 +43,14 @@ void info(const char *str, ...)
 	va_end(argp);
 }
 
+#ifndef NDEBUG
+void debug(const char *str unused, ...)
+{
+	// Stub
+}
+#else
 void debug(const char *str, ...)
 {
-#ifndef NDEBUG
 	va_list argp;
 	va_start(argp, str);
 
@@ -52,5 +58,5 @@ void debug(const char *str, ...)
 	fprintf(stderr, "\n");
 
 	va_end(argp);
-#endif
 }
+#endif

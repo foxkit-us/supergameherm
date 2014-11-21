@@ -12,20 +12,40 @@
 #include "serio.h"	// serial_tick
 #include "timer.h"	// init_clock
 
-void init_emulator(emulator_state *restrict state)
+emulator_state * init_emulator(void)
 {
-	memset(state, 0, sizeof(emulator_state));
-	state->interrupts = true;
-	state->bank = 1;
+	emulator_state *state = calloc(sizeof(emulator_state), 1);
+	emulator_state state2 =
+	{
+		.registers = {
+			.a = ((uint8_t *)&(state->registers.af)) + 1,
+			.f = (uint8_t *)&(state->registers.af),
+			.b = ((uint8_t *)&(state->registers.bc)) + 1,
+			.c = (uint8_t *)&(state->registers.bc),
+			.d = ((uint8_t *)&(state->registers.de)) + 1,
+			.e = (uint8_t *)&(state->registers.de),
+			.h = ((uint8_t *)&(state->registers.hl)) + 1,
+			.l = (uint8_t *)&(state->registers.hl),
+		},
+		.iflags = I_INTERRUPTS,
+		.bank = 1,
+	};
+
+	memcpy(state, &state2, sizeof(emulator_state));
+
+	return state;
 }
 
 int main(int argc, char *argv[])
 {
 	FILE *rom;
 	system_types system;
-	emulator_state state;
+	emulator_state *state;
 	cart_header *header;
 	uint64_t cycles = 0;
+
+	// Debugging purposes
+	//uint16_t cache_pc = (uint16_t)-1;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -35,7 +55,10 @@ int main(int argc, char *argv[])
 		fatal("You must specify a ROM file... -.-");
 	}
 
-	init_emulator(&state);
+	if(unlikely((state = init_emulator()) == NULL))
+	{
+		fatal("Out of memory :(");
+	}
 
 	if(unlikely((rom = fopen(argv[1], "rb")) == NULL))
 	{
@@ -43,14 +66,14 @@ int main(int argc, char *argv[])
 		fatal("Can't open ROM file %s", argv[1]);
 	}
 
-	if(unlikely(!read_rom_data(&state, rom, &header, &system)))
+	if(unlikely(!read_rom_data(state, rom, &header, &system)))
 	{
 		fatal("can't read ROM data (ROM is corrupt)?");
 	}
 
 	fclose(rom);
 
-	init_ctl(&state, system);
+	init_ctl(state, system);
 
 	do
 	{
@@ -63,14 +86,26 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		execute(&state);
-		lcdc_tick(&state);
-		serial_tick(&state);
-		timer_tick(&state);
-		//clock_tick(&state);
+		execute(state);
+		lcdc_tick(state);
+		serial_tick(state);
+		timer_tick(state);
+		//clock_tick(state);
 
+#if 0
+		// For debugging purposes
+		if(cache_pc != state->registers.pc)
+		{
+			debug("[%X] (af bc de hl sp %X %X %X %X %X)", state->registers.pc,
+					state->registers.af, state->registers.bc, state->registers.de,
+					state->registers.hl, state->registers.sp);
+			cache_pc = state->registers.pc;
+		}
+#endif
 	}
 	while(likely(true));
+
+	free(state);
 
 	return EXIT_SUCCESS;
 }

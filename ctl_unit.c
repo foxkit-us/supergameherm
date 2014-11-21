@@ -12,10 +12,10 @@
 void dump_flags(emulator_state *restrict state)
 {
 	debug("flags = %s%s%s%s",
-	      (state->flag_reg & FLAG_Z) ? "Z":"z",
-	      (state->flag_reg & FLAG_N) ? "N":"n",
-	      (state->flag_reg & FLAG_H) ? "H":"h",
-	      (state->flag_reg & FLAG_C) ? "C":"c");
+	      (*(state->registers.f) & FLAG_Z) ? "Z":"z",
+	      (*(state->registers.f) & FLAG_N) ? "N":"n",
+	      (*(state->registers.f) & FLAG_H) ? "H":"h",
+	      (*(state->registers.f) & FLAG_C) ? "C":"c");
 }
 
 uint8_t int_flag_read(emulator_state *restrict state, uint16_t location)
@@ -33,7 +33,7 @@ void int_flag_write(emulator_state *restrict state, uint16_t location, uint8_t d
  * @brief Invalid opcode (multiple values)
  * @result Terminates emulator
  */
-static inline void invalid(emulator_state *restrict state)
+static inline void invalid(emulator_state *restrict state unused)
 {
 	fatal("Invalid opcode");
 }
@@ -44,7 +44,7 @@ static inline void invalid(emulator_state *restrict state)
  */
 static inline void nop(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -53,12 +53,12 @@ static inline void nop(emulator_state *restrict state)
  */
 static inline void ld_bc_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->bc = (msb<<8)|lsb;
+	state->registers.bc = (msb<<8)|lsb;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -67,9 +67,9 @@ static inline void ld_bc_imm16(emulator_state *restrict state)
  */
 static inline void ld_bc_a(emulator_state *restrict state)
 {
-	mem_write8(state, state->bc, *REG_A(state));
+	mem_write8(state, state->registers.bc, *(state->registers.a));
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -78,30 +78,30 @@ static inline void ld_bc_a(emulator_state *restrict state)
  */
 static inline void inc_bc(emulator_state *restrict state)
 {
-	state->bc++;
-	state->pc++;
+	state->registers.bc++;
+	state->registers.pc++;
 }
 
 static inline void inc_r8(emulator_state *restrict state, uint8_t *reg)
 {
-	uint8_t old = *reg;
+	//uint8_t old = *reg;
 
 	if(*reg ^ 0x0F)
 	{
-		state->flag_reg &= ~FLAG_H;
+		*(state->registers.f) &= ~FLAG_H;
 	}
 	else
 	{
-		state->flag_reg |= FLAG_H;
+		*(state->registers.f) |= FLAG_H;
 	}
 
 	*reg += 1;
 
-	if(*reg == 0) state->flag_reg |= FLAG_Z;
+	if(*reg == 0) *(state->registers.f) |= FLAG_Z;
 
-	state->flag_reg &= ~FLAG_N;
+	*(state->registers.f) &= ~FLAG_N;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -110,28 +110,28 @@ static inline void inc_r8(emulator_state *restrict state, uint8_t *reg)
  */
 static inline void inc_b(emulator_state *restrict state)
 {
-	inc_r8(state, REG_B(state));
+	inc_r8(state, state->registers.b);
 }
 
 static inline void dec_r8(emulator_state *restrict state, uint8_t *reg)
 {
-	uint8_t old = *reg;
+	//uint8_t old = *reg;
 
-	state->flag_reg = FLAG_N;
+	*(state->registers.f) = FLAG_N;
 
 	if(*reg & 0x0F)
 	{
-		state->flag_reg &= ~FLAG_H;
+		*(state->registers.f) &= ~FLAG_H;
 	}
 	else
 	{
-		state->flag_reg |= FLAG_H;
+		*(state->registers.f) |= FLAG_H;
 	}
 
 	*reg -= 1;
 
-	if(*reg == 0) state->flag_reg |= FLAG_Z;
-	state->pc++;
+	if(*reg == 0) *(state->registers.f) |= FLAG_Z;
+	state->registers.pc++;
 }
 
 /*!
@@ -140,7 +140,7 @@ static inline void dec_r8(emulator_state *restrict state, uint8_t *reg)
  */
 static inline void dec_b(emulator_state *restrict state)
 {
-	dec_r8(state, REG_B(state));
+	dec_r8(state, state->registers.b);
 }
 
 /*!
@@ -149,35 +149,35 @@ static inline void dec_b(emulator_state *restrict state)
  */
 static inline void ld_b_imm8(emulator_state *restrict state)
 {
-	*REG_B(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.b) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 static inline void add_to_hl(emulator_state *restrict state, uint16_t to_add)
 {
-	if((uint32_t)(state->hl + to_add) > 0xFFFF)
+	if((uint32_t)(state->registers.hl + to_add) > 0xFFFF)
 	{
-		state->flag_reg |= FLAG_C;
+		*(state->registers.f) |= FLAG_C;
 	}
 	else
 	{
-		state->flag_reg &= ~FLAG_C;
+		*(state->registers.f) &= ~FLAG_C;
 	}
 
-	if((state->hl & 0xF) + (to_add & 0xF) > 0xF)
+	if((state->registers.hl & 0xF) + (to_add & 0xF) > 0xF)
 	{
-		state->flag_reg |= FLAG_H;
+		*(state->registers.f) |= FLAG_H;
 	}
 	else
 	{
-		state->flag_reg &= ~FLAG_H;
+		*(state->registers.f) &= ~FLAG_H;
 	}
 
-	state->flag_reg &= ~FLAG_N;
+	*(state->registers.f) &= ~FLAG_N;
 
-	state->hl += to_add;
+	state->registers.hl += to_add;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -186,7 +186,7 @@ static inline void add_to_hl(emulator_state *restrict state, uint16_t to_add)
  */
 static inline void add_hl_bc(emulator_state *restrict state)
 {
-	add_to_hl(state, state->bc);
+	add_to_hl(state, state->registers.bc);
 }
 
 /*!
@@ -195,8 +195,8 @@ static inline void add_hl_bc(emulator_state *restrict state)
  */
 static inline void ld_a_bc(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, state->bc);
-	state->pc++;
+	*(state->registers.a) = mem_read8(state, state->registers.bc);
+	state->registers.pc++;
 }
 
 /*!
@@ -205,8 +205,8 @@ static inline void ld_a_bc(emulator_state *restrict state)
  */
 static inline void dec_bc(emulator_state *restrict state)
 {
-	state->bc--;
-	state->pc++;
+	state->registers.bc--;
+	state->registers.pc++;
 }
 
 /*!
@@ -215,7 +215,7 @@ static inline void dec_bc(emulator_state *restrict state)
  */
 static inline void inc_c(emulator_state *restrict state)
 {
-	inc_r8(state, REG_C(state));
+	inc_r8(state, state->registers.c);
 }
 
 /*!
@@ -224,7 +224,7 @@ static inline void inc_c(emulator_state *restrict state)
  */
 static inline void dec_c(emulator_state *restrict state)
 {
-	dec_r8(state, REG_C(state));
+	dec_r8(state, state->registers.c);
 }
 
 /*!
@@ -233,8 +233,8 @@ static inline void dec_c(emulator_state *restrict state)
  */
 static inline void ld_c_imm8(emulator_state *restrict state)
 {
-	*REG_C(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.c) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 /*!
@@ -243,12 +243,12 @@ static inline void ld_c_imm8(emulator_state *restrict state)
  */
 static inline void ld_de_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->de = (msb<<8)|lsb;
+	state->registers.de = (msb<<8)|lsb;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -257,9 +257,9 @@ static inline void ld_de_imm16(emulator_state *restrict state)
  */
 static inline void ld_de_a(emulator_state *restrict state)
 {
-	mem_write8(state, state->de, *REG_A(state));
+	mem_write8(state, state->registers.de, *(state->registers.a));
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -268,8 +268,8 @@ static inline void ld_de_a(emulator_state *restrict state)
  */
 static inline void inc_de(emulator_state *restrict state)
 {
-	state->de++;
-	state->pc++;
+	state->registers.de++;
+	state->registers.pc++;
 }
 
 /*!
@@ -278,7 +278,7 @@ static inline void inc_de(emulator_state *restrict state)
  */
 static inline void inc_d(emulator_state *restrict state)
 {
-	inc_r8(state, REG_D(state));
+	inc_r8(state, state->registers.d);
 }
 
 /*!
@@ -287,7 +287,7 @@ static inline void inc_d(emulator_state *restrict state)
  */
 static inline void dec_d(emulator_state *restrict state)
 {
-	dec_r8(state, REG_D(state));
+	dec_r8(state, state->registers.d);
 }
 
 /*!
@@ -296,8 +296,8 @@ static inline void dec_d(emulator_state *restrict state)
  */
 static inline void ld_d_imm8(emulator_state *restrict state)
 {
-	*REG_D(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.d) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 /*!
@@ -306,9 +306,9 @@ static inline void ld_d_imm8(emulator_state *restrict state)
  */
 static inline void jr_imm8(emulator_state *restrict state)
 {
-	int8_t to_add = mem_read8(state, ++state->pc);
+	int8_t to_add = mem_read8(state, ++state->registers.pc);
 
-	state->pc += to_add + 1;
+	state->registers.pc += to_add + 1;
 }
 
 /*!
@@ -317,7 +317,7 @@ static inline void jr_imm8(emulator_state *restrict state)
  */
 static inline void add_hl_de(emulator_state *restrict state)
 {
-	add_to_hl(state, state->de);
+	add_to_hl(state, state->registers.de);
 }
 
 /*!
@@ -326,9 +326,9 @@ static inline void add_hl_de(emulator_state *restrict state)
  */
 static inline void ld_a_de(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, state->de);
+	*(state->registers.a) = mem_read8(state, state->registers.de);
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -337,8 +337,8 @@ static inline void ld_a_de(emulator_state *restrict state)
  */
 static inline void dec_de(emulator_state *restrict state)
 {
-	state->de--;
-	state->pc++;
+	state->registers.de--;
+	state->registers.pc++;
 }
 
 /*!
@@ -347,7 +347,7 @@ static inline void dec_de(emulator_state *restrict state)
  */
 static inline void inc_e(emulator_state *restrict state)
 {
-	inc_r8(state, REG_E(state));
+	inc_r8(state, state->registers.e);
 }
 
 /*!
@@ -356,7 +356,7 @@ static inline void inc_e(emulator_state *restrict state)
  */
 static inline void dec_e(emulator_state *restrict state)
 {
-	dec_r8(state, REG_E(state));
+	dec_r8(state, state->registers.e);
 }
 
 /*!
@@ -365,8 +365,8 @@ static inline void dec_e(emulator_state *restrict state)
  */
 static inline void ld_e_imm8(emulator_state *restrict state)
 {
-	*REG_E(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.e) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 /*!
@@ -375,9 +375,9 @@ static inline void ld_e_imm8(emulator_state *restrict state)
  */
 static inline void jr_nz_imm8(emulator_state *restrict state)
 {
-	int8_t to_add = mem_read8(state, ++state->pc) + 1;
+	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->pc += (state->flag_reg & FLAG_Z) ? 1 : to_add;
+	state->registers.pc += (*(state->registers.f) & FLAG_Z) ? 1 : to_add;
 }
 
 /*!
@@ -386,12 +386,12 @@ static inline void jr_nz_imm8(emulator_state *restrict state)
  */
 static inline void ld_hl_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->hl = (msb<<8)|lsb;
+	state->registers.hl = (msb<<8)|lsb;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -400,8 +400,8 @@ static inline void ld_hl_imm16(emulator_state *restrict state)
  */
 static inline void ldi_hl_a(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl++, *REG_A(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl++, *(state->registers.a));
+	state->registers.pc++;
 }
 
 /*!
@@ -410,8 +410,8 @@ static inline void ldi_hl_a(emulator_state *restrict state)
 */
 static inline void inc_hl(emulator_state *restrict state)
 {
-	state->hl++;
-	state->pc++;
+	state->registers.hl++;
+	state->registers.pc++;
 }
 
 /*!
@@ -420,7 +420,7 @@ static inline void inc_hl(emulator_state *restrict state)
  */
 static inline void inc_h(emulator_state *restrict state)
 {
-	inc_r8(state, REG_H(state));
+	inc_r8(state, state->registers.h);
 }
 
 /*!
@@ -429,7 +429,7 @@ static inline void inc_h(emulator_state *restrict state)
  */
 static inline void dec_h(emulator_state *restrict state)
 {
-	dec_r8(state, REG_H(state));
+	dec_r8(state, state->registers.h);
 }
 
 /*!
@@ -438,8 +438,8 @@ static inline void dec_h(emulator_state *restrict state)
  */
 static inline void ld_h_imm8(emulator_state *restrict state)
 {
-	*REG_H(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.h) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 /*!
@@ -448,9 +448,9 @@ static inline void ld_h_imm8(emulator_state *restrict state)
  */
 static inline void jr_z_imm8(emulator_state *restrict state)
 {
-	int8_t to_add = mem_read8(state, ++state->pc) + 1;
+	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->pc += (state->flag_reg & FLAG_Z) ? to_add : 1;
+	state->registers.pc += (*(state->registers.f) & FLAG_Z) ? to_add : 1;
 }
 
 /*!
@@ -459,7 +459,7 @@ static inline void jr_z_imm8(emulator_state *restrict state)
  */
 static inline void add_hl_hl(emulator_state *restrict state)
 {
-	add_to_hl(state, state->hl);
+	add_to_hl(state, state->registers.hl);
 }
 
 /*!
@@ -468,8 +468,8 @@ static inline void add_hl_hl(emulator_state *restrict state)
  */
 static inline void ldi_a_hl(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, state->hl++);
-	state->pc++;
+	*(state->registers.a) = mem_read8(state, state->registers.hl++);
+	state->registers.pc++;
 }
 
 /*!
@@ -478,8 +478,8 @@ static inline void ldi_a_hl(emulator_state *restrict state)
  */
 static inline void dec_hl(emulator_state *restrict state)
 {
-	state->hl--;
-	state->pc++;
+	state->registers.hl--;
+	state->registers.pc++;
 }
 
 /*!
@@ -488,7 +488,7 @@ static inline void dec_hl(emulator_state *restrict state)
  */
 static inline void inc_l(emulator_state *restrict state)
 {
-	inc_r8(state, REG_L(state));
+	inc_r8(state, state->registers.l);
 }
 
 /*!
@@ -497,7 +497,7 @@ static inline void inc_l(emulator_state *restrict state)
  */
 static inline void dec_l(emulator_state *restrict state)
 {
-	dec_r8(state, REG_L(state));
+	dec_r8(state, state->registers.l);
 }
 
 /*!
@@ -506,8 +506,8 @@ static inline void dec_l(emulator_state *restrict state)
  */
 static inline void ld_l_imm8(emulator_state *restrict state)
 {
-	*REG_L(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.l) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 /*!
@@ -516,8 +516,8 @@ static inline void ld_l_imm8(emulator_state *restrict state)
  */
 static inline void cpl(emulator_state *restrict state)
 {
-	*REG_A(state) ^= ~(*REG_A(state));
-	state->pc++;
+	*(state->registers.a) ^= ~(*(state->registers.a));
+	state->registers.pc++;
 }
 
 /*!
@@ -526,9 +526,9 @@ static inline void cpl(emulator_state *restrict state)
  */
 static inline void jr_nc_imm8(emulator_state *restrict state)
 {
-	int8_t to_add = mem_read8(state, ++state->pc) + 1;
+	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->pc += (state->flag_reg & FLAG_C) ? 1 : to_add;
+	state->registers.pc += (*(state->registers.f) & FLAG_C) ? 1 : to_add;
 }
 
 /*!
@@ -537,12 +537,12 @@ static inline void jr_nc_imm8(emulator_state *restrict state)
  */
 static inline void ld_sp_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->sp = (msb<<8)|lsb;
+	state->registers.sp = (msb<<8)|lsb;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -551,8 +551,8 @@ static inline void ld_sp_imm16(emulator_state *restrict state)
  */
 static inline void ldd_hl_a(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl--, *REG_A(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl--, *(state->registers.a));
+	state->registers.pc++;
 }
 
 /*!
@@ -561,8 +561,8 @@ static inline void ldd_hl_a(emulator_state *restrict state)
  */
 static inline void inc_sp(emulator_state *restrict state)
 {
-	state->sp++;
-	state->pc++;
+	state->registers.sp++;
+	state->registers.pc++;
 }
 
 /*!
@@ -571,9 +571,9 @@ static inline void inc_sp(emulator_state *restrict state)
  */
 static inline void ld_hl_imm8(emulator_state *restrict state)
 {
-	uint8_t n = mem_read8(state, ++state->pc);
-	mem_write8(state, state->hl, n);
-	state->pc++;
+	uint8_t n = mem_read8(state, ++state->registers.pc);
+	mem_write8(state, state->registers.hl, n);
+	state->registers.pc++;
 }
 
 /*!
@@ -582,8 +582,8 @@ static inline void ld_hl_imm8(emulator_state *restrict state)
  */
 static inline void scf(emulator_state *restrict state)
 {
-	state->flag_reg |= FLAG_C;
-	state->pc++;
+	*(state->registers.f) |= FLAG_C;
+	state->registers.pc++;
 }
 
 /*!
@@ -592,9 +592,9 @@ static inline void scf(emulator_state *restrict state)
  */
 static inline void jr_c_imm8(emulator_state *restrict state)
 {
-	int8_t to_add = mem_read8(state, ++state->pc) + 1;
+	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->pc += (state->flag_reg & FLAG_C) ? to_add : 1;
+	state->registers.pc += (*(state->registers.f) & FLAG_C) ? to_add : 1;
 }
 
 /*!
@@ -603,7 +603,7 @@ static inline void jr_c_imm8(emulator_state *restrict state)
  */
 static inline void add_hl_sp(emulator_state *restrict state)
 {
-	add_to_hl(state, state->sp);
+	add_to_hl(state, state->registers.sp);
 }
 
 /*!
@@ -612,8 +612,8 @@ static inline void add_hl_sp(emulator_state *restrict state)
  */
 static inline void ldd_a_hl(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, state->hl--);
-	state->pc++;
+	*(state->registers.a) = mem_read8(state, state->registers.hl--);
+	state->registers.pc++;
 }
 
 /*!
@@ -622,8 +622,8 @@ static inline void ldd_a_hl(emulator_state *restrict state)
  */
 static inline void dec_sp(emulator_state *restrict state)
 {
-	state->sp--;
-	state->pc++;
+	state->registers.sp--;
+	state->registers.pc++;
 }
 
 /*!
@@ -632,7 +632,7 @@ static inline void dec_sp(emulator_state *restrict state)
  */
 static inline void inc_a(emulator_state *restrict state)
 {
-	inc_r8(state, REG_A(state));
+	inc_r8(state, state->registers.a);
 }
 
 /*!
@@ -641,7 +641,7 @@ static inline void inc_a(emulator_state *restrict state)
  */
 static inline void dec_a(emulator_state *restrict state)
 {
-	dec_r8(state, REG_A(state));
+	dec_r8(state, state->registers.a);
 }
 
 /*!
@@ -650,8 +650,8 @@ static inline void dec_a(emulator_state *restrict state)
  */
 static inline void ld_a_imm8(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, ++state->pc);
-	state->pc++;
+	*(state->registers.a) = mem_read8(state, ++state->registers.pc);
+	state->registers.pc++;
 }
 
 /*!
@@ -660,8 +660,8 @@ static inline void ld_a_imm8(emulator_state *restrict state)
  */
 static inline void ccf(emulator_state *restrict state)
 {
-	state->flag_reg ^= ~FLAG_C;
-	state->pc++;
+	*(state->registers.f) ^= ~FLAG_C;
+	state->registers.pc++;
 }
 
 /*!
@@ -670,7 +670,7 @@ static inline void ccf(emulator_state *restrict state)
  */
 static inline void ld_b_b(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -679,8 +679,8 @@ static inline void ld_b_b(emulator_state *restrict state)
  */
 static inline void ld_b_c(emulator_state *restrict state)
 {
-	*REG_B(state) = *REG_C(state);
-	state->pc++;
+	*(state->registers.b) = *(state->registers.c);
+	state->registers.pc++;
 }
 
 /*!
@@ -689,8 +689,8 @@ static inline void ld_b_c(emulator_state *restrict state)
  */
 static inline void ld_b_d(emulator_state *restrict state)
 {
-	*REG_B(state) = *REG_D(state);
-	state->pc++;
+	*(state->registers.b) = *(state->registers.d);
+	state->registers.pc++;
 }
 
 /*!
@@ -699,8 +699,8 @@ static inline void ld_b_d(emulator_state *restrict state)
  */
 static inline void ld_b_e(emulator_state *restrict state)
 {
-	*REG_B(state) = *REG_E(state);
-	state->pc++;
+	*(state->registers.b) = *(state->registers.e);
+	state->registers.pc++;
 }
 
 /*!
@@ -709,8 +709,8 @@ static inline void ld_b_e(emulator_state *restrict state)
  */
 static inline void ld_b_h(emulator_state *restrict state)
 {
-	*REG_B(state) = *REG_H(state);
-	state->pc++;
+	*(state->registers.b) = *(state->registers.h);
+	state->registers.pc++;
 }
 
 /*!
@@ -719,8 +719,8 @@ static inline void ld_b_h(emulator_state *restrict state)
  */
 static inline void ld_b_l(emulator_state *restrict state)
 {
-	*REG_B(state) = *REG_L(state);
-	state->pc++;
+	*(state->registers.b) = *(state->registers.l);
+	state->registers.pc++;
 }
 
 /*!
@@ -729,8 +729,8 @@ static inline void ld_b_l(emulator_state *restrict state)
  */
 static inline void ld_b_hl(emulator_state *restrict state)
 {
-	*REG_B(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.b) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -739,8 +739,8 @@ static inline void ld_b_hl(emulator_state *restrict state)
  */
 static inline void ld_b_a(emulator_state *restrict state)
 {
-	*REG_B(state) = *REG_A(state);
-	state->pc++;
+	*(state->registers.b) = *(state->registers.a);
+	state->registers.pc++;
 }
 
 /*!
@@ -749,8 +749,8 @@ static inline void ld_b_a(emulator_state *restrict state)
  */
 static inline void ld_c_b(emulator_state *restrict state)
 {
-	*REG_C(state) = *REG_B(state);
-	state->pc++;
+	*(state->registers.c) = *(state->registers.b);
+	state->registers.pc++;
 }
 
 /*!
@@ -759,7 +759,7 @@ static inline void ld_c_b(emulator_state *restrict state)
  */
 static inline void ld_c_c(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -768,8 +768,8 @@ static inline void ld_c_c(emulator_state *restrict state)
  */
 static inline void ld_c_d(emulator_state *restrict state)
 {
-	*REG_C(state) = *REG_D(state);
-	state->pc++;
+	*(state->registers.c) = *(state->registers.d);
+	state->registers.pc++;
 }
 
 /*!
@@ -778,8 +778,8 @@ static inline void ld_c_d(emulator_state *restrict state)
  */
 static inline void ld_c_e(emulator_state *restrict state)
 {
-	*REG_C(state) = *REG_E(state);
-	state->pc++;
+	*(state->registers.c) = *(state->registers.e);
+	state->registers.pc++;
 }
 
 /*!
@@ -788,8 +788,8 @@ static inline void ld_c_e(emulator_state *restrict state)
  */
 static inline void ld_c_h(emulator_state *restrict state)
 {
-	*REG_C(state) = *REG_H(state);
-	state->pc++;
+	*(state->registers.c) = *(state->registers.h);
+	state->registers.pc++;
 }
 
 /*!
@@ -798,8 +798,8 @@ static inline void ld_c_h(emulator_state *restrict state)
  */
 static inline void ld_c_l(emulator_state *restrict state)
 {
-	*REG_C(state) = *REG_L(state);
-	state->pc++;
+	*(state->registers.c) = *(state->registers.l);
+	state->registers.pc++;
 }
 
 /*!
@@ -808,8 +808,8 @@ static inline void ld_c_l(emulator_state *restrict state)
  */
 static inline void ld_c_hl(emulator_state *restrict state)
 {
-	*REG_C(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.c) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -818,8 +818,8 @@ static inline void ld_c_hl(emulator_state *restrict state)
  */
 static inline void ld_c_a(emulator_state *restrict state)
 {
-	*REG_C(state) = *REG_A(state);
-	state->pc++;
+	*(state->registers.c) = *(state->registers.a);
+	state->registers.pc++;
 }
 
 /*!
@@ -828,8 +828,8 @@ static inline void ld_c_a(emulator_state *restrict state)
  */
 static inline void ld_d_b(emulator_state *restrict state)
 {
-	*REG_D(state) = *REG_B(state);
-	state->pc++;
+	*(state->registers.d) = *(state->registers.b);
+	state->registers.pc++;
 }
 
 /*!
@@ -838,8 +838,8 @@ static inline void ld_d_b(emulator_state *restrict state)
  */
 static inline void ld_d_c(emulator_state *restrict state)
 {
-	*REG_D(state) = *REG_C(state);
-	state->pc++;
+	*(state->registers.d) = *(state->registers.c);
+	state->registers.pc++;
 }
 
 /*!
@@ -848,7 +848,7 @@ static inline void ld_d_c(emulator_state *restrict state)
  */
 static inline void ld_d_d(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -857,8 +857,8 @@ static inline void ld_d_d(emulator_state *restrict state)
  */
 static inline void ld_d_e(emulator_state *restrict state)
 {
-	*REG_D(state) = *REG_E(state);
-	state->pc++;
+	*(state->registers.d) = *(state->registers.e);
+	state->registers.pc++;
 }
 
 /*!
@@ -867,8 +867,8 @@ static inline void ld_d_e(emulator_state *restrict state)
  */
 static inline void ld_d_h(emulator_state *restrict state)
 {
-	*REG_D(state) = *REG_H(state);
-	state->pc++;
+	*(state->registers.d) = *(state->registers.h);
+	state->registers.pc++;
 }
 
 /*!
@@ -877,8 +877,8 @@ static inline void ld_d_h(emulator_state *restrict state)
  */
 static inline void ld_d_l(emulator_state *restrict state)
 {
-	*REG_D(state) = *REG_L(state);
-	state->pc++;
+	*(state->registers.d) = *(state->registers.l);
+	state->registers.pc++;
 }
 
 /*!
@@ -887,8 +887,8 @@ static inline void ld_d_l(emulator_state *restrict state)
  */
 static inline void ld_d_hl(emulator_state *restrict state)
 {
-	*REG_D(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.d) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -897,8 +897,8 @@ static inline void ld_d_hl(emulator_state *restrict state)
  */
 static inline void ld_d_a(emulator_state *restrict state)
 {
-	*REG_D(state) = *REG_A(state);
-	state->pc++;
+	*(state->registers.d) = *(state->registers.a);
+	state->registers.pc++;
 }
 
 /*!
@@ -907,8 +907,8 @@ static inline void ld_d_a(emulator_state *restrict state)
  */
 static inline void ld_e_b(emulator_state *restrict state)
 {
-	*REG_E(state) = *REG_B(state);
-	state->pc++;
+	*(state->registers.e) = *(state->registers.b);
+	state->registers.pc++;
 }
 
 /*!
@@ -917,8 +917,8 @@ static inline void ld_e_b(emulator_state *restrict state)
  */
 static inline void ld_e_c(emulator_state *restrict state)
 {
-	*REG_E(state) = *REG_C(state);
-	state->pc++;
+	*(state->registers.e) = *(state->registers.c);
+	state->registers.pc++;
 }
 
 /*!
@@ -927,8 +927,8 @@ static inline void ld_e_c(emulator_state *restrict state)
  */
 static inline void ld_e_d(emulator_state *restrict state)
 {
-	*REG_E(state) = *REG_D(state);
-	state->pc++;
+	*(state->registers.e) = *(state->registers.d);
+	state->registers.pc++;
 }
 
 /*!
@@ -937,7 +937,7 @@ static inline void ld_e_d(emulator_state *restrict state)
  */
 static inline void ld_e_e(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -946,8 +946,8 @@ static inline void ld_e_e(emulator_state *restrict state)
  */
 static inline void ld_e_h(emulator_state *restrict state)
 {
-	*REG_E(state) = *REG_H(state);
-	state->pc++;
+	*(state->registers.e) = *(state->registers.h);
+	state->registers.pc++;
 }
 
 /*!
@@ -956,8 +956,8 @@ static inline void ld_e_h(emulator_state *restrict state)
  */
 static inline void ld_e_l(emulator_state *restrict state)
 {
-	*REG_E(state) = *REG_L(state);
-	state->pc++;
+	*(state->registers.e) = *(state->registers.l);
+	state->registers.pc++;
 }
 
 /*!
@@ -966,8 +966,8 @@ static inline void ld_e_l(emulator_state *restrict state)
  */
 static inline void ld_e_hl(emulator_state *restrict state)
 {
-	*REG_E(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.e) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -976,8 +976,8 @@ static inline void ld_e_hl(emulator_state *restrict state)
  */
 static inline void ld_e_a(emulator_state *restrict state)
 {
-	*REG_E(state) = *REG_A(state);
-	state->pc++;
+	*(state->registers.e) = *(state->registers.a);
+	state->registers.pc++;
 }
 
 /*!
@@ -986,8 +986,8 @@ static inline void ld_e_a(emulator_state *restrict state)
  */
 static inline void ld_h_b(emulator_state *restrict state)
 {
-	*REG_H(state) = *REG_B(state);
-	state->pc++;
+	*(state->registers.h) = *(state->registers.b);
+	state->registers.pc++;
 }
 
 /*!
@@ -996,8 +996,8 @@ static inline void ld_h_b(emulator_state *restrict state)
  */
 static inline void ld_h_c(emulator_state *restrict state)
 {
-	*REG_H(state) = *REG_C(state);
-	state->pc++;
+	*(state->registers.h) = *(state->registers.c);
+	state->registers.pc++;
 }
 
 /*!
@@ -1006,8 +1006,8 @@ static inline void ld_h_c(emulator_state *restrict state)
  */
 static inline void ld_h_d(emulator_state *restrict state)
 {
-	*REG_H(state) = *REG_D(state);
-	state->pc++;
+	*(state->registers.h) = *(state->registers.d);
+	state->registers.pc++;
 }
 
 /*!
@@ -1016,8 +1016,8 @@ static inline void ld_h_d(emulator_state *restrict state)
  */
 static inline void ld_h_e(emulator_state *restrict state)
 {
-	*REG_H(state) = *REG_E(state);
-	state->pc++;
+	*(state->registers.h) = *(state->registers.e);
+	state->registers.pc++;
 }
 
 /*!
@@ -1026,7 +1026,7 @@ static inline void ld_h_e(emulator_state *restrict state)
  */
 static inline void ld_h_h(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -1035,8 +1035,8 @@ static inline void ld_h_h(emulator_state *restrict state)
  */
 static inline void ld_h_l(emulator_state *restrict state)
 {
-	*REG_H(state) = *REG_L(state);
-	state->pc++;
+	*(state->registers.h) = *(state->registers.l);
+	state->registers.pc++;
 }
 
 /*!
@@ -1045,8 +1045,8 @@ static inline void ld_h_l(emulator_state *restrict state)
  */
 static inline void ld_h_hl(emulator_state *restrict state)
 {
-	*REG_H(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.h) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -1055,8 +1055,8 @@ static inline void ld_h_hl(emulator_state *restrict state)
  */
 static inline void ld_h_a(emulator_state *restrict state)
 {
-	*REG_H(state) = *REG_A(state);
-	state->pc++;
+	*(state->registers.h) = *(state->registers.a);
+	state->registers.pc++;
 }
 
 /*!
@@ -1065,8 +1065,8 @@ static inline void ld_h_a(emulator_state *restrict state)
  */
 static inline void ld_l_b(emulator_state *restrict state)
 {
-	*REG_L(state) = *REG_B(state);
-	state->pc++;
+	*(state->registers.l) = *(state->registers.b);
+	state->registers.pc++;
 }
 
 /*!
@@ -1075,8 +1075,8 @@ static inline void ld_l_b(emulator_state *restrict state)
  */
 static inline void ld_l_c(emulator_state *restrict state)
 {
-	*REG_L(state) = *REG_C(state);
-	state->pc++;
+	*(state->registers.l) = *(state->registers.c);
+	state->registers.pc++;
 }
 
 /*!
@@ -1085,8 +1085,8 @@ static inline void ld_l_c(emulator_state *restrict state)
  */
 static inline void ld_l_d(emulator_state *restrict state)
 {
-	*REG_L(state) = *REG_D(state);
-	state->pc++;
+	*(state->registers.l) = *(state->registers.d);
+	state->registers.pc++;
 }
 
 /*!
@@ -1095,8 +1095,8 @@ static inline void ld_l_d(emulator_state *restrict state)
  */
 static inline void ld_l_e(emulator_state *restrict state)
 {
-	*REG_L(state) = *REG_E(state);
-	state->pc++;
+	*(state->registers.l) = *(state->registers.e);
+	state->registers.pc++;
 }
 
 /*!
@@ -1105,8 +1105,8 @@ static inline void ld_l_e(emulator_state *restrict state)
  */
 static inline void ld_l_h(emulator_state *restrict state)
 {
-	*REG_L(state) = *REG_H(state);
-	state->pc++;
+	*(state->registers.l) = *(state->registers.h);
+	state->registers.pc++;
 }
 
 /*!
@@ -1115,7 +1115,7 @@ static inline void ld_l_h(emulator_state *restrict state)
  */
 static inline void ld_l_l(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -1124,8 +1124,8 @@ static inline void ld_l_l(emulator_state *restrict state)
  */
 static inline void ld_l_hl(emulator_state *restrict state)
 {
-	*REG_L(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.l) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -1134,18 +1134,18 @@ static inline void ld_l_hl(emulator_state *restrict state)
  */
 static inline void ld_l_a(emulator_state *restrict state)
 {
-	*REG_L(state) = *REG_A(state);
-	state->pc++;
+	*(state->registers.l) = *(state->registers.a);
+	state->registers.pc++;
 }
 
 static inline void and_common(emulator_state *restrict state, uint8_t to_and)
 {
-	*REG_A(state) &= to_and;
+	*(state->registers.a) &= to_and;
 
-	state->flag_reg = FLAG_H;
-	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+	*(state->registers.f) = FLAG_H;
+	if(*(state->registers.a) == 0) *(state->registers.f) |= FLAG_Z;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -1154,8 +1154,8 @@ static inline void and_common(emulator_state *restrict state, uint8_t to_and)
  */
 static inline void ld_hl_b(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_B(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.b));
+	state->registers.pc++;
 }
 
 /*!
@@ -1164,8 +1164,8 @@ static inline void ld_hl_b(emulator_state *restrict state)
  */
 static inline void ld_hl_c(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_C(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.c));
+	state->registers.pc++;
 }
 
 /*!
@@ -1174,8 +1174,8 @@ static inline void ld_hl_c(emulator_state *restrict state)
  */
 static inline void ld_hl_d(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_D(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.d));
+	state->registers.pc++;
 }
 
 /*!
@@ -1184,8 +1184,8 @@ static inline void ld_hl_d(emulator_state *restrict state)
  */
 static inline void ld_hl_e(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_E(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.e));
+	state->registers.pc++;
 }
 
 /*!
@@ -1194,8 +1194,8 @@ static inline void ld_hl_e(emulator_state *restrict state)
  */
 static inline void ld_hl_h(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_H(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.h));
+	state->registers.pc++;
 }
 
 /*!
@@ -1204,8 +1204,8 @@ static inline void ld_hl_h(emulator_state *restrict state)
  */
 static inline void ld_hl_l(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_L(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.l));
+	state->registers.pc++;
 }
 
 /*!
@@ -1214,8 +1214,8 @@ static inline void ld_hl_l(emulator_state *restrict state)
  */
 static inline void ld_hl_a(emulator_state *restrict state)
 {
-	mem_write8(state, state->hl, *REG_A(state));
-	state->pc++;
+	mem_write8(state, state->registers.hl, *(state->registers.a));
+	state->registers.pc++;
 }
 
 /*!
@@ -1224,8 +1224,8 @@ static inline void ld_hl_a(emulator_state *restrict state)
  */
 static inline void ld_a_b(emulator_state *restrict state)
 {
-	*REG_A(state) = *REG_B(state);
-	state->pc++;
+	*(state->registers.a) = *(state->registers.b);
+	state->registers.pc++;
 }
 
 /*!
@@ -1234,8 +1234,8 @@ static inline void ld_a_b(emulator_state *restrict state)
  */
 static inline void ld_a_c(emulator_state *restrict state)
 {
-	*REG_A(state) = *REG_C(state);
-	state->pc++;
+	*(state->registers.a) = *(state->registers.c);
+	state->registers.pc++;
 }
 
 /*!
@@ -1244,8 +1244,8 @@ static inline void ld_a_c(emulator_state *restrict state)
  */
 static inline void ld_a_d(emulator_state *restrict state)
 {
-	*REG_A(state) = *REG_D(state);
-	state->pc++;
+	*(state->registers.a) = *(state->registers.d);
+	state->registers.pc++;
 }
 
 /*!
@@ -1254,8 +1254,8 @@ static inline void ld_a_d(emulator_state *restrict state)
  */
 static inline void ld_a_e(emulator_state *restrict state)
 {
-	*REG_A(state) = *REG_E(state);
-	state->pc++;
+	*(state->registers.a) = *(state->registers.e);
+	state->registers.pc++;
 }
 
 /*!
@@ -1264,8 +1264,8 @@ static inline void ld_a_e(emulator_state *restrict state)
  */
 static inline void ld_a_h(emulator_state *restrict state)
 {
-	*REG_A(state) = *REG_H(state);
-	state->pc++;
+	*(state->registers.a) = *(state->registers.h);
+	state->registers.pc++;
 }
 
 /*!
@@ -1274,8 +1274,8 @@ static inline void ld_a_h(emulator_state *restrict state)
  */
 static inline void ld_a_l(emulator_state *restrict state)
 {
-	*REG_A(state) = *REG_L(state);
-	state->pc++;
+	*(state->registers.a) = *(state->registers.l);
+	state->registers.pc++;
 }
 
 /*!
@@ -1284,8 +1284,8 @@ static inline void ld_a_l(emulator_state *restrict state)
  */
 static inline void ld_a_hl(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, state->hl);
-	state->pc++;
+	*(state->registers.a) = mem_read8(state, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -1294,35 +1294,35 @@ static inline void ld_a_hl(emulator_state *restrict state)
  */
 static inline void ld_a_a(emulator_state *restrict state)
 {
-	state->pc++;
+	state->registers.pc++;
 }
 
 static inline void add_common(emulator_state *restrict state, uint8_t to_add)
 {
-	uint32_t temp = *REG_A(state) + to_add;
+	uint32_t temp = *(state->registers.a) + to_add;
 
-	state->flag_reg = 0;
+	*(state->registers.f) = 0;
 
 	if(temp == 0)
 	{
-		state->flag_reg |= FLAG_Z;
+		*(state->registers.f) |= FLAG_Z;
 	}
 	else
 	{
 		if(temp & 0x100)
 		{
-			state->flag_reg |= FLAG_C;
+			*(state->registers.f) |= FLAG_C;
 		}
 
 		// Half carry
-		if(((*REG_A(state) & 0x0F) + (to_add & 0x0F)) > 0x0F)
+		if(((*(state->registers.a) & 0x0F) + (to_add & 0x0F)) > 0x0F)
 		{
-			state->flag_reg |= FLAG_H;
+			*(state->registers.f) |= FLAG_H;
 		}
 	}
 
-	*REG_A(state) = (uint8_t)temp;
-	state->pc++;
+	*(state->registers.a) = (uint8_t)temp;
+	state->registers.pc++;
 }
 
 /*!
@@ -1331,7 +1331,7 @@ static inline void add_common(emulator_state *restrict state, uint8_t to_add)
  */
 static inline void add_b(emulator_state *restrict state)
 {
-	add_common(state, *REG_B(state));
+	add_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1340,7 +1340,7 @@ static inline void add_b(emulator_state *restrict state)
  */
 static inline void add_c(emulator_state *restrict state)
 {
-	add_common(state, *REG_C(state));
+	add_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1349,7 +1349,7 @@ static inline void add_c(emulator_state *restrict state)
  */
 static inline void add_d(emulator_state *restrict state)
 {
-	add_common(state, *REG_D(state));
+	add_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1358,7 +1358,7 @@ static inline void add_d(emulator_state *restrict state)
  */
 static inline void add_e(emulator_state *restrict state)
 {
-	add_common(state, *REG_E(state));
+	add_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1367,7 +1367,7 @@ static inline void add_e(emulator_state *restrict state)
  */
 static inline void add_h(emulator_state *restrict state)
 {
-	add_common(state, *REG_H(state));
+	add_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1376,7 +1376,7 @@ static inline void add_h(emulator_state *restrict state)
  */
 static inline void add_l(emulator_state *restrict state)
 {
-	add_common(state, *REG_L(state));
+	add_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1385,7 +1385,7 @@ static inline void add_l(emulator_state *restrict state)
  */
 static inline void add_hl(emulator_state *restrict state)
 {
-	add_common(state, mem_read8(state, state->hl));
+	add_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1394,12 +1394,12 @@ static inline void add_hl(emulator_state *restrict state)
  */
 static inline void add_a(emulator_state *restrict state)
 {
-	add_common(state, *REG_A(state));
+	add_common(state, *(state->registers.a));
 }
 
 static inline void adc_common(emulator_state *restrict state, uint8_t to_add)
 {
-	if(state->flag_reg & FLAG_C)
+	if(*(state->registers.f) & FLAG_C)
 	{
 		to_add++;
 	}
@@ -1413,7 +1413,7 @@ static inline void adc_common(emulator_state *restrict state, uint8_t to_add)
  */
 static inline void adc_b(emulator_state *restrict state)
 {
-	adc_common(state, *REG_B(state));
+	adc_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1422,7 +1422,7 @@ static inline void adc_b(emulator_state *restrict state)
  */
 static inline void adc_c(emulator_state *restrict state)
 {
-	adc_common(state, *REG_C(state));
+	adc_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1431,7 +1431,7 @@ static inline void adc_c(emulator_state *restrict state)
  */
 static inline void adc_d(emulator_state *restrict state)
 {
-	adc_common(state, *REG_D(state));
+	adc_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1440,7 +1440,7 @@ static inline void adc_d(emulator_state *restrict state)
  */
 static inline void adc_e(emulator_state *restrict state)
 {
-	adc_common(state, *REG_E(state));
+	adc_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1449,7 +1449,7 @@ static inline void adc_e(emulator_state *restrict state)
  */
 static inline void adc_h(emulator_state *restrict state)
 {
-	adc_common(state, *REG_H(state));
+	adc_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1458,7 +1458,7 @@ static inline void adc_h(emulator_state *restrict state)
  */
 static inline void adc_l(emulator_state *restrict state)
 {
-	adc_common(state, *REG_L(state));
+	adc_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1467,7 +1467,7 @@ static inline void adc_l(emulator_state *restrict state)
  */
 static inline void adc_hl(emulator_state *restrict state)
 {
-	adc_common(state, mem_read8(state, state->hl));
+	adc_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1476,32 +1476,32 @@ static inline void adc_hl(emulator_state *restrict state)
  */
 static inline void adc_a(emulator_state *restrict state)
 {
-	adc_common(state, *REG_A(state));
+	adc_common(state, *(state->registers.a));
 }
 
 static inline void sub_common(emulator_state *restrict state, uint8_t to_sub)
 {
-	uint32_t temp = *REG_A(state) - to_sub;
+	uint32_t temp = *(state->registers.a) - to_sub;
 
-	state->flag_reg = FLAG_N;
+	*(state->registers.f) = FLAG_N;
 
 	if(temp == 0)
 	{
-		state->flag_reg |= FLAG_Z;
+		*(state->registers.f) |= FLAG_Z;
 	}
 
-	if(*REG_A(state) < to_sub)
+	if(*(state->registers.a) < to_sub)
 	{
-		state->flag_reg |= FLAG_C;
+		*(state->registers.f) |= FLAG_C;
 	}
 
-	if((*REG_A(state) & 0x0f) < (to_sub & 0x0f))
+	if((*(state->registers.a) & 0x0f) < (to_sub & 0x0f))
 	{
-		state->flag_reg |= FLAG_H;
+		*(state->registers.f) |= FLAG_H;
 	}
 
-	*REG_A(state) = (uint8_t)temp;
-	state->pc++;
+	*(state->registers.a) = (uint8_t)temp;
+	state->registers.pc++;
 }
 
 /*!
@@ -1510,7 +1510,7 @@ static inline void sub_common(emulator_state *restrict state, uint8_t to_sub)
  */
 static inline void sub_b(emulator_state *restrict state)
 {
-	sub_common(state, *REG_B(state));
+	sub_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1519,7 +1519,7 @@ static inline void sub_b(emulator_state *restrict state)
  */
 static inline void sub_c(emulator_state *restrict state)
 {
-	sub_common(state, *REG_C(state));
+	sub_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1528,7 +1528,7 @@ static inline void sub_c(emulator_state *restrict state)
  */
 static inline void sub_d(emulator_state *restrict state)
 {
-	sub_common(state, *REG_D(state));
+	sub_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1537,7 +1537,7 @@ static inline void sub_d(emulator_state *restrict state)
  */
 static inline void sub_e(emulator_state *restrict state)
 {
-	sub_common(state, *REG_E(state));
+	sub_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1546,7 +1546,7 @@ static inline void sub_e(emulator_state *restrict state)
  */
 static inline void sub_h(emulator_state *restrict state)
 {
-	sub_common(state, *REG_H(state));
+	sub_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1555,7 +1555,7 @@ static inline void sub_h(emulator_state *restrict state)
  */
 static inline void sub_l(emulator_state *restrict state)
 {
-	sub_common(state, *REG_L(state));
+	sub_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1564,7 +1564,7 @@ static inline void sub_l(emulator_state *restrict state)
  */
 static inline void sub_hl(emulator_state *restrict state)
 {
-	sub_common(state, mem_read8(state, state->hl));
+	sub_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1573,13 +1573,13 @@ static inline void sub_hl(emulator_state *restrict state)
  */
 static inline void sub_a(emulator_state *restrict state)
 {
-	sub_common(state, *REG_A(state));
+	sub_common(state, *(state->registers.a));
 }
 
 
 static inline void sbc_common(emulator_state *restrict state, uint8_t to_sub)
 {
-	if(state->flag_reg & FLAG_C)
+	if(*(state->registers.f) & FLAG_C)
 	{
 		to_sub++;
 	}
@@ -1593,7 +1593,7 @@ static inline void sbc_common(emulator_state *restrict state, uint8_t to_sub)
  */
 static inline void sbc_b(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_B(state));
+	sbc_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1602,7 +1602,7 @@ static inline void sbc_b(emulator_state *restrict state)
  */
 static inline void sbc_c(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_C(state));
+	sbc_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1611,7 +1611,7 @@ static inline void sbc_c(emulator_state *restrict state)
  */
 static inline void sbc_d(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_D(state));
+	sbc_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1620,7 +1620,7 @@ static inline void sbc_d(emulator_state *restrict state)
  */
 static inline void sbc_e(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_E(state));
+	sbc_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1629,7 +1629,7 @@ static inline void sbc_e(emulator_state *restrict state)
  */
 static inline void sbc_h(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_H(state));
+	sbc_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1638,7 +1638,7 @@ static inline void sbc_h(emulator_state *restrict state)
  */
 static inline void sbc_l(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_L(state));
+	sbc_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1647,7 +1647,7 @@ static inline void sbc_l(emulator_state *restrict state)
  */
 static inline void sbc_hl(emulator_state *restrict state)
 {
-	sbc_common(state, mem_read8(state, state->hl));
+	sbc_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1656,7 +1656,7 @@ static inline void sbc_hl(emulator_state *restrict state)
  */
 static inline void sbc_a(emulator_state *restrict state)
 {
-	sbc_common(state, *REG_A(state));
+	sbc_common(state, *(state->registers.a));
 }
 
 /*!
@@ -1665,7 +1665,7 @@ static inline void sbc_a(emulator_state *restrict state)
  */
 static inline void and_b(emulator_state *restrict state)
 {
-	and_common(state, *REG_B(state));
+	and_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1674,7 +1674,7 @@ static inline void and_b(emulator_state *restrict state)
  */
 static inline void and_c(emulator_state *restrict state)
 {
-	and_common(state, *REG_C(state));
+	and_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1683,7 +1683,7 @@ static inline void and_c(emulator_state *restrict state)
  */
 static inline void and_d(emulator_state *restrict state)
 {
-	and_common(state, *REG_D(state));
+	and_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1692,7 +1692,7 @@ static inline void and_d(emulator_state *restrict state)
  */
 static inline void and_e(emulator_state *restrict state)
 {
-	and_common(state, *REG_E(state));
+	and_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1701,7 +1701,7 @@ static inline void and_e(emulator_state *restrict state)
  */
 static inline void and_h(emulator_state *restrict state)
 {
-	and_common(state, *REG_H(state));
+	and_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1710,7 +1710,7 @@ static inline void and_h(emulator_state *restrict state)
  */
 static inline void and_l(emulator_state *restrict state)
 {
-	and_common(state, *REG_L(state));
+	and_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1719,7 +1719,7 @@ static inline void and_l(emulator_state *restrict state)
  */
 static inline void and_hl(emulator_state *restrict state)
 {
-	and_common(state, mem_read8(state, state->hl));
+	and_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1728,20 +1728,20 @@ static inline void and_hl(emulator_state *restrict state)
  */
 static inline void and_a(emulator_state *restrict state)
 {
-	state->flag_reg = FLAG_H;
-	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+	*(state->registers.f) = FLAG_H;
+	if(*(state->registers.a) == 0) *(state->registers.f) |= FLAG_Z;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 static inline void xor_common(emulator_state *restrict state, char to_xor)
 {
-	*REG_A(state) ^= to_xor;
+	*(state->registers.a) ^= to_xor;
 
-	state->flag_reg = 0;
-	if(*REG_A(state) == 0) state->flag_reg |= FLAG_Z;
+	*(state->registers.f) = 0;
+	if(*(state->registers.a) == 0) *(state->registers.f) |= FLAG_Z;
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -1750,7 +1750,7 @@ static inline void xor_common(emulator_state *restrict state, char to_xor)
  */
 static inline void xor_b(emulator_state *restrict state)
 {
-	xor_common(state, *REG_B(state));
+	xor_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1759,7 +1759,7 @@ static inline void xor_b(emulator_state *restrict state)
  */
 static inline void xor_c(emulator_state *restrict state)
 {
-	xor_common(state, *REG_C(state));
+	xor_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1768,7 +1768,7 @@ static inline void xor_c(emulator_state *restrict state)
  */
 static inline void xor_d(emulator_state *restrict state)
 {
-	xor_common(state, *REG_D(state));
+	xor_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1777,7 +1777,7 @@ static inline void xor_d(emulator_state *restrict state)
  */
 static inline void xor_e(emulator_state *restrict state)
 {
-	xor_common(state, *REG_E(state));
+	xor_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1786,7 +1786,7 @@ static inline void xor_e(emulator_state *restrict state)
  */
 static inline void xor_h(emulator_state *restrict state)
 {
-	xor_common(state, *REG_H(state));
+	xor_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1795,7 +1795,7 @@ static inline void xor_h(emulator_state *restrict state)
  */
 static inline void xor_l(emulator_state *restrict state)
 {
-	xor_common(state, *REG_L(state));
+	xor_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1804,7 +1804,7 @@ static inline void xor_l(emulator_state *restrict state)
  */
 static inline void xor_hl(emulator_state *restrict state)
 {
-	xor_common(state, mem_read8(state, state->hl));
+	xor_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1813,18 +1813,18 @@ static inline void xor_hl(emulator_state *restrict state)
  */
 static inline void xor_a(emulator_state *restrict state)
 {
-	*REG_A(state) = 0;
-	state->flag_reg = FLAG_Z;
-	state->pc++;
+	*(state->registers.a) = 0;
+	*(state->registers.f) = FLAG_Z;
+	state->registers.pc++;
 }
 
 static inline void or_common(emulator_state *restrict state, uint8_t to_or)
 {
-	*REG_A(state) |= to_or;
+	*(state->registers.a) |= to_or;
 
-	state->flag_reg = (*REG_A(state) == 0 ? FLAG_Z : 0);
+	*(state->registers.f) = (*(state->registers.a) == 0 ? FLAG_Z : 0);
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -1833,7 +1833,7 @@ static inline void or_common(emulator_state *restrict state, uint8_t to_or)
  */
 static inline void or_b(emulator_state *restrict state)
 {
-	or_common(state, *REG_B(state));
+	or_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1842,7 +1842,7 @@ static inline void or_b(emulator_state *restrict state)
  */
 static inline void or_c(emulator_state *restrict state)
 {
-	or_common(state, *REG_C(state));
+	or_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1851,7 +1851,7 @@ static inline void or_c(emulator_state *restrict state)
  */
 static inline void or_d(emulator_state *restrict state)
 {
-	or_common(state, *REG_D(state));
+	or_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1860,7 +1860,7 @@ static inline void or_d(emulator_state *restrict state)
  */
 static inline void or_e(emulator_state *restrict state)
 {
-	or_common(state, *REG_E(state));
+	or_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1869,7 +1869,7 @@ static inline void or_e(emulator_state *restrict state)
  */
 static inline void or_h(emulator_state *restrict state)
 {
-	or_common(state, *REG_H(state));
+	or_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1878,7 +1878,7 @@ static inline void or_h(emulator_state *restrict state)
  */
 static inline void or_l(emulator_state *restrict state)
 {
-	or_common(state, *REG_L(state));
+	or_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1887,7 +1887,7 @@ static inline void or_l(emulator_state *restrict state)
  */
 static inline void or_hl(emulator_state *restrict state)
 {
-	or_common(state, mem_read8(state, state->hl));
+	or_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1896,35 +1896,35 @@ static inline void or_hl(emulator_state *restrict state)
  */
 static inline void or_a(emulator_state *restrict state)
 {
-	or_common(state, *REG_A(state));
+	or_common(state, *(state->registers.a));
 }
 
 static inline void cp_common(emulator_state *restrict state, uint8_t cmp)
 {
 	/*debug("flags = %s%s%s%s; cmp = %d; A = %d",
 	 ( stat*e->flag_reg & FLAG_Z) ? "Z":"z",
-	 (state->flag_reg & FLAG_N) ? "N":"n",
-	 (state->flag_reg & FLAG_H) ? "H":"h",
-	 (state->flag_reg & FLAG_C) ? "C":"c", cmp, *REG_A(state));*/
-	state->flag_reg = FLAG_N;
-	if(*REG_A(state) == cmp)
+	 (*(state->registers.f) & FLAG_N) ? "N":"n",
+	 (*(state->registers.f) & FLAG_H) ? "H":"h",
+	 (*(state->registers.f) & FLAG_C) ? "C":"c", cmp, *(state->registers.a));*/
+	*(state->registers.f) = FLAG_N;
+	if(*(state->registers.a) == cmp)
 	{
-		state->flag_reg |= FLAG_Z;
+		*(state->registers.f) |= FLAG_Z;
 	}
 	else
 	{
-		if(*REG_A(state) < cmp)
+		if(*(state->registers.a) < cmp)
 		{
-			state->flag_reg |= FLAG_C;
+			*(state->registers.f) |= FLAG_C;
 		}
 		else
 		{
-			state->flag_reg |= FLAG_H;
+			*(state->registers.f) |= FLAG_H;
 		}
 	}
 	/* dump_flags(state); */
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -1933,7 +1933,7 @@ static inline void cp_common(emulator_state *restrict state, uint8_t cmp)
  */
 static inline void cp_b(emulator_state *restrict state)
 {
-	cp_common(state, *REG_B(state));
+	cp_common(state, *(state->registers.b));
 }
 
 /*!
@@ -1942,7 +1942,7 @@ static inline void cp_b(emulator_state *restrict state)
  */
 static inline void cp_c(emulator_state *restrict state)
 {
-	cp_common(state, *REG_C(state));
+	cp_common(state, *(state->registers.c));
 }
 
 /*!
@@ -1951,7 +1951,7 @@ static inline void cp_c(emulator_state *restrict state)
  */
 static inline void cp_d(emulator_state *restrict state)
 {
-	cp_common(state, *REG_D(state));
+	cp_common(state, *(state->registers.d));
 }
 
 /*!
@@ -1960,7 +1960,7 @@ static inline void cp_d(emulator_state *restrict state)
  */
 static inline void cp_e(emulator_state *restrict state)
 {
-	cp_common(state, *REG_E(state));
+	cp_common(state, *(state->registers.e));
 }
 
 /*!
@@ -1969,7 +1969,7 @@ static inline void cp_e(emulator_state *restrict state)
  */
 static inline void cp_h(emulator_state *restrict state)
 {
-	cp_common(state, *REG_H(state));
+	cp_common(state, *(state->registers.h));
 }
 
 /*!
@@ -1978,7 +1978,7 @@ static inline void cp_h(emulator_state *restrict state)
  */
 static inline void cp_l(emulator_state *restrict state)
 {
-	cp_common(state, *REG_L(state));
+	cp_common(state, *(state->registers.l));
 }
 
 /*!
@@ -1987,7 +1987,7 @@ static inline void cp_l(emulator_state *restrict state)
  */
 static inline void cp_hl(emulator_state *restrict state)
 {
-	cp_common(state, mem_read8(state, state->hl));
+	cp_common(state, mem_read8(state, state->registers.hl));
 }
 
 /*!
@@ -1996,7 +1996,7 @@ static inline void cp_hl(emulator_state *restrict state)
  */
 static inline void cp_a(emulator_state *restrict state)
 {
-	cp_common(state, *REG_A(state));
+	cp_common(state, *(state->registers.a));
 }
 
 /*!
@@ -2005,9 +2005,9 @@ static inline void cp_a(emulator_state *restrict state)
  */
 static inline void pop_bc(emulator_state *restrict state)
 {
-	state->bc = mem_read16(state, state->sp);
-	state->sp += 2;
-	state->pc++;
+	state->registers.bc = mem_read16(state, state->registers.sp);
+	state->registers.sp += 2;
+	state->registers.pc++;
 }
 
 /*!
@@ -2016,10 +2016,10 @@ static inline void pop_bc(emulator_state *restrict state)
  */
 static inline void jp_nz_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->pc = (state->flag_reg & FLAG_Z) ? state->pc+1 : (msb<<8 | lsb);
+	state->registers.pc = (*(state->registers.f) & FLAG_Z) ? state->registers.pc+1 : (msb<<8 | lsb);
 }
 
 /*!
@@ -2028,10 +2028,10 @@ static inline void jp_nz_imm16(emulator_state *restrict state)
  */
 static inline void jp_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->pc = (msb<<8 | lsb);
+	state->registers.pc = (msb<<8 | lsb);
 }
 
 /*!
@@ -2040,9 +2040,9 @@ static inline void jp_imm16(emulator_state *restrict state)
  */
 static inline void push_bc(emulator_state *restrict state)
 {
-	state->sp -= 2;
-	mem_write16(state, state->sp, state->bc);
-	state->pc++;
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, state->registers.bc);
+	state->registers.pc++;
 }
 
 /*!
@@ -2051,16 +2051,16 @@ static inline void push_bc(emulator_state *restrict state)
  */
 static inline void add_imm8(emulator_state *restrict state)
 {
-	add_common(state, mem_read8(state, ++state->pc));
+	add_common(state, mem_read8(state, ++state->registers.pc));
 }
 
 static inline void reset_common(emulator_state *restrict state)
 {
-	uint16_t to = mem_read8(state, state->pc) - 0xC7;
+	uint16_t to = mem_read8(state, state->registers.pc) - 0xC7;
 
-	state->sp -= 2;
-	mem_write16(state, state->sp, ++state->pc);
-	state->pc = to;
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, ++state->registers.pc);
+	state->registers.pc = to;
 }
 
 /*!
@@ -2069,8 +2069,8 @@ static inline void reset_common(emulator_state *restrict state)
  */
 static inline void ret(emulator_state *restrict state)
 {
-	state->pc = mem_read16(state, state->sp);
-	state->sp += 2;
+	state->registers.pc = mem_read16(state, state->registers.sp);
+	state->registers.sp += 2;
 }
 
 /*!
@@ -2079,13 +2079,13 @@ static inline void ret(emulator_state *restrict state)
  */
 static inline void retnz(emulator_state *restrict state)
 {
-	if(!(state->flag_reg & FLAG_Z))
+	if(!(*(state->registers.f) & FLAG_Z))
 	{
 		ret(state);
 	}
 	else
 	{
-		state->pc++;
+		state->registers.pc++;
 	}
 }
 
@@ -2095,13 +2095,13 @@ static inline void retnz(emulator_state *restrict state)
  */
 static inline void retz(emulator_state *restrict state)
 {
-	if(state->flag_reg & FLAG_Z)
+	if(*(state->registers.f) & FLAG_Z)
 	{
 		ret(state);
 	}
 	else
 	{
-		state->pc++;
+		state->registers.pc++;
 	}
 }
 
@@ -2111,10 +2111,10 @@ static inline void retz(emulator_state *restrict state)
  */
 static inline void jp_z_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->pc = (state->flag_reg & FLAG_Z) ? (msb<<8 | lsb) : state->pc+1;
+	state->registers.pc = (*(state->registers.f) & FLAG_Z) ? (msb<<8 | lsb) : state->registers.pc+1;
 }
 
 /*!
@@ -2123,7 +2123,7 @@ static inline void jp_z_imm16(emulator_state *restrict state)
  */
 static inline void cb_dispatch(emulator_state *restrict state)
 {
-	int8_t opcode = mem_read8(state, ++state->pc);
+	int8_t opcode = mem_read8(state, ++state->registers.pc);
 	uint8_t *write_to;
 	uint8_t maybe_temp;
 	uint8_t bit_number;
@@ -2143,28 +2143,28 @@ static inline void cb_dispatch(emulator_state *restrict state)
 	switch(reg)
 	{
 	case CB_REG_B:
-		write_to = REG_B(state);
+		write_to = state->registers.b;
 		break;
 	case CB_REG_C:
-		write_to = REG_C(state);
+		write_to = state->registers.c;
 		break;
 	case CB_REG_D:
-		write_to = REG_D(state);
+		write_to = state->registers.d;
 		break;
 	case CB_REG_E:
-		write_to = REG_E(state);
+		write_to = state->registers.e;
 		break;
 	case CB_REG_H:
-		write_to = REG_H(state);
+		write_to = state->registers.h;
 		break;
 	case CB_REG_L:
-		write_to = REG_L(state);
+		write_to = state->registers.l;
 		break;
 	case CB_REG_HL:
 		write_to = &maybe_temp;
 		break;
 	case CB_REG_A:
-		write_to = REG_A(state);
+		write_to = state->registers.a;
 		break;
 	}
 
@@ -2172,7 +2172,7 @@ static inline void cb_dispatch(emulator_state *restrict state)
 
 	if(reg == CB_REG_HL)
 	{
-		maybe_temp = mem_read8(state, state->hl);
+		maybe_temp = mem_read8(state, state->registers.hl);
 	}
 
 	switch(op)
@@ -2180,41 +2180,41 @@ static inline void cb_dispatch(emulator_state *restrict state)
 	case CB_OP_RLC:
 		if(*write_to & 0x80)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to <<= 1;
-		*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+		*write_to |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
 	case CB_OP_RRC:
 		if(*write_to & 0x01)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to >>= 1;
-		if(state->flag_reg & FLAG_C)
+		if(*(state->registers.f) & FLAG_C)
 		{
 			*write_to |= 0x80;
 		}
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
@@ -2222,24 +2222,24 @@ static inline void cb_dispatch(emulator_state *restrict state)
 		/* abusing FLAG_H as a temp var. */
 		if(*write_to & 0x80)
 		{
-			state->flag_reg = FLAG_H;
+			*(state->registers.f) = FLAG_H;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to <<= 1;
-		*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+		*write_to |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
 
-		if(state->flag_reg & FLAG_H)
+		if(*(state->registers.f) & FLAG_H)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
@@ -2247,78 +2247,78 @@ static inline void cb_dispatch(emulator_state *restrict state)
 		/* same as above */
 		if(*write_to & 0x01)
 		{
-			state->flag_reg = FLAG_H;
+			*(state->registers.f) = FLAG_H;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to >>= 1;
-		*write_to |= ((state->flag_reg & FLAG_C) == FLAG_C);
+		*write_to |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
 
-		if(state->flag_reg & FLAG_H)
+		if(*(state->registers.f) & FLAG_H)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
 	case CB_OP_SLA:
 		if(*write_to & 0x80)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to <<= 1;
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
 	case CB_OP_SRA:
 		if(*write_to & 0x01)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to = (*write_to & 0x80) | (*write_to >> 1);
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
 	case CB_OP_SRL:
 		if(*write_to & 0x01)
 		{
-			state->flag_reg = FLAG_C;
+			*(state->registers.f) = FLAG_C;
 		}
 		else
 		{
-			state->flag_reg = 0x00;
+			*(state->registers.f) = 0x00;
 		}
 
 		*write_to >>= 1;
 
 		if(*write_to == 0)
 		{
-			state->flag_reg |= FLAG_Z;
+			*(state->registers.f) |= FLAG_Z;
 		}
 
 		break;
@@ -2332,18 +2332,18 @@ static inline void cb_dispatch(emulator_state *restrict state)
 		break;
 	case CB_OP_BIT:
 		/* test bit <bit_number> of register <reg> */
-		state->flag_reg |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
-		state->flag_reg |= FLAG_H;
-		state->flag_reg &= !FLAG_N;
+		*(state->registers.f) |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
+		*(state->registers.f) |= FLAG_H;
+		*(state->registers.f) &= !FLAG_N;
 		break;
 	}
 
 	if(reg == CB_REG_HL)
 	{
-		mem_write8(state, state->hl, maybe_temp);
+		mem_write8(state, state->registers.hl, maybe_temp);
 	}
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -2352,13 +2352,13 @@ static inline void cb_dispatch(emulator_state *restrict state)
  */
 static inline void call_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->sp -= 2;
-	mem_write16(state, state->sp, ++state->pc);
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, ++state->registers.pc);
 
-	state->pc = (msb<<8 | lsb);
+	state->registers.pc = (msb<<8 | lsb);
 }
 
 /*!
@@ -2367,13 +2367,13 @@ static inline void call_imm16(emulator_state *restrict state)
  */
 static inline void retnc(emulator_state *restrict state)
 {
-	if(!(state->flag_reg & FLAG_C))
+	if(!(*(state->registers.f) & FLAG_C))
 	{
 		ret(state);
 	}
 	else
 	{
-		state->pc++;
+		state->registers.pc++;
 	}
 }
 
@@ -2383,9 +2383,9 @@ static inline void retnc(emulator_state *restrict state)
  */
 static inline void pop_de(emulator_state *restrict state)
 {
-	state->de = mem_read16(state, state->sp);
-	state->sp += 2;
-	state->pc++;
+	state->registers.de = mem_read16(state, state->registers.sp);
+	state->registers.sp += 2;
+	state->registers.pc++;
 }
 
 /*!
@@ -2394,10 +2394,10 @@ static inline void pop_de(emulator_state *restrict state)
  */
 static inline void jp_nc_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->pc = (state->flag_reg & FLAG_C) ? state->pc+1 : (msb<<8 | lsb);
+	state->registers.pc = (*(state->registers.f) & FLAG_C) ? state->registers.pc+1 : (msb<<8 | lsb);
 }
 
 /*!
@@ -2406,9 +2406,9 @@ static inline void jp_nc_imm16(emulator_state *restrict state)
  */
 static inline void push_de(emulator_state *restrict state)
 {
-	state->sp -= 2;
-	mem_write16(state, state->sp, state->de);
-	state->pc++;
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, state->registers.de);
+	state->registers.pc++;
 }
 
 /*!
@@ -2417,7 +2417,7 @@ static inline void push_de(emulator_state *restrict state)
  */
 static inline void sub_imm8(emulator_state *restrict state)
 {
-	sub_common(state, mem_read8(state, ++state->pc));
+	sub_common(state, mem_read8(state, ++state->registers.pc));
 }
 
 /*!
@@ -2426,13 +2426,13 @@ static inline void sub_imm8(emulator_state *restrict state)
  */
 static inline void retc(emulator_state *restrict state)
 {
-	if(state->flag_reg & FLAG_C)
+	if(*(state->registers.f) & FLAG_C)
 	{
 		ret(state);
 	}
 	else
 	{
-		state->pc++;
+		state->registers.pc++;
 	}
 }
 
@@ -2442,7 +2442,7 @@ static inline void retc(emulator_state *restrict state)
  */
 static inline void reti(emulator_state *restrict state)
 {
-	state->enable_int_on_next = true;
+	state->iflags |= I_ENABLE_INT_ON_NEXT;
 	ret(state);
 }
 
@@ -2452,10 +2452,10 @@ static inline void reti(emulator_state *restrict state)
  */
 static inline void jp_c_imm16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-	state->pc = (state->flag_reg & FLAG_C) ? (msb<<8 | lsb) : state->pc+1;
+	state->registers.pc = (*(state->registers.f) & FLAG_C) ? (msb<<8 | lsb) : state->registers.pc+1;
 }
 
 /*!
@@ -2464,12 +2464,12 @@ static inline void jp_c_imm16(emulator_state *restrict state)
  */
 static inline void ldh_imm8_a(emulator_state *restrict state)
 {
-	uint16_t write = mem_read8(state, ++state->pc);
+	uint16_t write = mem_read8(state, ++state->registers.pc);
 	write += 0xFF00;
 
-	mem_write8(state, write, *REG_A(state));
+	mem_write8(state, write, *(state->registers.a));
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -2478,9 +2478,9 @@ static inline void ldh_imm8_a(emulator_state *restrict state)
  */
 static inline void pop_hl(emulator_state *restrict state)
 {
-	state->hl = mem_read16(state, state->sp);
-	state->sp += 2;
-	state->pc++;
+	state->registers.hl = mem_read16(state, state->registers.sp);
+	state->registers.sp += 2;
+	state->registers.pc++;
 }
 
 /*!
@@ -2489,8 +2489,8 @@ static inline void pop_hl(emulator_state *restrict state)
  */
 static inline void ld_ff00_c_a(emulator_state *restrict state)
 {
-	mem_write8(state, 0xFF00 + *REG_C(state), *REG_A(state));
-	state->pc++;
+	mem_write8(state, 0xFF00 + *(state->registers.c), *(state->registers.a));
+	state->registers.pc++;
 }
 
 /*!
@@ -2499,9 +2499,9 @@ static inline void ld_ff00_c_a(emulator_state *restrict state)
  */
 static inline void push_hl(emulator_state *restrict state)
 {
-	state->sp -= 2;
-	mem_write16(state, state->sp, state->hl);
-	state->pc++;
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, state->registers.hl);
+	state->registers.pc++;
 }
 
 /*!
@@ -2510,7 +2510,7 @@ static inline void push_hl(emulator_state *restrict state)
  */
 static inline void and_imm8(emulator_state *restrict state)
 {
-	uint8_t nn = mem_read8(state, ++state->pc);
+	uint8_t nn = mem_read8(state, ++state->registers.pc);
 	and_common(state, nn);
 }
 
@@ -2520,7 +2520,7 @@ static inline void and_imm8(emulator_state *restrict state)
  */
 static inline void jp_hl(emulator_state *restrict state)
 {
-	state->pc = state->hl;
+	state->registers.pc = state->registers.hl;
 }
 
 /*!
@@ -2529,14 +2529,14 @@ static inline void jp_hl(emulator_state *restrict state)
  */
 static inline void ld_d16_a(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
 	uint16_t loc = (msb<<8) | lsb;
 
-	mem_write8(state, loc, *REG_A(state));
+	mem_write8(state, loc, *(state->registers.a));
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -2545,10 +2545,10 @@ static inline void ld_d16_a(emulator_state *restrict state)
  */
 static inline void ldh_a_imm8(emulator_state *restrict state)
 {
-	uint8_t loc = mem_read8(state, ++state->pc);
-	*REG_A(state) = mem_read8(state, 0xFF00 + loc);
+	uint8_t loc = mem_read8(state, ++state->registers.pc);
+	*(state->registers.a) = mem_read8(state, 0xFF00 + loc);
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -2557,9 +2557,9 @@ static inline void ldh_a_imm8(emulator_state *restrict state)
  */
 static inline void pop_af(emulator_state *restrict state)
 {
-	state->af = mem_read16(state, state->sp);
-	state->sp += 2;
-	state->pc++;
+	state->registers.af = mem_read16(state, state->registers.sp);
+	state->registers.sp += 2;
+	state->registers.pc++;
 }
 
 /*!
@@ -2568,8 +2568,8 @@ static inline void pop_af(emulator_state *restrict state)
  */
 static inline void ld_a_ff00_c(emulator_state *restrict state)
 {
-	*REG_A(state) = mem_read8(state, 0xFF00 + *REG_C(state));
-	state->pc++;
+	*(state->registers.a) = mem_read8(state, 0xFF00 + *(state->registers.c));
+	state->registers.pc++;
 }
 
 /*!
@@ -2578,9 +2578,8 @@ static inline void ld_a_ff00_c(emulator_state *restrict state)
  */
 static inline void di(emulator_state *restrict state)
 {
-	state->disable_int_on_next = true;
-
-	state->pc++;
+	state->iflags |= I_DISABLE_INT_ON_NEXT;
+	state->registers.pc++;
 }
 
 /*!
@@ -2589,9 +2588,9 @@ static inline void di(emulator_state *restrict state)
  */
 static inline void push_af(emulator_state *restrict state)
 {
-	state->sp -= 2;
-	mem_write16(state, state->sp, state->af);
-	state->pc++;
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, state->registers.af);
+	state->registers.pc++;
 }
 
 /*!
@@ -2600,14 +2599,14 @@ static inline void push_af(emulator_state *restrict state)
  */
 static inline void ld_a_d16(emulator_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->pc);
-	uint8_t msb = mem_read8(state, ++state->pc);
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
 
 	uint16_t loc = (msb<<8) | lsb;
 
-	*REG_A(state) = mem_read8(state, loc);
+	*(state->registers.a) = mem_read8(state, loc);
 
-	state->pc++;
+	state->registers.pc++;
 }
 
 /*!
@@ -2616,9 +2615,8 @@ static inline void ld_a_d16(emulator_state *restrict state)
  */
 static inline void ei(emulator_state *restrict state)
 {
-	state->enable_int_on_next = true;
-
-	state->pc++;
+	state->iflags |= I_ENABLE_INT_ON_NEXT;
+	state->registers.pc++;
 }
 
 /*!
@@ -2627,7 +2625,7 @@ static inline void ei(emulator_state *restrict state)
  */
 static inline void cp_imm8(emulator_state *restrict state)
 {
-	cp_common(state, mem_read8(state, ++state->pc));
+	cp_common(state, mem_read8(state, ++state->registers.pc));
 }
 
 // XXX this is exported for main
@@ -2707,52 +2705,55 @@ static const char cycles[0x100] =
 /*! boot up */
 void init_ctl(emulator_state *restrict state, system_types type)
 {
-	state->pc = 0x0100;
+	state->registers.pc = 0x0100;
 	switch(type)
 	{
 	case SYSTEM_SGB:
 		debug("Super Game Boy emulation");
-		*REG_A(state) = 0x01;
+		*(state->registers.a) = 0x01;
 		break;
 	case SYSTEM_GBC:
 		debug("Game Boy Color emulation");
-		*REG_A(state) = 0x11;
+		*(state->registers.a) = 0x11;
 		break;
 	case SYSTEM_GBP:
 		debug("Game Boy Portable emulation");
-		*REG_A(state) = 0xFF;
+		*(state->registers.a) = 0xFF;
 		break;
 	case SYSTEM_GB:
 	default:
 		debug("original Game Boy emulation");
-		*REG_A(state) = 0x01;
+		*(state->registers.a) = 0x01;
 		break;
 	}
-	*REG_F(state) = 0xB0;
-	*REG_B(state) = 0x00;
-	*REG_C(state) = 0x13;
-	*REG_D(state) = 0x00;
-	*REG_E(state) = 0xD8;
-	*REG_H(state) = 0x01;
-	*REG_L(state) = 0x4D;
-	state->sp = 0xFFFE;
+	*(state->registers.f) = 0xB0;
+	*(state->registers.b) = 0x00;
+	*(state->registers.c) = 0x13;
+	*(state->registers.d) = 0x00;
+	*(state->registers.e) = 0xD8;
+	*(state->registers.h) = 0x01;
+	*(state->registers.l) = 0x4D;
+	state->registers.sp = 0xFFFE;
 }
 
 
 /*! the emulated CU for the 'z80-ish' CPU */
 bool execute(emulator_state *restrict state)
 {
-	uint8_t opcode = mem_read8(state, state->pc);
+	uint8_t opcode = mem_read8(state, state->registers.pc);
 	opcode_t handler = handlers[opcode];
-	bool enable = state->enable_int_on_next;
-	bool disable = state->disable_int_on_next;
+	bool enable = state->iflags & I_ENABLE_INT_ON_NEXT;
+	bool disable = state->iflags & I_DISABLE_INT_ON_NEXT;
+
+	//fprintf(stderr, "Opcode: %d\n", opcode);
 
 	if(unlikely(handler == NULL))
 	{
-		fatal("Unimplemented opcode %02X at %04X", opcode, state->pc);
+		fatal("Unimplemented opcode %02X at %04X", opcode, state->registers.pc);
 	}
 
-	WAIT_CYCLE(state, cycles[opcode], handler(state));
+	handler(state);
+	//WAIT_CYCLE(state, cycles[opcode], handler(state));
 
 	if(unlikely(enable))
 	{
@@ -2762,14 +2763,14 @@ bool execute(emulator_state *restrict state)
 		}
 
 
-		state->enable_int_on_next = false;
-		state->interrupts = true;
+		state->iflags &= ~I_ENABLE_INT_ON_NEXT;
+		state->iflags |= I_INTERRUPTS;
 	}
 
 	if(unlikely(disable))
 	{
-		state->disable_int_on_next = false;
-		state->interrupts = false;
+		state->iflags &= ~I_DISABLE_INT_ON_NEXT;
+		state->iflags &= ~I_INTERRUPTS;
 	}
 
 	return true;
