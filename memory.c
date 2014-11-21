@@ -336,7 +336,8 @@ void mem_write8(emulator_state *restrict state, uint16_t location, uint8_t data)
 		case 0xFF:
 			if(likely(location < 0xFF80))
 			{
-				return hw_reg_write[location - 0xFF00](state, location, data);
+				hw_reg_write[location - 0xFF00](state, location, data);
+				return;
 			}
 
 			break;
