@@ -90,7 +90,10 @@ static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 
 	*reg += 1;
 
-	if(*reg == 0) *(state->registers.f) |= FLAG_Z;
+	if(!(*reg))
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
 
 	*(state->registers.f) &= ~FLAG_N;
 
@@ -123,7 +126,10 @@ static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 
 	*reg -= 1;
 
-	if(*reg == 0) *(state->registers.f) |= FLAG_Z;
+	if(!(*reg))
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
 	state->registers.pc++;
 }
 
@@ -1136,7 +1142,10 @@ static inline void and_common(emu_state *restrict state, uint8_t to_and)
 	*(state->registers.a) &= to_and;
 
 	*(state->registers.f) = FLAG_H;
-	if(*(state->registers.a) == 0) *(state->registers.f) |= FLAG_Z;
+	if(!*(state->registers.a))
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
 
 	state->registers.pc++;
 }
@@ -1296,11 +1305,7 @@ static inline void add_common(emu_state *restrict state, uint8_t to_add)
 
 	*(state->registers.f) = 0;
 
-	if(temp == 0)
-	{
-		*(state->registers.f) |= FLAG_Z;
-	}
-	else
+	if(likely(temp))
 	{
 		if(temp & 0x100)
 		{
@@ -1308,10 +1313,14 @@ static inline void add_common(emu_state *restrict state, uint8_t to_add)
 		}
 
 		// Half carry
-		if(((*(state->registers.a) & 0x0F) + (to_add & 0x0F)) > 0x0F)
+		if(((*(state->registers.a) & 0xF) + (to_add & 0xF)) & 0x10)
 		{
 			*(state->registers.f) |= FLAG_H;
 		}
+	}
+	else
+	{
+		*(state->registers.f) |= FLAG_Z;
 	}
 
 	*(state->registers.a) = (uint8_t)temp;
@@ -1474,27 +1483,7 @@ static inline void adc_a(emu_state *restrict state)
 
 static inline void sub_common(emu_state *restrict state, uint8_t to_sub)
 {
-	uint32_t temp = *(state->registers.a) - to_sub;
-
-	*(state->registers.f) = FLAG_N;
-
-	if(temp == 0)
-	{
-		*(state->registers.f) |= FLAG_Z;
-	}
-
-	if(*(state->registers.a) < to_sub)
-	{
-		*(state->registers.f) |= FLAG_C;
-	}
-
-	if((*(state->registers.a) & 0x0f) < (to_sub & 0x0f))
-	{
-		*(state->registers.f) |= FLAG_H;
-	}
-
-	*(state->registers.a) = (uint8_t)temp;
-	state->registers.pc++;
+	add_common(state, ~to_sub + 1);
 }
 
 /*!
