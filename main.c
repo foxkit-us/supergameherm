@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	system_types system;
 	emu_state *state;
 	cart_header *header;
-	uint32_t gbc_seconds = 0;
+	uint32_t count_cur_second = 0, gbc_seconds = 0;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -107,12 +107,12 @@ int main(int argc, char *argv[])
 		timer_tick(state);
 		//clock_tick(state);
 
-		if(unlikely(!(++state->cycles % state->freq)))
+		if(++count_cur_second == state->freq)
 		{
 			debug("GBC seconds: %ld", ++gbc_seconds);
 		}
 	}
-	while(true);
+	while(++state->cycles || true);
 
 	finish_emulator(state);
 
