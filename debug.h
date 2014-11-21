@@ -8,5 +8,6 @@
 void print_cpu_state(emu_state *restrict);
 void print_cycles(emu_state *restrict);
 void print_flags(emu_state *restrict);
+void dump_all_state(emu_state *restrict);
 
 #endif /*!__DEBUG_H_*/
