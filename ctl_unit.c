@@ -2332,11 +2332,9 @@ static inline void cb_dispatch(emulator_state *restrict state)
 		break;
 	case CB_OP_BIT:
 		/* test bit <bit_number> of register <reg> */
-		dump_flags(state);
 		state->flag_reg |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
 		state->flag_reg |= FLAG_H;
 		state->flag_reg &= !FLAG_N;
-		dump_flags(state);
 		break;
 	}
 
