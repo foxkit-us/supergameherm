@@ -146,37 +146,42 @@ static inline uint8_t shadow_read(emulator_state *restrict state, uint16_t locat
  */
 uint8_t mem_read8(emulator_state *restrict state, uint16_t location)
 {
-	switch(location >> 4)
+	switch(location >> 12)
 	{
-	case 0x400:
-	case 0x500:
-	case 0x600:
-	case 0x700:
+	case 0x4:
+	case 0x5:
+	case 0x6:
+	case 0x7:
 		// switchable bank - 0x4000..0x7FFF
 		return rom_bank_read(state, location);
-	case 0x800:
-	case 0x900:
+	case 0x8:
+	case 0x9:
 		// video memory - 0x8000..0x9FFF
 		return not_impl(state, location);
-	case 0xA00:
+	case 0xA:
+	case 0xB:
 		// switchable RAM bank - 0xA000-0xBFFF
 		return ram_bank_read(state, location);
-	case 0xE00:
-		// who knows? the SHADOW knows! - 0xE000..0xFDFF
-		return shadow_read(state, location);
-	case 0xFE0:
-		/* who knows?  the SHADOW knows! */
-		return shadow_read(state, location);
-	case 0xFEA:
-		/* OAM */
-		fatal("OAM not yet implemented");
-		return -1;
-	case 0xFF0:
-		/* invalid */
-		fatal("invalid memory read at %04X", location);
-		return -1;
-	case 0xFF8:
-		return hw_reg_read[location - 0xFF00](state, location);
+	case 0xE:
+	case 0xF:
+		if(location < 0xFE00)
+		{
+			// who knows? the SHADOW knows! - 0xE000..0xFDFF
+			return shadow_read(state, location);
+		}
+		switch(location >> 8)
+		{
+		case 0xFE:
+			/* OAM */
+			fatal("OAM not yet implemented");
+			return -1;
+		case 0xFF:
+			if(likely(location < 0xFF80))
+			{
+				return hw_reg_read[location - 0xFF00](state, location);
+			}
+			/* fall through on purpose */
+		}
 	default:
 		return direct_read(state, location);
 	}
@@ -319,6 +324,7 @@ void mem_write8(emulator_state *restrict state, uint16_t location, uint8_t data)
 		case CART_MBC3_TIMER_BATT:
 		case CART_MBC3_TIMER_RAM_BATT:
 			state->bank = data & 0x7F;
+			debug("switching to bank %04X", state->bank);
 			return;
 		default:
 			fatal("banks for this cart aren't done yet sorry :(");
