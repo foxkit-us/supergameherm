@@ -35,7 +35,7 @@ else()
 	message("I'm at a loss as to what to do, hope it all works out.")
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 
 
 add_executable(sgherm main.c ctl_unit.c input.c lcdc.c memory.c print.c
