@@ -44,8 +44,8 @@ void serial_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
 		state->ser_state.out = data;
 		break;
 	case 0xFF02:	/* SC - serial control */
-		state->ser_state.enabled = (data & 0x80);
-		state->ser_state.use_internal = (data & 0x01);
+		state->ser_state.enabled = (data && 0x80 == 0x80);
+		state->ser_state.use_internal = (data && 0x01 == 0x01);
 		break;
 	default:
 		error("serial: unknown register %04X (W)", reg);
