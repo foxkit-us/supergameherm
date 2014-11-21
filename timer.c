@@ -83,7 +83,7 @@ void timer_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
 	 */
 	case 0xFF07:
 	{
-		uint16_t ticks[4] = { 1024, 16, 64, 128 };
+		const static uint16_t ticks[4] = { 1024, 16, 64, 128 };
 
 		state->timer_state.enabled = (data & 0x04);
 		state->timer_state.ticks_per_tima = ticks[(data & 3)];
