@@ -26,7 +26,7 @@ static inline void _lcdc_inc_mode(emulator_state *restrict state)
 	uint8_t *byte = state->memory + 0xFF41;
 	if(*byte & 0x3)
 	{
-		*byte ^= 0x3;
+		*byte &= 0x78;
 	}
 	else
 	{
