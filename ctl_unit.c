@@ -117,6 +117,8 @@ static inline void dec_r8(emulator_state *restrict state, uint8_t *reg)
 {
 	uint8_t old = *reg;
 
+	state->flag_reg = FLAG_N;
+
 	if(*reg & 0x0F)
 	{
 		state->flag_reg &= ~FLAG_H;
@@ -129,9 +131,6 @@ static inline void dec_r8(emulator_state *restrict state, uint8_t *reg)
 	*reg -= 1;
 
 	if(*reg == 0) state->flag_reg |= FLAG_Z;
-
-	state->flag_reg |= FLAG_N;
-
 	state->pc++;
 }
 
