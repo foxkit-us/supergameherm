@@ -1,19 +1,19 @@
 #include "config.h"	// macros
 
 #include "timer.h"	// get_time
-#include "sgherm.h"	// emulator_state, cpu_freq
+#include "sgherm.h"	// emu_state, cpu_freq
 #include "print.h"	// debug
 #include "ctl_unit.h"	// flags
 #include "debug.h"	// Prototypes etc
 
-void print_cpu_state(emulator_state *restrict state)
+void print_cpu_state(emu_state *restrict state)
 {
 	debug("[%X] (af bc de hl sp %X %X %X %X %X)", state->registers.pc,
 		state->registers.af, state->registers.bc, state->registers.de,
 		state->registers.hl, state->registers.sp);
 }
 
-void print_cycles(emulator_state *restrict state)
+void print_cycles(emu_state *restrict state)
 {
 	uint64_t finish = get_time();
 	double taken = (finish - state->start_time) / 1e9;
@@ -26,7 +26,7 @@ void print_cycles(emulator_state *restrict state)
 			cps / freq_gb, cps / freq_gbc);
 }
 
-void print_flags(emulator_state *restrict state)
+void print_flags(emu_state *restrict state)
 {
 	debug("flags = %s%s%s%s",
 		(*(state->registers.f) & FLAG_Z) ? "Z":"z",

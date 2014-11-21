@@ -5,7 +5,7 @@
 
 #include <stdbool.h>	// bool
 
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 #include "params.h"	// system_types
 
 typedef enum
@@ -174,7 +174,7 @@ typedef enum
 	CART_CAMERA = 0x1F
 } cart_types;
 
-bool read_rom_data(emulator_state *restrict, FILE *restrict,
+bool read_rom_data(emu_state *restrict, FILE *restrict,
 	cart_header *restrict *restrict, system_types *restrict);
 
 #endif /* __ROM_READ_H__ */

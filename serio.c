@@ -2,7 +2,7 @@
 #include <stdbool.h>	// bool
 
 #include "print.h"	// error
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 
 /*!
  * @brief	Read a register from the serial controller.
@@ -10,7 +10,7 @@
  * @param	reg	The register to read from.
  * @returns	The contents of the selected register.
  */
-uint8_t serial_read(emulator_state *restrict state, uint16_t reg)
+uint8_t serial_read(emu_state *restrict state, uint16_t reg)
 {
 	switch(reg)
 	{
@@ -36,7 +36,7 @@ uint8_t serial_read(emulator_state *restrict state, uint16_t reg)
  * @param	data	The data to write to the selected register.
  * @result	The serial controller state is updated.
  */
-void serial_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
+void serial_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	switch(reg)
 	{
@@ -59,7 +59,7 @@ void serial_write(emulator_state *restrict state, uint16_t reg, uint8_t data)
  * @param	state	The emulator state the clock pulse is occurring on.
  * @result	The serial controller acts on the clock pulse.
  */
-void serial_tick(emulator_state *restrict state)
+void serial_tick(emu_state *restrict state)
 {
 	uint16_t ticks;
 

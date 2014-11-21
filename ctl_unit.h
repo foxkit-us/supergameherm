@@ -5,7 +5,7 @@
 
 #include <stdint.h>	// uint[XX]_t
 
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 #include "params.h"	// system_types
 
 #define WAIT_CYCLE(state, cycles, handler) \
@@ -54,13 +54,13 @@ typedef enum
 } cb_ops;
 
 
-typedef void (*opcode_t)(emulator_state *restrict state);
+typedef void (*opcode_t)(emu_state *restrict state);
 
 
-void init_ctl(emulator_state *restrict state, system_types type);
-bool execute(emulator_state *restrict);
+void init_ctl(emu_state *restrict state, system_types type);
+bool execute(emu_state *restrict);
 
-uint8_t int_flag_read(emulator_state *restrict, uint16_t);
-void int_flag_write(emulator_state *restrict, uint16_t, uint8_t);
+uint8_t int_flag_read(emu_state *restrict, uint16_t);
+void int_flag_write(emu_state *restrict, uint16_t, uint8_t);
 
 #endif /*!__CTL_UNIT_H__*/

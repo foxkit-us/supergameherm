@@ -13,7 +13,7 @@
 #	include <byteswap.h>	// __bswap_16
 #endif
 
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 #include "print.h"	// fatal, error, debug
 #include "rom_read.h"	// constants, cart_header, etc.
 
@@ -41,7 +41,7 @@ const char *friendly_cart_names[0x20] =
 	"MBC5 Rumble Cart with SRAM (Battery)", "GB Pocket Camera"
 };
 
-bool read_rom_data(emulator_state *restrict state, FILE *restrict rom,
+bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		cart_header *restrict *restrict header, system_types
 		*restrict system)
 {

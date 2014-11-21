@@ -14,14 +14,14 @@
 /***********************************************************************
  * readers
  ***********************************************************************/
-typedef uint8_t (*mem_read_fn)(emulator_state *restrict, uint16_t);
+typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
 
 /*!
  * @brief hardware read catch-all for no hardware present at a port
  * @result emulation stopped because some doofus read from a non-existant
  * 	   device.
  */
-static inline uint8_t no_hardware(emulator_state *restrict state, uint16_t location)
+static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 {
 	printf("%X\n", state->registers.pc);
 	fatal("no device present at %04X (emulator bug?  incompatible GB?)",
@@ -30,7 +30,7 @@ static inline uint8_t no_hardware(emulator_state *restrict state, uint16_t locat
 	return -1;
 }
 
-static inline uint8_t ugh_sound(emulator_state *restrict state unused, uint16_t location unused)
+static inline uint8_t ugh_sound(emu_state *restrict state unused, uint16_t location unused)
 {
 	fatal("ask greaser or aji to write a sound module for this thing");
 	return -1;
@@ -105,19 +105,19 @@ static mem_read_fn hw_reg_read[0x80] =
 };
 
 /*! directly read from a location in memory */
-static inline uint8_t direct_read(emulator_state *restrict state, uint16_t location)
+static inline uint8_t direct_read(emu_state *restrict state, uint16_t location)
 {
 	return state->memory[location];
 }
 
 /*! read from the switchable ROM bank space */
-static inline uint8_t rom_bank_read(emulator_state *restrict state unused, uint16_t location)
+static inline uint8_t rom_bank_read(emu_state *restrict state unused, uint16_t location)
 {
 	uint32_t addr = (state->bank - 1) * 0x4000;
 	return state->cart_data[addr + location];
 }
 
-static inline uint8_t not_impl(emulator_state *restrict state unused, uint16_t location)
+static inline uint8_t not_impl(emu_state *restrict state unused, uint16_t location)
 {
 	fatal("reading from %04X is not yet implemented", location);
 	/* NOTREACHED */
@@ -125,7 +125,7 @@ static inline uint8_t not_impl(emulator_state *restrict state unused, uint16_t l
 }
 
 /*! read from the switchable RAM bank space */
-static inline uint8_t ram_bank_read(emulator_state *restrict state unused, uint16_t location unused)
+static inline uint8_t ram_bank_read(emu_state *restrict state unused, uint16_t location unused)
 {
 	fatal("RAM bank switching not yet implemented");
 	/* NOTREACHED */
@@ -139,7 +139,7 @@ static inline uint8_t ram_bank_read(emulator_state *restrict state unused, uint1
  * @returns	The value of the location in memory.
  * @result	Emulation will terminate if the memory cannot be read.
  */
-uint8_t mem_read8(emulator_state *restrict state, uint16_t location)
+uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
@@ -186,7 +186,7 @@ uint8_t mem_read8(emulator_state *restrict state, uint16_t location)
  * @returns	The value of the two bytes at the location, LSB lower.
  * @result	Emulation will terminate if the memory cannot be read.
  */
-uint16_t mem_read16(emulator_state *restrict state, uint16_t location)
+uint16_t mem_read16(emu_state *restrict state, uint16_t location)
 {
 	return (mem_read8(state, location+1) << 8) | mem_read8(state, location);
 }
@@ -197,13 +197,13 @@ uint16_t mem_read16(emulator_state *restrict state, uint16_t location)
 /***********************************************************************
  * writers
  ***********************************************************************/
-typedef void (*mem_write8_fn)(emulator_state *restrict , uint16_t, uint8_t);
+typedef void (*mem_write8_fn)(emu_state *restrict , uint16_t, uint8_t);
 
 /*!
  * @brief silly name, decent intent
  * @result emulation terminates because some doofus wrote to a r/o reg
  */
-static inline void readonly_reg_write(emulator_state *restrict state unused, uint16_t location, uint8_t data)
+static inline void readonly_reg_write(emu_state *restrict state unused, uint16_t location, uint8_t data)
 {
 	fatal("attempted write of %02X to read-only register %04X",
 	      data, location);
@@ -213,7 +213,7 @@ static inline void readonly_reg_write(emulator_state *restrict state unused, uin
  * @brief what happens when you poke around randomly
  * @result emulation terminates because some doofus wrote to a device not there
  */
-static inline void doofus_write(emulator_state *restrict state unused, uint16_t location, uint8_t data)
+static inline void doofus_write(emu_state *restrict state unused, uint16_t location, uint8_t data)
 {
 	fatal("attempted doofus write of %02X to non-existant device at %04X",
 	      data, location);
@@ -301,7 +301,7 @@ static mem_write8_fn hw_reg_write[0x80] =
  * @result	The data is written to the specified location.
  * 		Emulation will terminate if the memory cannot be written to.
  */
-void mem_write8(emulator_state *restrict state, uint16_t location, uint8_t data)
+void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	switch(location >> 12)
 	{
@@ -351,7 +351,7 @@ void mem_write8(emulator_state *restrict state, uint16_t location, uint8_t data)
 	state->memory[location] = data;
 }
 
-void mem_write16(emulator_state *restrict state, uint16_t location, uint16_t data)
+void mem_write16(emu_state *restrict state, uint16_t location, uint16_t data)
 {
 	/* TODO this needs to be filtered just like the readers */
 	unsigned char *l = state->memory + location;

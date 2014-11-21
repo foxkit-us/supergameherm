@@ -7,12 +7,12 @@
 #include <stdint.h>	// uint[XX]_t
 
 #include "print.h"	// fatal
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 
 
-uint8_t timer_read(emulator_state *restrict, uint16_t);
-void timer_write(emulator_state *restrict, uint16_t, uint8_t);
-void timer_tick(emulator_state *restrict);
+uint8_t timer_read(emu_state *restrict, uint16_t);
+void timer_write(emu_state *restrict, uint16_t, uint8_t);
+void timer_tick(emu_state *restrict);
 
 
 #if defined HAVE_CLOCK_GETTIME

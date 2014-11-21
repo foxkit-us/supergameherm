@@ -3,10 +3,10 @@
 
 #include "config.h"	// Various macros
 
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 
-void print_cpu_state(emulator_state *restrict);
-void print_cycles(emulator_state *restrict);
-void print_flags(emulator_state *restrict);
+void print_cpu_state(emu_state *restrict);
+void print_cycles(emu_state *restrict);
+void print_flags(emu_state *restrict);
 
 #endif /*!__DEBUG_H_*/

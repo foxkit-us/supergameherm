@@ -7,7 +7,7 @@
 
 #include "ctl_unit.h"	// init_ctl, execute
 #include "lcdc.h"	// lcdc_tick
-#include "sgherm.h"	// emulator_state
+#include "sgherm.h"	// emu_state
 #include "rom_read.h"	// offsets
 #include "params.h"	// system_types
 #include "print.h"	// fatal, error, debug
@@ -16,12 +16,12 @@
 #include "debug.h"	// print_cycles
 
 // XXX FIXME UGH
-static emulator_state *state_current;
+static emu_state *state_current;
 
-emulator_state * init_emulator(void)
+emu_state * init_emulator(void)
 {
-	emulator_state *state = calloc(sizeof(emulator_state), 1);
-	emulator_state state2 =
+	emu_state *state = (emu_state *)malloc(sizeof(emu_state));
+	emu_state state2 =
 	{
 		.registers = {
 			.a = ((uint8_t *)&(state->registers.af)) + 1,
@@ -38,7 +38,7 @@ emulator_state * init_emulator(void)
 		.freq = CPU_FREQ_GB,
 	};
 
-	memcpy(state, &state2, sizeof(emulator_state));
+	memcpy(state, &state2, sizeof(emu_state));
 
 	return state;
 }
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 {
 	FILE *rom;
 	system_types system;
-	emulator_state *state;
+	emu_state *state;
 	cart_header *header;
 
 	printf("Super Game Herm!\n");

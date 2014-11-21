@@ -16,7 +16,7 @@
 
 
 // XXX this doesn't belong here but it'll have to do for now
-// (emulator_state depends on it and everything depends on that)
+// (emu_state depends on it and everything depends on that)
 typedef enum
 {
 	CPU_FREQ_GB = 4194304,
@@ -25,7 +25,7 @@ typedef enum
 } cpu_freq;
 
 
-typedef struct _emulator_state
+typedef struct _emu_state
 {
 	unsigned char memory[MEM_SIZE];		/*! RAM */
 	unsigned char *cart_data;		/*! Loaded cart data */
@@ -73,9 +73,9 @@ typedef struct _emulator_state
 	uint64_t cycles;			/*! Present cycle count */
 	uint64_t start_time;			/*! Time started */
 	cpu_freq freq;				/*! CPU frequency */
-} emulator_state;
+} emu_state;
 
-emulator_state * init_emulator(void);
+emu_state * init_emulator(void);
 
 #ifdef unused
 #	undef unused

@@ -3,10 +3,10 @@
 #include <stdint.h>	/* uint[XX]_t */
 
 #include "print.h"	/* error */
-#include "sgherm.h"	/* emulator_state */
+#include "sgherm.h"	/* emu_state */
 
 
-uint8_t joypad_read(emulator_state *restrict state unused, uint16_t reg)
+uint8_t joypad_read(emu_state *restrict state unused, uint16_t reg)
 {
 	assert(reg == 0xFF00);
 
@@ -20,7 +20,7 @@ uint8_t joypad_read(emulator_state *restrict state unused, uint16_t reg)
 	return 0;
 }
 
-void joypad_write(emulator_state *restrict state unused, uint16_t reg unused, uint8_t data unused)
+void joypad_write(emu_state *restrict state unused, uint16_t reg unused, uint8_t data unused)
 {
 	/* TODO see above */
 	return;
