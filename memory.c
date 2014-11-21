@@ -160,25 +160,21 @@ uint8_t mem_read8(emulator_state *restrict state, uint16_t location)
 		switch(location >> 8)
 		{
 		case 0xFE:
-			/* OAM */
-			fatal("OAM not yet implemented");
-			return -1;
+			break;
 		case 0xFF:
 			if(likely(location < 0xFF80))
 			{
 				return hw_reg_read[location - 0xFF00](state, location);
 			}
-			else
-			{
-				return direct_read(state, location);
-			}
+
+			break;
 		default:
 			// who knows? the SHADOW knows! - 0xE000..0xFDFF
 			location -= 0x2000;
 		}
-	default:
-		return direct_read(state, location);
 	}
+
+	return direct_read(state, location);
 }
 
 /*!
@@ -305,8 +301,10 @@ static mem_write8_fn hw_reg_write[0x80] =
  */
 void mem_write8(emulator_state *restrict state, uint16_t location, uint8_t data)
 {
-	if(location >= 0x2000 && location < 0x4000)
+	switch(location >> 12)
 	{
+	case 0x2:
+	case 0x3:
 		switch(state->cart_data[OFF_CART_TYPE])
 		{
 		case CART_ROM_ONLY:
@@ -323,34 +321,31 @@ void mem_write8(emulator_state *restrict state, uint16_t location, uint8_t data)
 		default:
 			fatal("banks for this cart aren't done yet sorry :(");
 		}
-	}
-	else if(location >= 0xA000 && location < 0xC000)
-	{
+	case 0xA:
+	case 0xB:
 		/* switched RAM bank */
 		fatal("invalid memory write at %04X (%02X)", location, data);
-	}
-	else if((location >= 0x8000 && location < 0xA000) ||
-		(location >= 0xC000 && location < 0xE000) ||
-		(location >= 0xFE80 && location < 0xFF00) ||
-		(location >= 0xFF80 && location <= 0xFFFF))
-	{
-		if(location == 0xFFFF) printf("writing %02X to FFFF\n", data);
-		state->memory[location] = data;
 		return;
+	case 0xE:
+	case 0xF:
+		switch(location >> 8)
+		{
+		case 0xFE:
+			break;
+		case 0xFF:
+			if(likely(location < 0xFF80))
+			{
+				return hw_reg_write[location - 0xFF00](state, location, data);
+			}
+
+			break;
+		default:
+			// who knows? the SHADOW knows! - 0xE000..0xFDFF
+			location -= 0x2000;
+		}
 	}
-	else if((location >= 0xE000 && location < 0xFE00))
-	{
-		state->memory[location - 0x2000] = data;
-		return;
-	}
-	else if((location >= 0xFF00 && location < 0xFF80))
-	{
-		hw_reg_write[location - 0xFF00](state, location, data);
-	}
-	else
-	{
-		debug("IGNORING write of %02X to %04X", data, location);
-	}
+
+	state->memory[location] = data;
 }
 
 void mem_write16(emulator_state *restrict state, uint16_t location, uint16_t data)
