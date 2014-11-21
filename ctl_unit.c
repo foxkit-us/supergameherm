@@ -117,6 +117,8 @@ static inline void dec_r8(emulator_state *restrict state, uint8_t *reg)
 {
 	uint8_t old = *reg;
 
+	state->flag_reg = FLAG_N;
+
 	if(*reg & 0x0F)
 	{
 		state->flag_reg &= ~FLAG_H;
@@ -129,9 +131,6 @@ static inline void dec_r8(emulator_state *restrict state, uint8_t *reg)
 	*reg -= 1;
 
 	if(*reg == 0) state->flag_reg |= FLAG_Z;
-
-	state->flag_reg |= FLAG_N;
-
 	state->pc++;
 }
 
@@ -2648,7 +2647,7 @@ static const opcode_t handlers[0x100] =
 	/* 0x48 */ ld_c_b, ld_c_c, ld_c_d, ld_c_e, ld_c_h, ld_c_l, ld_c_hl, ld_c_a,
 	/* 0x50 */ ld_d_b, ld_d_c, ld_d_d, ld_d_e, ld_d_h, ld_d_l, ld_d_hl, ld_d_a,
 	/* 0x58 */ ld_e_b, ld_e_c, ld_e_d, ld_e_e, ld_e_h, ld_e_l, ld_e_hl, ld_e_a,
-	/* 0x60 */ ld_h_b, ld_h_c, ld_h_d, ld_h_e, ld_h_h, ld_h_l, ld_e_hl, ld_h_a,
+	/* 0x60 */ ld_h_b, ld_h_c, ld_h_d, ld_h_e, ld_h_h, ld_h_l, ld_h_hl, ld_h_a,
 	/* 0x68 */ ld_l_b, ld_l_c, ld_l_d, ld_l_e, ld_l_h, ld_l_l, ld_l_hl, ld_l_a,
 	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, NULL, ld_hl_a,
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
