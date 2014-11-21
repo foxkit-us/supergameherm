@@ -57,11 +57,12 @@ int main(int argc, char *argv[])
 		if((++cycles % 8400000) == 0)
 		{
 			debug("GBC seconds: %ld", cycles / 8400000);
-			if((cycles % (8400000*10)) == 0)
+			if((cycles % (8400000*60)) == 0)
 			{
 				break;
 			}
 		}
+
 		execute(&state);
 		lcdc_tick(&state);
 		serial_tick(&state);

@@ -12,7 +12,7 @@ typedef struct _emulator_state
 	unsigned char memory[MEM_SIZE];		/*! RAM */
 	unsigned char *cart_data;		/*! Loaded cart data */
 	uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
-	char flag_reg;
+	uint8_t flag_reg;
 	bool disable_int_on_next;
 	bool enable_int_on_next;
 	bool interrupts;			/* Initalise to 1! */
@@ -23,11 +23,12 @@ typedef struct _emulator_state
 	} lcdc_state;
 	struct _ser_state
 	{
-		uint8_t curr_clk;		/*! ticks passed */
+		uint16_t curr_clk;		/*! ticks passed */
 		uint8_t in, out;		/*! in / out values */
 		int8_t cur_bit;			/*! the current bit */
 		bool enabled;			/*! transfer active */
 		bool use_internal;		/*! clock source */
+		uint16_t padding;		/*! struct padding */
 	} ser_state;
 	struct _tm_state
 	{
@@ -37,6 +38,7 @@ typedef struct _emulator_state
 		uint16_t ticks_per_tima;	/*! ticks per TIMA++ */
 		uint8_t curr_clk;		/*! ticks passed */
 		bool enabled;			/*! timer armed */
+		uint8_t padding;		/*! Struct padding */
 	} timer_state;
 	uint8_t bank;				/*! current bank */
 } emulator_state;
