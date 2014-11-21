@@ -33,14 +33,10 @@ typedef struct _emulator_state
 	struct _registers
 	{
 		uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
-		uint8_t *const a;
-		uint8_t *const f;
-		uint8_t *const b;
-		uint8_t *const c;
-		uint8_t *const d;
-		uint8_t *const e;
-		uint8_t *const h;
-		uint8_t *const l;
+		uint8_t *const a, *const f;
+		uint8_t *const b, *const c;
+		uint8_t *const d, *const e;
+		uint8_t *const h, *const l;
 		uint8_t flags;
 	} registers;
 
