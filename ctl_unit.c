@@ -1142,6 +1142,7 @@ static inline void and_common(emu_state *restrict state, uint8_t to_and)
 	*(state->registers.a) &= to_and;
 
 	*(state->registers.f) = FLAG_H;
+
 	if(!*(state->registers.a))
 	{
 		*(state->registers.f) |= FLAG_Z;
@@ -1305,7 +1306,7 @@ static inline void add_common(emu_state *restrict state, uint8_t to_add)
 
 	*(state->registers.f) = 0;
 
-	if(likely(temp))
+	if(temp)
 	{
 		if(temp & 0x100)
 		{
@@ -2061,13 +2062,13 @@ static inline void ret(emu_state *restrict state)
  */
 static inline void retnz(emu_state *restrict state)
 {
-	if(!(*(state->registers.f) & FLAG_Z))
+	if(*(state->registers.f) & FLAG_Z)
 	{
-		ret(state);
+		state->registers.pc++;
 	}
 	else
 	{
-		state->registers.pc++;
+		ret(state);
 	}
 }
 
@@ -2350,13 +2351,13 @@ static inline void call_imm16(emu_state *restrict state)
  */
 static inline void retnc(emu_state *restrict state)
 {
-	if(!(*(state->registers.f) & FLAG_C))
+	if(*(state->registers.f) & FLAG_C)
 	{
-		ret(state);
+		state->registers.pc++;
 	}
 	else
 	{
-		state->registers.pc++;
+		ret(state);
 	}
 }
 

@@ -91,8 +91,8 @@ emu_state * init_emulator(void);
 
 #ifdef __GNUC__
 #	define unused __attribute__((unused))
-#	define unlikely(x) __builtin_expect((x), 0)
-#	define likely(x) __builtin_expect((x), 1)
+#	define unlikely(x) (!!__builtin_expect((x), 0))
+#	define likely(x) (!!__builtin_expect((x), 1))
 #else
 #	define unused
 #	define unlikely(x) (x)

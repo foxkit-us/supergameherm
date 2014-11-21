@@ -28,7 +28,7 @@ static inline uint64_t get_time(void)
 		return 0;
 	}
 
-	return tv.tv_sec * 1e9 + tv.tv_nsec;
+	return tv.tv_sec * 1000000000L + tv.tv_nsec;
 }
 #else
 static inline uint64_t get_time(void)

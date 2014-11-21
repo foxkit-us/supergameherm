@@ -68,22 +68,26 @@ int main(int argc, char *argv[])
 	if(argc < 2)
 	{
 		fatal("You must specify a ROM file... -.-");
+		return EXIT_FAILURE;
 	}
 
 	if(unlikely((state_current = state = init_emulator()) == NULL))
 	{
 		fatal("Out of memory :(");
+		return EXIT_FAILURE;
 	}
 
 	if(unlikely((rom = fopen(argv[1], "rb")) == NULL))
 	{
 		perror("open rom");
 		fatal("Can't open ROM file %s", argv[1]);
+		return EXIT_FAILURE;
 	}
 
 	if(unlikely(!read_rom_data(state, rom, &header, &system)))
 	{
 		fatal("can't read ROM data (ROM is corrupt)?");
+		return EXIT_FAILURE;
 	}
 
 	fclose(rom);
@@ -97,15 +101,16 @@ int main(int argc, char *argv[])
 
 	do
 	{
-		if(unlikely(!(++state->cycles % state->freq)))
-		{
-			debug("GBC seconds: %ld", ++gbc_seconds);
-		}
 		execute(state);
 		lcdc_tick(state);
 		serial_tick(state);
 		timer_tick(state);
 		//clock_tick(state);
+
+		if(unlikely(!(++state->cycles % state->freq)))
+		{
+			debug("GBC seconds: %ld", ++gbc_seconds);
+		}
 	}
 	while(true);
 
