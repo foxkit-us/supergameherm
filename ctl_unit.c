@@ -2113,7 +2113,7 @@ static inline void cb_dispatch(emu_state *restrict state)
 	cb_regs reg = (cb_regs)(opcode & 0x7);
 	cb_ops op;
 
-	if(likely(opcode >= 0x40))
+	if(opcode >= 0x40)
 	{
 		bit_number = (opcode & 0x38) >> 3;
 		op = (cb_ops)(((opcode & 0xC0) >> 7) + 8);
@@ -2731,7 +2731,7 @@ bool execute(emu_state *restrict state)
 
 	//fprintf(stderr, "Opcode: %d\n", opcode);
 
-	if(unlikely(handler == NULL))
+	if(unlikely(!handler))
 	{
 		fatal("Unimplemented opcode %02X at %04X", opcode, state->registers.pc);
 	}
