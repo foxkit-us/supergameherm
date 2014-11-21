@@ -44,7 +44,7 @@ void info(const char *str, ...)
 	va_end(argp);
 }
 
-#ifndef NDEBUG
+#ifdef NDEBUG
 void debug(const char *str unused, ...)
 {
 	// Stub
