@@ -2137,6 +2137,7 @@ static inline void cb_dispatch(emulator_state *restrict state)
 	}
 	else
 	{
+		bit_number = 0;
 		op = (cb_ops)(opcode >> 3);
 	}
 
