@@ -2731,12 +2731,15 @@ bool execute(emu_state *restrict state)
 
 	//fprintf(stderr, "Opcode: %d\n", opcode);
 
-	if(unlikely(!handler))
+	if(likely(handler != NULL))
+	{
+		WAIT_CYCLE(state, cycles[opcode], handler(state));
+	}
+	else
 	{
 		fatal("Unimplemented opcode %02X at %04X", opcode, state->registers.pc);
+		return false;
 	}
-
-	WAIT_CYCLE(state, cycles[opcode], handler(state));
 
 	if(unlikely(enable))
 	{
