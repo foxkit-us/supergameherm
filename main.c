@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
 
 		if(++count_cur_second == state->freq)
 		{
+			count_cur_second = 0;
 			debug("GBC seconds: %ld", ++gbc_seconds);
 		}
 	}
