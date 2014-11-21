@@ -49,7 +49,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	int8_t checksum = 0;
 	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
 	const offsets begin = OFF_GRAPHIC_BEGIN;
-	bool err = true;
+	bool no_err = false;
 	size_t i;
 
 	/* Initalise */
@@ -111,6 +111,8 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 			sizeof((*header)->gbc_title.publisher));
 
 		*system = SYSTEM_GBC;
+
+		debug("cart type is GBC");
 	}
 	else if ((*header)->sgb_title.sgb & 0x03)
 	{
@@ -119,6 +121,8 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 			sizeof((*header)->sgb_title.title));
 
 		*system = SYSTEM_SGB;
+
+		debug("cart type is SGB");
 	}
 	else
 	{
@@ -126,20 +130,8 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		strncpy(title, (*header)->gb_title, sizeof((*header)->gb_title));
 
 		*system = SYSTEM_GB;
-	}
 
-	switch (*system)
-	{
-	case SYSTEM_GBC:
-		debug("cart type is GBC");
-		break;
-	case SYSTEM_SGB:
-		debug("cart type is SGB");
-		break;
-	case SYSTEM_GB:
-	default:
 		debug("cart type is GB");
-		break;
 	}
 
 	debug("loading cart %s", title);
@@ -173,12 +165,12 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		debug("Valid header checksum found");
 	}
 
-	err = false;
+	no_err = true;
 close_rom:
-	if(unlikely(err))
-		free(state->cart_data);
-	else
+	if(likely(no_err))
 		memcpy(state->memory, state->cart_data, 0x7fff);
+	else
+		free(state->cart_data);
 
-	return (!err);
+	return (no_err);
 }
