@@ -29,16 +29,9 @@ static inline void ei(emu_state *restrict state)
  */
 static inline void halt(emu_state *restrict state)
 {
-	if(unlikely(state->registers.interrupts))
-	{
-		// Erratum - next instruction is skipped
-		state->registers.pc += 2;
-	}
-	else
-	{
-		state->halt = true;
-		state->registers.pc++;
-	}
+	state->halt = true;
+
+	state->registers.pc++;
 
 	state->wait = 4;
 }
