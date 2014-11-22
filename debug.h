@@ -5,6 +5,7 @@
 
 #include "sgherm.h"	// emu_state
 
+const char * lookup_mnemonic(uint8_t);
 void print_cpu_state(emu_state *restrict);
 void print_cycles(emu_state *restrict);
 void print_flags(emu_state *restrict);

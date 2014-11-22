@@ -9,7 +9,7 @@
 #include "memory.h"	// mem_[read|write][8|16]
 #include "params.h"	// system_types
 #include "print.h"	// fatal
-
+#include "debug.h"	// lookup_mnemonic
 
 uint8_t int_flag_read(emu_state *restrict state, uint16_t location)
 {
@@ -20,6 +20,18 @@ void int_flag_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	/* only allow setting of the first five bits. */
 	state->memory[location] = data & 0x1F;
+}
+
+/*!
+ * @brief Unimplemented opcode (multiple values)
+ * @result Terminates emulator
+ * @note This function will go away when all opcodes are implemented
+ */
+static inline void not_impl(emu_state *restrict state unused)
+{
+	uint8_t opcode = mem_read8(state, state->registers.pc);
+	fatal("Unimplemented opcode %2X at %4X (nmemonic %s)", opcode,
+			state->registers.pc, lookup_mnemonic(opcode));
 }
 
 /*!
@@ -2615,11 +2627,11 @@ static inline void cp_imm8(emu_state *restrict state)
 // XXX this is exported for main
 static const opcode_t handlers[0x100] =
 {
-	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, NULL,
-	/* 0x08 */ NULL, add_hl_bc, ld_a_bc, dec_bc, inc_c, dec_c, ld_c_imm8, NULL,
-	/* 0x10 */ NULL, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, NULL,
-	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, NULL,
-	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, NULL,
+	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, not_impl,
+	/* 0x08 */ not_impl, add_hl_bc, ld_a_bc, dec_bc, inc_c, dec_c, ld_c_imm8, not_impl,
+	/* 0x10 */ not_impl, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, not_impl,
+	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, not_impl,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, not_impl,
 	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, cpl,
 	/* 0x30 */ jr_nc_imm8, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, scf,
 	/* 0x38 */ jr_c_imm8, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, ccf,
@@ -2629,7 +2641,7 @@ static const opcode_t handlers[0x100] =
 	/* 0x58 */ ld_e_b, ld_e_c, ld_e_d, ld_e_e, ld_e_h, ld_e_l, ld_e_hl, ld_e_a,
 	/* 0x60 */ ld_h_b, ld_h_c, ld_h_d, ld_h_e, ld_h_h, ld_h_l, ld_h_hl, ld_h_a,
 	/* 0x68 */ ld_l_b, ld_l_c, ld_l_d, ld_l_e, ld_l_h, ld_l_l, ld_l_hl, ld_l_a,
-	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, NULL, ld_hl_a,
+	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, not_impl, ld_hl_a,
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
 	/* 0x80 */ add_b, add_c, add_d, add_e, add_h, add_l, add_hl, add_a,
 	/* 0x88 */ adc_b, adc_c, adc_d, adc_e, adc_h, adc_h, adc_hl, adc_a,
@@ -2639,16 +2651,17 @@ static const opcode_t handlers[0x100] =
 	/* 0xA8 */ xor_b, xor_c, xor_d, xor_e, xor_h, xor_l, xor_hl, xor_a,
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
 	/* 0xB8 */ cp_b, cp_c, cp_d, cp_e, cp_h, cp_l, cp_hl, cp_a,
-	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, NULL, push_bc, add_imm8, reset_common,
-	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, NULL, call_imm16, NULL, reset_common,
-	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, NULL, push_de, sub_imm8, reset_common,
-	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, NULL, invalid, NULL, reset_common,
+	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, not_impl, push_bc, add_imm8, reset_common,
+	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, not_impl, call_imm16, not_impl, reset_common,
+	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, not_impl, push_de, sub_imm8, reset_common,
+	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, not_impl, invalid, not_impl, reset_common,
 	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, invalid, invalid, push_hl, and_imm8, reset_common,
-	/* 0xE8 */ NULL, jp_hl, ld_d16_a, invalid, invalid, invalid, NULL, reset_common,
-	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, NULL, reset_common,
-	/* 0xF8 */ NULL, NULL, ld_a_d16, ei, invalid, invalid, cp_imm8, reset_common
+	/* 0xE8 */ not_impl, jp_hl, ld_d16_a, invalid, invalid, invalid, not_impl, reset_common,
+	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, not_impl, reset_common,
+	/* 0xF8 */ not_impl, not_impl, ld_a_d16, ei, invalid, invalid, cp_imm8, reset_common
 };
 
+// FIXME not all instructions are constant-time!
 static const char cycles[0x100] =
 {
 	/* 0x00 */ 4, 12, 8, 8, 4, 4, 8, 4,
@@ -2731,15 +2744,8 @@ bool execute(emu_state *restrict state)
 
 	//fprintf(stderr, "Opcode: %d\n", opcode);
 
-	if(likely(handler != NULL))
-	{
-		WAIT_CYCLE(state, cycles[opcode], handler(state));
-	}
-	else
-	{
-		fatal("Unimplemented opcode %02X at %04X", opcode, state->registers.pc);
-		return false;
-	}
+	// FIXME belongs in the opcode handlers
+	WAIT_CYCLE(state, cycles[opcode], handler(state));
 
 	if(unlikely(enable))
 	{
