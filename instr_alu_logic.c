@@ -1,418 +1,418 @@
 /*!
- * @brief CPL (0x2F)
- * @result all bits of A are negated
- */
+* @brief CPL (0x2F)
+* @result all bits of A are negated
+*/
 static inline void cpl(emu_state *restrict state)
 {
-	*(state->registers.a) ^= ~(*(state->registers.a));
-	state->registers.pc++;
+*(state->registers.a) ^= ~(*(state->registers.a));
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 /*!
- * @brief SCF (0x37)
- * @result C flag set
- */
+* @brief SCF (0x37)
+* @result C flag set
+*/
 static inline void scf(emu_state *restrict state)
 {
-	*(state->registers.f) |= FLAG_C;
-	state->registers.pc++;
+*(state->registers.f) |= FLAG_C;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 /*!
- * @brief CCF (0x3F)
- * @result C flag inverted
- */
+* @brief CCF (0x3F)
+* @result C flag inverted
+*/
 static inline void ccf(emu_state *restrict state)
 {
-	*(state->registers.f) ^= ~FLAG_C;
-	state->registers.pc++;
+*(state->registers.f) ^= ~FLAG_C;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 static inline void and_common(emu_state *restrict state, uint8_t to_and)
 {
-	*(state->registers.a) &= to_and;
+*(state->registers.a) &= to_and;
 
-	*(state->registers.f) = FLAG_H;
+*(state->registers.f) = FLAG_H;
 
-	if(!*(state->registers.a))
-	{
-		*(state->registers.f) |= FLAG_Z;
-	}
+if(!*(state->registers.a))
+{
+	*(state->registers.f) |= FLAG_Z;
+}
 
-	state->registers.pc++;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 /*!
- * @brief AND B (0xA0)
- * @result A &= B; Z flag set if A is now zero
- */
+* @brief AND B (0xA0)
+* @result A &= B; Z flag set if A is now zero
+*/
 static inline void and_b(emu_state *restrict state)
 {
-	and_common(state, *(state->registers.b));
+and_common(state, *(state->registers.b));
 }
 
 /*!
- * @brief AND C (0xA1)
- * @result A &= C; Z flag set if A is now zero
- */
+* @brief AND C (0xA1)
+* @result A &= C; Z flag set if A is now zero
+*/
 static inline void and_c(emu_state *restrict state)
 {
-	and_common(state, *(state->registers.c));
+and_common(state, *(state->registers.c));
 }
 
 /*!
- * @brief AND D (0xA2)
- * @result A &= D; Z flag set if A is now zero
- */
+* @brief AND D (0xA2)
+* @result A &= D; Z flag set if A is now zero
+*/
 static inline void and_d(emu_state *restrict state)
 {
-	and_common(state, *(state->registers.d));
+and_common(state, *(state->registers.d));
 }
 
 /*!
- * @brief AND E (0xA3)
- * @result A &= E; Z flag set if A is now zero
- */
+* @brief AND E (0xA3)
+* @result A &= E; Z flag set if A is now zero
+*/
 static inline void and_e(emu_state *restrict state)
 {
-	and_common(state, *(state->registers.e));
+and_common(state, *(state->registers.e));
 }
 
 /*!
- * @brief AND H (0xA4)
- * @result A &= H; Z flag set if A is now zero
- */
+* @brief AND H (0xA4)
+* @result A &= H; Z flag set if A is now zero
+*/
 static inline void and_h(emu_state *restrict state)
 {
-	and_common(state, *(state->registers.h));
+and_common(state, *(state->registers.h));
 }
 
 /*!
- * @brief AND L (0xA5)
- * @result A &= L; Z flag set if A is now zero
- */
+* @brief AND L (0xA5)
+* @result A &= L; Z flag set if A is now zero
+*/
 static inline void and_l(emu_state *restrict state)
 {
-	and_common(state, *(state->registers.l));
+and_common(state, *(state->registers.l));
 }
 
 /*!
- * @brief AND (HL) (0xA6)
- * @result A &= contents of memory at AL; Z flag set if A is now zero
- */
+* @brief AND (HL) (0xA6)
+* @result A &= contents of memory at AL; Z flag set if A is now zero
+*/
 static inline void and_hl(emu_state *restrict state)
 {
-	and_common(state, mem_read8(state, state->registers.hl));
+and_common(state, mem_read8(state, state->registers.hl));
 
-	// and_common already adds 4
-	state->wait += 4;
+// and_common already adds 4
+state->wait += 4;
 }
 
 /*!
- * @brief AND A (0xA7)
- * @result Z flag set if A is now zero
- */
+* @brief AND A (0xA7)
+* @result Z flag set if A is now zero
+*/
 static inline void and_a(emu_state *restrict state)
 {
-	*(state->registers.f) = FLAG_H;
-	if(*(state->registers.a) == 0)
-	{
-		*(state->registers.f) |= FLAG_Z;
-	}
+*(state->registers.f) = FLAG_H;
+if(*(state->registers.a) == 0)
+{
+	*(state->registers.f) |= FLAG_Z;
+}
 
-	state->registers.pc++;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 static inline void xor_common(emu_state *restrict state, char to_xor)
 {
-	*(state->registers.a) ^= to_xor;
+*(state->registers.a) ^= to_xor;
 
-	*(state->registers.f) = 0;
-	if(*(state->registers.a) == 0) *(state->registers.f) |= FLAG_Z;
+*(state->registers.f) = 0;
+if(*(state->registers.a) == 0) *(state->registers.f) |= FLAG_Z;
 
-	state->registers.pc++;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 /*!
- * @brief XOR B (0xA8)
- * @result A ^= B; Z flag set if A is now zero
- */
+* @brief XOR B (0xA8)
+* @result A ^= B; Z flag set if A is now zero
+*/
 static inline void xor_b(emu_state *restrict state)
 {
-	xor_common(state, *(state->registers.b));
+xor_common(state, *(state->registers.b));
 }
 
 /*!
- * @brief XOR C (0xA9)
- * @result A ^= C; Z flag set if A is now zero
- */
+* @brief XOR C (0xA9)
+* @result A ^= C; Z flag set if A is now zero
+*/
 static inline void xor_c(emu_state *restrict state)
 {
-	xor_common(state, *(state->registers.c));
+xor_common(state, *(state->registers.c));
 }
 
 /*!
- * @brief XOR D (0xAA)
- * @result A ^= D; Z flag set if A is now zero
- */
+* @brief XOR D (0xAA)
+* @result A ^= D; Z flag set if A is now zero
+*/
 static inline void xor_d(emu_state *restrict state)
 {
-	xor_common(state, *(state->registers.d));
+xor_common(state, *(state->registers.d));
 }
 
 /*!
- * @brief XOR E (0xAB)
- * @result A ^= E; Z flag set if A is now zero
- */
+* @brief XOR E (0xAB)
+* @result A ^= E; Z flag set if A is now zero
+*/
 static inline void xor_e(emu_state *restrict state)
 {
-	xor_common(state, *(state->registers.e));
+xor_common(state, *(state->registers.e));
 }
 
 /*!
- * @brief XOR H (0xAC)
- * @result A ^= H; Z flag set if A is now zero
- */
+* @brief XOR H (0xAC)
+* @result A ^= H; Z flag set if A is now zero
+*/
 static inline void xor_h(emu_state *restrict state)
 {
-	xor_common(state, *(state->registers.h));
+xor_common(state, *(state->registers.h));
 }
 
 /*!
- * @brief XOR L (0xAD)
- * @result A ^= L; Z flag set if A is now zero
- */
+* @brief XOR L (0xAD)
+* @result A ^= L; Z flag set if A is now zero
+*/
 static inline void xor_l(emu_state *restrict state)
 {
-	xor_common(state, *(state->registers.l));
+xor_common(state, *(state->registers.l));
 }
 
 /*!
- * @brief XOR (HL) (0xAE)
- * @result A ^= contents of memory at HL; Z flag set if A is now zero
- */
+* @brief XOR (HL) (0xAE)
+* @result A ^= contents of memory at HL; Z flag set if A is now zero
+*/
 static inline void xor_hl(emu_state *restrict state)
 {
-	xor_common(state, mem_read8(state, state->registers.hl));
+xor_common(state, mem_read8(state, state->registers.hl));
 
-	// xor_common already adds 4
-	state->wait += 4;
+// xor_common already adds 4
+state->wait += 4;
 }
 
 /*!
- * @brief XOR A (0xAF)
- * @result A = 0; Z flag set
- */
+* @brief XOR A (0xAF)
+* @result A = 0; Z flag set
+*/
 static inline void xor_a(emu_state *restrict state)
 {
-	*(state->registers.a) = 0;
-	*(state->registers.f) = FLAG_Z;
-	state->registers.pc++;
+*(state->registers.a) = 0;
+*(state->registers.f) = FLAG_Z;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 static inline void or_common(emu_state *restrict state, uint8_t to_or)
 {
-	*(state->registers.a) |= to_or;
+*(state->registers.a) |= to_or;
 
-	*(state->registers.f) = (*(state->registers.a) == 0 ? FLAG_Z : 0);
+*(state->registers.f) = (*(state->registers.a) == 0 ? FLAG_Z : 0);
 
-	state->registers.pc++;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 /*!
- * @brief OR B (0xB0)
- * @result A |= B; Z flag set if A is zero
- */
+* @brief OR B (0xB0)
+* @result A |= B; Z flag set if A is zero
+*/
 static inline void or_b(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.b));
+or_common(state, *(state->registers.b));
 }
 
 /*!
- * @brief OR C (0xB1)
- * @result A |= C; Z flag set if A is zero
- */
+* @brief OR C (0xB1)
+* @result A |= C; Z flag set if A is zero
+*/
 static inline void or_c(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.c));
+or_common(state, *(state->registers.c));
 }
 
 /*!
- * @brief OR D (0xB2)
- * @result A |= D; Z flag set if A is zero
- */
+* @brief OR D (0xB2)
+* @result A |= D; Z flag set if A is zero
+*/
 static inline void or_d(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.d));
+or_common(state, *(state->registers.d));
 }
 
 /*!
- * @brief OR E (0xB3)
- * @result A |= E; Z flag set if A is zero
- */
+* @brief OR E (0xB3)
+* @result A |= E; Z flag set if A is zero
+*/
 static inline void or_e(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.e));
+or_common(state, *(state->registers.e));
 }
 
 /*!
- * @brief OR H (0xB4)
- * @result A |= H; Z flag set if A is zero
- */
+* @brief OR H (0xB4)
+* @result A |= H; Z flag set if A is zero
+*/
 static inline void or_h(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.h));
+or_common(state, *(state->registers.h));
 }
 
 /*!
- * @brief OR L (0xB5)
- * @result A |= L; Z flag set if A is zero
- */
+* @brief OR L (0xB5)
+* @result A |= L; Z flag set if A is zero
+*/
 static inline void or_l(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.l));
+or_common(state, *(state->registers.l));
 }
 
 /*!
- * @brief OR (HL) (0xB6)
- * @result A |= contents of memory at HL; Z flag set if A is zero
- */
+* @brief OR (HL) (0xB6)
+* @result A |= contents of memory at HL; Z flag set if A is zero
+*/
 static inline void or_hl(emu_state *restrict state)
 {
-	or_common(state, mem_read8(state, state->registers.hl));
+or_common(state, mem_read8(state, state->registers.hl));
 
-	// or_common already adds 4
-	state->wait += 4;
+// or_common already adds 4
+state->wait += 4;
 }
 
 /*!
- * @brief OR A (0xB7)
- * @result A |= A; Z flag set if A is zero
- */
+* @brief OR A (0xB7)
+* @result A |= A; Z flag set if A is zero
+*/
 static inline void or_a(emu_state *restrict state)
 {
-	or_common(state, *(state->registers.a));
+or_common(state, *(state->registers.a));
 }
 
 static inline void cp_common(emu_state *restrict state, uint8_t cmp)
 {
-	*(state->registers.f) = FLAG_N;
-	if(*(state->registers.a) == cmp)
+*(state->registers.f) = FLAG_N;
+if(*(state->registers.a) == cmp)
+{
+	*(state->registers.f) |= FLAG_Z;
+}
+else
+{
+	if(*(state->registers.a) < cmp)
 	{
-		*(state->registers.f) |= FLAG_Z;
+		*(state->registers.f) |= FLAG_C;
 	}
 	else
 	{
-		if(*(state->registers.a) < cmp)
-		{
-			*(state->registers.f) |= FLAG_C;
-		}
-		else
-		{
-			*(state->registers.f) |= FLAG_H;
-		}
+		*(state->registers.f) |= FLAG_H;
 	}
+}
 
-	state->registers.pc++;
+state->registers.pc++;
 
-	state->wait = 4;
+state->wait = 4;
 }
 
 /*!
- * @brief CP B (0xB8)
- * @result flags set based on how equivalent B is to A
- */
+* @brief CP B (0xB8)
+* @result flags set based on how equivalent B is to A
+*/
 static inline void cp_b(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.b));
+cp_common(state, *(state->registers.b));
 }
 
 /*!
- * @brief CP C (0xB9)
- * @result flags set based on how equivalent C is to A
- */
+* @brief CP C (0xB9)
+* @result flags set based on how equivalent C is to A
+*/
 static inline void cp_c(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.c));
+cp_common(state, *(state->registers.c));
 }
 
 /*!
- * @brief CP D (0xBA)
- * @result flags set based on how equivalent D is to A
- */
+* @brief CP D (0xBA)
+* @result flags set based on how equivalent D is to A
+*/
 static inline void cp_d(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.d));
+cp_common(state, *(state->registers.d));
 }
 
 /*!
- * @brief CP E (0xBB)
- * @result flags set based on how equivalent E is to A
- */
+* @brief CP E (0xBB)
+* @result flags set based on how equivalent E is to A
+*/
 static inline void cp_e(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.e));
+cp_common(state, *(state->registers.e));
 }
 
 /*!
- * @brief CP H (0xBC)
- * @result flags set based on how equivalent H is to A
- */
+* @brief CP H (0xBC)
+* @result flags set based on how equivalent H is to A
+*/
 static inline void cp_h(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.h));
+cp_common(state, *(state->registers.h));
 }
 
 /*!
- * @brief CP L (0xBD)
- * @result flags set based on how equivalent L is to A
- */
+* @brief CP L (0xBD)
+* @result flags set based on how equivalent L is to A
+*/
 static inline void cp_l(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.l));
+cp_common(state, *(state->registers.l));
 }
 
 /*!
- * @brief CP (HL) (0xBE)
- * @result flags set based on how equivalent contents of memory at HL are to A
- */
+* @brief CP (HL) (0xBE)
+* @result flags set based on how equivalent contents of memory at HL are to A
+*/
 static inline void cp_hl(emu_state *restrict state)
 {
-	cp_common(state, mem_read8(state, state->registers.hl));
+cp_common(state, mem_read8(state, state->registers.hl));
 
-	// cp_common already adds 4
-	state->wait += 4;
+// cp_common already adds 4
+state->wait += 4;
 }
 
 /*!
- * @brief CP A (0xBF)
- * @result flags set based on how equivalent A is to A... wait.. really?
- */
+* @brief CP A (0xBF)
+* @result flags set based on how equivalent A is to A... wait.. really?
+*/
 static inline void cp_a(emu_state *restrict state)
 {
-	cp_common(state, *(state->registers.a));
+cp_common(state, *(state->registers.a));
 }
 
 /*!
- * @brief CB ..
- * @note this is just a dispatch function for SWAP/BIT/etc
- */
+* @brief CB ..
+* @note this is just a dispatch function for SWAP/BIT/etc
+*/
 static inline void cb_dispatch(emu_state *restrict state)
 {
 	int8_t opcode = mem_read8(state, ++state->registers.pc);
@@ -625,11 +625,27 @@ static inline void cb_dispatch(emu_state *restrict state)
 		/* set bit <bit_number> of register <reg> */
 		*write_to |= val;
 		break;
+	case CB_OP_SWAP:
+	{
+		/* swap higher and lower nibble of register <reg> */
+		uint8_t x = ((*write_to >> 1) ^ (*write_to >> 5)) & ((1U << 4) - 1);
+		if((*write_to ^= ((x << 1) | (x << 5))) == 0)
+		{
+			*(state->registers.f) |= FLAG_Z;
+		}
+	}
 	case CB_OP_BIT:
 		/* test bit <bit_number> of register <reg> */
-		*(state->registers.f) |= (*write_to & val) ? FLAG_Z : !FLAG_Z;
+		if(*write_to & val)
+		{
+			*(state->registers.f) |= FLAG_Z;
+		}
+		else
+		{
+			*(state->registers.f) &= ~FLAG_Z;
+		}
 		*(state->registers.f) |= FLAG_H;
-		*(state->registers.f) &= !FLAG_N;
+		*(state->registers.f) &= ~FLAG_N;
 		break;
 	}
 
