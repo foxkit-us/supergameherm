@@ -14,9 +14,7 @@
 #include "serio.h"	// serial_tick
 #include "timer.h"	// get_clock
 #include "debug.h"	// print_cycles
-
-// XXX FIXME UGH
-static emu_state *state_current;
+#include "signals.h"	// register_handler
 
 emu_state * init_emulator(void)
 {
@@ -44,15 +42,10 @@ emu_state * init_emulator(void)
 	return state;
 }
 
-void finish_emulator(emu_state *restrict state)
+static void finish_emulator(emu_state *restrict state)
 {
 	free(state->cart_data);
 	free(state);
-}
-
-void exit_print_stats(void)
-{
-	print_cycles(state_current);
 }
 
 int main(int argc, char *argv[])
@@ -95,10 +88,11 @@ int main(int argc, char *argv[])
 
 	init_ctl(state, system);
 
+	// Register the handlers
+	register_handlers();
+
 	// Set the starting clock
 	state->start_time = get_time();
-
-	atexit(exit_print_stats);
 
 	do
 	{
@@ -115,7 +109,7 @@ int main(int argc, char *argv[])
 			debug("GBC seconds: %ld", ++gbc_seconds);
 		}
 	}
-	while(++state->cycles || true);
+	while(likely(++state->cycles && !do_exit));
 
 	finish_emulator(state);
 
