@@ -23,7 +23,7 @@ void joypad_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
 {
-	uint8_t key_mask = mem_read8(state, 0x00F0);
+	uint8_t key_mask = mem_read8(state, 0xFF00);
 	uint8_t key_col = key_mask & (RAW_INPUT_P14 | RAW_INPUT_P15);
 
 	if(!(key & key_col))
