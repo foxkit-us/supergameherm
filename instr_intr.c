@@ -1,4 +1,29 @@
 /*!
+ * @brief STOP (0x10
+ * @result puts the system to sleep until any button is pressed
+ * @note also has CGB side effect of changing speed potentially
+ */
+static inline void stop(emu_state *restrict state)
+{
+	// XXX validate for DMG only operation
+	uint8_t speed_reg = mem_read8(state, 0xFF4D);
+
+	if(speed_reg & 0x1)
+	{
+		// XXX simulate flicker
+		state->freq = ((speed_reg & 0x7) ? CPU_FREQ_GB : CPU_FREQ_GBC);
+	}
+	else
+	{
+		state->stop = true;
+	}
+
+	state->registers.pc++;
+
+	state->wait = 4;
+}
+
+/*!
  * @brief DI (0xF3) - disable interrupts
  * @result interrupts will be disabled the instruction AFTER this one
  */
@@ -38,3 +63,4 @@ static inline void halt(emu_state *restrict state)
 
 	state->wait = 4;
 }
+

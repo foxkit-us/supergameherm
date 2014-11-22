@@ -35,7 +35,7 @@ static const opcode_t const handlers[0x100] =
 {
 	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, not_impl,
 	/* 0x08 */ not_impl, add_hl_bc, ld_a_bc, dec_bc, inc_c, dec_c, ld_c_imm8, not_impl,
-	/* 0x10 */ not_impl, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, not_impl,
+	/* 0x10 */ stop, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, not_impl,
 	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, not_impl,
 	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, not_impl,
 	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, cpl,

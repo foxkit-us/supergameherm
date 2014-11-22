@@ -40,6 +40,10 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 	}
 	else
 	{
+		// Bring system back up
+		// XXX does it come back on resume?
+		state->stop = false;
+
 		signal_interrupt(state, INT_JOYPAD);
 		mem_write8(state, 0xFF00, report_key);
 	}
