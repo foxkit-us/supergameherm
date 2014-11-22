@@ -10,7 +10,6 @@
 
 uint8_t joypad_read(emu_state *restrict state, uint16_t reg)
 {
-	assert(reg == 0xFF00);
 	return state->memory[reg];
 }
 
