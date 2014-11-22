@@ -6,7 +6,7 @@
 static inline void not_impl(emu_state *restrict state)
 {
 	uint8_t opcode = mem_read8(state, state->registers.pc);
-	fatal("Unimplemented opcode %2X at %4X (nmemonic %s)", opcode,
+	fatal("Unimplemented opcode %2X at %4X (mnemonic %s)", opcode,
 			state->registers.pc, lookup_mnemonic(opcode));
 }
 
@@ -14,9 +14,10 @@ static inline void not_impl(emu_state *restrict state)
  * @brief Invalid opcode (multiple values)
  * @result Terminates emulator
  */
-static inline void invalid(emu_state *restrict state unused)
+static inline void invalid(emu_state *restrict state)
 {
-	fatal("Invalid opcode");
+	uint8_t opcode = mem_read8(state, state->registers.pc);
+	fatal("Invalid opcode %2X at %4X", opcode, state->registers.pc);
 }
 
 /*!
