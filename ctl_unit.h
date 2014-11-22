@@ -75,12 +75,7 @@ void int_flag_write(emu_state *restrict, uint16_t, uint8_t);
 
 static inline void signal_interrupt(emu_state *restrict state, uint8_t interrupt)
 {
-	uint8_t mask = mem_read8(state, 0xFFFF);
-
-	if(mask & interrupt)
-	{
-		mem_write8(state, 0xFF0F, mem_read8(state, 0xFF0F) | interrupt);
-	}
+	mem_write8(state, 0xFF0F, mem_read8(state, 0xFF0F) | interrupt);
 }
 
 #endif /*!__CTL_UNIT_H__*/
