@@ -21,3 +21,24 @@ static inline void ei(emu_state *restrict state)
 
 	state->wait = 4;
 }
+
+
+/*!
+ * @brief HALT (0x76)
+ * @result Put CPU to sleep until next interrupt
+ */
+static inline void halt(emu_state *restrict state)
+{
+	if(unlikely(state->registers.interrupts))
+	{
+		// Erratum - next instruction is skipped
+		state->registers.pc += 2;
+	}
+	else
+	{
+		state->halt = true;
+		state->registers.pc++;
+	}
+
+	state->wait = 4;
+}

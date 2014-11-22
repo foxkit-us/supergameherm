@@ -29,13 +29,3 @@ static inline void nop(emu_state *restrict state)
 
 	state->wait = 4;
 }
-
-/*!
- * @brief HALT (0x76)
- * @result Put CPU to sleep until next interrupt
- */
-static inline void halt(emu_state *restrict state)
-{
-	// Erratum - do not increment instruction pointer
-	state->halt = true;
-}
