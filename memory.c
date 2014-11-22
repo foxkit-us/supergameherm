@@ -353,10 +353,6 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 
 void mem_write16(emu_state *restrict state, uint16_t location, uint16_t data)
 {
-	/* TODO this needs to be filtered just like the readers */
-	unsigned char *l = state->memory + location;
-	uint16_t *hax = (uint16_t *)l;
-
-	*hax = data;
-	//fatal("invalid memory write at %04X (%04X)", location, data);
+        mem_write8(state, location++, (uint8_t)(data & 0xFF));
+        mem_write8(state, location, (uint8_t)(data >> 8));
 }
