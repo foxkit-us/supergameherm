@@ -214,9 +214,10 @@ static inline void jp_z_imm16(emu_state *restrict state)
 		uint8_t lsb = mem_read8(state, ++state->registers.pc);
 		uint8_t msb = mem_read8(state, ++state->registers.pc);
 
-		state->registers = (msb<<8 | lsb);
+		state->registers.pc = (msb<<8 | lsb);
 
 		state->wait += 4;
+	}
 	else
 	{
 		state->registers.pc++;
