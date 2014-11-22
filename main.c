@@ -35,6 +35,7 @@ emu_state * init_emulator(void)
 		},
 		.iflags = I_INTERRUPTS,
 		.bank = 1,
+		.wait = 1,
 		.freq = CPU_FREQ_GB,
 	};
 

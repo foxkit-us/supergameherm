@@ -8,13 +8,6 @@
 #include "sgherm.h"	// emu_state
 #include "params.h"	// system_types
 
-#define WAIT_CYCLE(state, cycles, handler) \
-	if(state->wait == 0) {\
-		handler;\
-		state->wait = cycles;\
-	}\
-	state->wait--;
-
 
 /*! Zero Flag */
 #define FLAG_Z 0x80
