@@ -108,7 +108,7 @@ static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
 {
 	interrupt_list jmp_offset;
 
-	// Clear interrupt mask
+	// Clear interrupts
 	mem_write8(state, 0xFF0F, 0);
 
 	// Interrupts are locked out before handling
@@ -161,7 +161,6 @@ static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
 bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
-	uint8_t interrupts = mem_read8(state, 0xFF0F);
 	opcode_t handler;
 
 	if(--state->wait)
@@ -170,9 +169,13 @@ bool execute(emu_state *restrict state)
 	}
 
 	// Check for interrupts
-	if(state->registers.interrupts && interrupts)
+	if(state->registers.interrupts)
 	{
-		call_interrupt(state, interrupts);
+		uint8_t interrupts = mem_read8(state, 0xFF0F) & ~(mem_read8(state, 0xFFFF));
+		if(interrupts)
+		{
+			call_interrupt(state, interrupts);
+		}
 	}
 
 	if(state->halt || state->stop)
