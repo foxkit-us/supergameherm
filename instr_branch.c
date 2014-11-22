@@ -312,7 +312,7 @@ static inline void retc(emu_state *restrict state)
  */
 static inline void reti(emu_state *restrict state)
 {
-	state->iflags |= I_ENABLE_INT_ON_NEXT;
+	state->registers.interrupts = true;
 	ret(state);
 }
 

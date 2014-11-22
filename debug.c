@@ -5,6 +5,7 @@
 #include "print.h"	// debug
 #include "ctl_unit.h"	// flags
 #include "debug.h"	// Prototypes etc
+#include "memory.h"	// mem_read8
 
 static const char * const mnemonics[0x100] =
 {
@@ -119,7 +120,7 @@ void dump_all_state(emu_state *restrict state)
 	state->registers.bc,
 	state->registers.de,
 	state->registers.hl);
-	debug("interrupts are %s\n", (state->iflags ? "ENABLED" : "DISABLED"));
+	debug("interrupts are %s\n", (state->registers.interrupts ? "ENABLED" : "DISABLED"));
 	print_flags(state);
 	debug("bytes at pc: %02X %02X %02X %02X\n",
 		mem_read8(state, state->registers.pc),

@@ -4,7 +4,7 @@
  */
 static inline void di(emu_state *restrict state)
 {
-	state->iflags |= I_DISABLE_INT_ON_NEXT;
+	state->registers.interrupts = false;
 	state->registers.pc++;
 
 	state->wait = 4;
@@ -16,7 +16,7 @@ static inline void di(emu_state *restrict state)
  */
 static inline void ei(emu_state *restrict state)
 {
-	state->iflags |= I_ENABLE_INT_ON_NEXT;
+	state->registers.interrupts = true;
 	state->registers.pc++;
 
 	state->wait = 4;

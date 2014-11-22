@@ -10,9 +10,11 @@
 #define MEM_SIZE	0x10000
 
 // Interrupt flags
-#define I_DISABLE_INT_ON_NEXT	0x1
-#define I_ENABLE_INT_ON_NEXT	0x2
-#define I_INTERRUPTS		0x4
+#define INT_VBLANK	0x1
+#define INT_LCD_STAT	0x2
+#define INT_TIMER	0x4
+#define INT_SERIAL	0x8
+#define INT_JOYPAD	0x10
 
 
 // XXX this doesn't belong here but it'll have to do for now
@@ -24,6 +26,14 @@ typedef enum
 	CPU_FREQ_GBC = 8388608,
 } cpu_freq;
 
+typedef enum
+{
+	INT_ID_VBLANK = 0x40,
+	INT_ID_LCD_STAT = 0x48,
+	INT_ID_TIMER = 0x50,
+	INT_ID_SERIAL = 0x58,
+	INT_ID_JOYPAD = 0x60
+} interrupt_list;
 
 typedef struct _emu_state
 {
@@ -33,14 +43,12 @@ typedef struct _emu_state
 	struct _registers
 	{
 		uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
-		uint8_t *const a, *const f;
-		uint8_t *const b, *const c;
-		uint8_t *const d, *const e;
-		uint8_t *const h, *const l;
-		uint8_t flags;
+		uint8_t *const a, *const f;		/*! Sub-registers */
+		uint8_t *const b, *const c;		/*! Sub-registers */
+		uint8_t *const d, *const e;		/*! Sub-registers */
+		uint8_t *const h, *const l;		/*! Sub-registers */
+		bool interrupts;			/*! Interrupts enabled */
 	} registers;
-
-	unsigned int iflags;			/* Interrupt information */
 
 	unsigned int wait;			/* number of clocks */
 

@@ -108,10 +108,6 @@ bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
 	opcode_t handler;
-	bool enable;
-	bool disable;
-
-	//fprintf(stderr, "Opcode: %d\n", opcode);
 
 	if(likely(--state->wait))
 	{
@@ -121,26 +117,6 @@ bool execute(emu_state *restrict state)
 	opcode = mem_read8(state, state->registers.pc);
 	handler = handlers[opcode];
 	handler(state);
-
-	enable = state->iflags & I_ENABLE_INT_ON_NEXT;
-	disable = state->iflags & I_DISABLE_INT_ON_NEXT;
-
-	if(unlikely(enable))
-	{
-		if(unlikely(disable))
-		{
-			error("somehow conflicting flags are set; expect brokenness");
-		}
-
-
-		state->iflags &= ~I_ENABLE_INT_ON_NEXT;
-		state->iflags |= I_INTERRUPTS;
-	}
-
-	if(unlikely(disable))
-	{
-		state->iflags &= ~I_DISABLE_INT_ON_NEXT & ~I_INTERRUPTS;
-	}
 
 	return true;
 }
