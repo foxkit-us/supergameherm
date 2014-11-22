@@ -9,6 +9,8 @@
 
 #cmakedefine LITTLE_ENDIAN
 
+#cmakedefine HAVE_MACH_CLOCK_H
+
 #ifdef HAVE_CLOCK_GETTIME
 #	define _POSIX_C_SOURCE 200809L
 #	define _XOPEN_VERSION 700

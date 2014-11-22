@@ -13,6 +13,10 @@ endif()
 
 if(HAVE_POSIX)
 	check_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
+	if(NOT HAVE_CLOCK_GETTIME)
+		# OS X check
+		check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
+	endif()
 endif()
 
 test_big_endian(BIG_ENDIAN)
