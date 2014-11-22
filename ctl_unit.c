@@ -108,8 +108,8 @@ bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
 	opcode_t handler;
-	bool enable = state->iflags & I_ENABLE_INT_ON_NEXT;
-	bool disable = state->iflags & I_DISABLE_INT_ON_NEXT;
+	bool enable;
+	bool disable;
 
 	//fprintf(stderr, "Opcode: %d\n", opcode);
 
@@ -121,6 +121,9 @@ bool execute(emu_state *restrict state)
 	opcode = mem_read8(state, state->registers.pc);
 	handler = handlers[opcode];
 	handler(state);
+
+	enable = state->iflags & I_ENABLE_INT_ON_NEXT;
+	disable = state->iflags & I_DISABLE_INT_ON_NEXT;
 
 	if(unlikely(enable))
 	{
@@ -136,8 +139,7 @@ bool execute(emu_state *restrict state)
 
 	if(unlikely(disable))
 	{
-		state->iflags &= ~I_DISABLE_INT_ON_NEXT;
-		state->iflags &= ~I_INTERRUPTS;
+		state->iflags &= ~I_DISABLE_INT_ON_NEXT & ~I_INTERRUPTS;
 	}
 
 	return true;
