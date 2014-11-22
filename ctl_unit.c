@@ -103,18 +103,79 @@ void init_ctl(emu_state *restrict state, system_types type)
 }
 
 
+/*! Do a call to an interrupt handler */
+static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
+{
+	interrupt_list jmp_offset;
+
+	// Clear interrupt mask
+	mem_write8(state, 0xFF0F, 0);
+
+	// Interrupts are locked out before handling
+	state->registers.interrupts = false;
+
+	if(interrupts & INT_VBLANK)
+	{
+		jmp_offset = INT_ID_VBLANK;
+	}
+	else if(interrupts & INT_LCD_STAT)
+	{
+		jmp_offset = INT_ID_LCD_STAT;
+	}
+	else if(interrupts & INT_TIMER)
+	{
+		jmp_offset = INT_ID_TIMER;
+	}
+	else if(interrupts & INT_SERIAL)
+	{
+		jmp_offset = INT_ID_SERIAL;
+	}
+	else if(interrupts & INT_JOYPAD)
+	{
+		jmp_offset = INT_ID_JOYPAD;
+	}
+	else
+	{
+		fatal("Unknown interrupt caught (mask: %X)", interrupts);
+		return;
+	}
+
+	// Push pc to the stack
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, state->registers.pc);
+
+	// Jump!
+	state->registers.pc = jmp_offset;
+
+	// Reset these states
+	state->halt = state->stop = false;
+
+	// XXX is this right?
+	state->wait = 24;
+
+	debug("Interrupt jumping to %04X", state->registers.pc);
+}
+
+
 /*! the emulated CU for the 'z80-ish' CPU */
 bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
+	uint8_t interrupts = mem_read8(state, 0xFF0F);
 	opcode_t handler;
 
-	if(likely(--state->wait))
+	if(--state->wait)
 	{
 		return true;
 	}
 
-	if(state->halt)
+	// Check for interrupts
+	if(state->registers.interrupts && interrupts)
+	{
+		call_interrupt(state, interrupts);
+	}
+
+	if(state->halt || state->stop)
 	{
 		// Waiting for an interrupt
 		return true;

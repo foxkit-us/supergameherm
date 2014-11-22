@@ -29,7 +29,10 @@ static inline void ei(emu_state *restrict state)
  */
 static inline void halt(emu_state *restrict state)
 {
-	state->halt = true;
+	if(state->registers.interrupts)
+	{
+		state->halt = true;
+	}
 
 	state->registers.pc++;
 

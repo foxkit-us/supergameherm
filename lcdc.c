@@ -1,5 +1,6 @@
 #include "config.h"	// macros
 #include "print.h"	// fatal
+#include "ctl_unit.h"	// signal_interrupt
 #include "sgherm.h"	// emu_state
 
 
@@ -41,6 +42,11 @@ void lcdc_tick(emu_state *restrict state)
 	*clk += 1;
 	uint8_t *ly = state->memory + 0xFF44;
 	uint8_t curr_mode = state->memory[0xFF41] & 0x3;
+
+	if(unlikely(state->stop))
+	{
+		return;
+	}
 
 	switch(curr_mode)
 	{
@@ -90,6 +96,9 @@ void lcdc_tick(emu_state *restrict state)
 			*clk = 0;
 			_lcdc_inc_mode(state);
 		}
+
+		// Fire the vblank interrupt
+		signal_interrupt(state, INT_VBLANK);
 		break;
 	default:
 		fatal("somehow wound up in an unknown impossible video mode");

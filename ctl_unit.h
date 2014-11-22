@@ -7,7 +7,7 @@
 
 #include "sgherm.h"	// emu_state
 #include "params.h"	// system_types
-
+#include "memory.h"	// mem_write8
 
 /*! Zero Flag */
 #define FLAG_Z 0x80
@@ -17,6 +17,23 @@
 #define FLAG_H 0x20
 /*! Carry Flag */
 #define FLAG_C 0x10
+
+typedef enum
+{
+	INT_ID_VBLANK = 0x0040,
+	INT_ID_LCD_STAT = 0x0048,
+	INT_ID_TIMER = 0x0050,
+	INT_ID_SERIAL = 0x0058,
+	INT_ID_JOYPAD = 0x0060
+} /* Ralf Brown's */ interrupt_list;
+
+
+// Interrupt flags
+#define INT_VBLANK	0x1
+#define INT_LCD_STAT	0x2
+#define INT_TIMER	0x4
+#define INT_SERIAL	0x8
+#define INT_JOYPAD	0x10
 
 
 typedef enum
@@ -55,5 +72,15 @@ bool execute(emu_state *restrict);
 
 uint8_t int_flag_read(emu_state *restrict, uint16_t);
 void int_flag_write(emu_state *restrict, uint16_t, uint8_t);
+
+static inline void signal_interrupt(emu_state *restrict state, uint8_t interrupt)
+{
+	uint8_t mask = mem_read8(state, 0xFFFF);
+
+	if(mask & interrupt)
+	{
+		mem_write8(state, 0xFF0F, mem_read8(state, 0xFF0F) | interrupt);
+	}
+}
 
 #endif /*!__CTL_UNIT_H__*/

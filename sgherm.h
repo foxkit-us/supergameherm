@@ -9,13 +9,6 @@
 // 8-bit address space
 #define MEM_SIZE	0x10000
 
-// Interrupt flags
-#define INT_VBLANK	0x1
-#define INT_LCD_STAT	0x2
-#define INT_TIMER	0x4
-#define INT_SERIAL	0x8
-#define INT_JOYPAD	0x10
-
 
 // XXX this doesn't belong here but it'll have to do for now
 // (emu_state depends on it and everything depends on that)
@@ -25,15 +18,6 @@ typedef enum
 	CPU_FREQ_SGB = 4295454,
 	CPU_FREQ_GBC = 8388608,
 } cpu_freq;
-
-typedef enum
-{
-	INT_ID_VBLANK = 0x40,
-	INT_ID_LCD_STAT = 0x48,
-	INT_ID_TIMER = 0x50,
-	INT_ID_SERIAL = 0x58,
-	INT_ID_JOYPAD = 0x60
-} interrupt_list;
 
 typedef struct _emu_state
 {
@@ -51,6 +35,7 @@ typedef struct _emu_state
 	} registers;
 
 	bool halt;				/*! waiting for interrupt */
+	bool stop;				/*! deep sleep state (disable LCDC) */
 
 	unsigned int wait;			/*! number of clocks */
 

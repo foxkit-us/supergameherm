@@ -203,20 +203,20 @@ typedef void (*mem_write8_fn)(emu_state *restrict , uint16_t, uint8_t);
  * @brief silly name, decent intent
  * @result emulation terminates because some doofus wrote to a r/o reg
  */
-static inline void readonly_reg_write(emu_state *restrict state unused, uint16_t location, uint8_t data)
+static inline void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	fatal("attempted write of %02X to read-only register %04X",
-	      data, location);
+	fatal("[%4X] attempted write of %02X to read-only register %04X",
+	      state->registers.pc, data, location);
 }
 
 /*!
  * @brief what happens when you poke around randomly
  * @result emulation terminates because some doofus wrote to a device not there
  */
-static inline void doofus_write(emu_state *restrict state unused, uint16_t location, uint8_t data)
+static inline void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	fatal("attempted doofus write of %02X to non-existant device at %04X",
-	      data, location);
+	fatal("[%4X] attempted doofus write of %02X to non-existant device at %04X",
+	      state->registers.pc, data, location);
 }
 
 static mem_write8_fn hw_reg_write[0x80] =

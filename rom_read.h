@@ -107,7 +107,6 @@ typedef enum
 	OFF_HIGH_RAM_BEGIN = 0xFF80,
 	OFF_HIGH_RAM_END = 0xFFFE,
 
-	/* Interrupts locked out */
 	OFF_INT_FLAG = 0xFFFF,
 } offsets;
 
