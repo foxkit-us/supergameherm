@@ -50,7 +50,9 @@ typedef struct _emu_state
 		bool interrupts;			/*! Interrupts enabled */
 	} registers;
 
-	unsigned int wait;			/* number of clocks */
+	bool halt;				/*! waiting for interrupt */
+
+	unsigned int wait;			/*! number of clocks */
 
 	uint8_t bank;				/*! current bank */
 

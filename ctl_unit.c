@@ -47,7 +47,7 @@ static const opcode_t const handlers[0x100] =
 	/* 0x58 */ ld_e_b, ld_e_c, ld_e_d, ld_e_e, ld_e_h, ld_e_l, ld_e_hl, ld_e_a,
 	/* 0x60 */ ld_h_b, ld_h_c, ld_h_d, ld_h_e, ld_h_h, ld_h_l, ld_h_hl, ld_h_a,
 	/* 0x68 */ ld_l_b, ld_l_c, ld_l_d, ld_l_e, ld_l_h, ld_l_l, ld_l_hl, ld_l_a,
-	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, not_impl, ld_hl_a,
+	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, halt, ld_hl_a,
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
 	/* 0x80 */ add_b, add_c, add_d, add_e, add_h, add_l, add_hl, add_a,
 	/* 0x88 */ adc_b, adc_c, adc_d, adc_e, adc_h, adc_h, adc_hl, adc_a,
@@ -111,6 +111,12 @@ bool execute(emu_state *restrict state)
 
 	if(likely(--state->wait))
 	{
+		return true;
+	}
+
+	if(state->halt)
+	{
+		// Waiting for an interrupt
 		return true;
 	}
 

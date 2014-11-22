@@ -3,7 +3,7 @@
  * @result Terminates emulator
  * @note This function will go away when all opcodes are implemented
  */
-static inline void not_impl(emu_state *restrict state unused)
+static inline void not_impl(emu_state *restrict state)
 {
 	uint8_t opcode = mem_read8(state, state->registers.pc);
 	fatal("Unimplemented opcode %2X at %4X (nmemonic %s)", opcode,
@@ -28,4 +28,14 @@ static inline void nop(emu_state *restrict state)
 	state->registers.pc++;
 
 	state->wait = 4;
+}
+
+/*!
+ * @brief HALT (0x76)
+ * @result Put CPU to sleep until next interrupt
+ */
+static inline void halt(emu_state *restrict state)
+{
+	// Erratum - do not increment instruction pointer
+	state->halt = true;
 }
