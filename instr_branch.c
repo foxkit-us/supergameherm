@@ -109,7 +109,7 @@ static inline void jp_nz_imm16(emu_state *restrict state)
 
 	if(*(state->registers.f) & FLAG_Z)
 	{
-		state->registers.pc++;
+		state->registers.pc += 3;
 	}
 	else
 	{
@@ -220,7 +220,7 @@ static inline void jp_z_imm16(emu_state *restrict state)
 	}
 	else
 	{
-		state->registers.pc++;
+		state->registers.pc += 3;
 	}
 }
 
@@ -272,7 +272,7 @@ static inline void jp_nc_imm16(emu_state *restrict state)
 
 	if(*(state->registers.f) & FLAG_C)
 	{
-		state->registers.pc++;
+		state->registers.pc += 3;
 	}
 	else
 	{
@@ -335,7 +335,7 @@ static inline void jp_c_imm16(emu_state *restrict state)
 	}
 	else
 	{
-		state->registers.pc++;
+		state->registers.pc += 3;
 	}
 }
 
