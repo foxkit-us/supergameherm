@@ -19,9 +19,18 @@ static inline void jr_nz_imm8(emu_state *restrict state)
 {
 	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->registers.pc += (*(state->registers.f) & FLAG_Z) ? 1 : to_add;
-
 	state->wait = 8;
+
+	if(*(state->registers.f) & FLAG_Z)
+	{
+		state->registers.pc++;
+	}
+	else
+	{
+		state->registers.pc += to_add;
+
+		state->wait += 4;
+	}
 }
 
 /*!
@@ -32,9 +41,18 @@ static inline void jr_z_imm8(emu_state *restrict state)
 {
 	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->registers.pc += (*(state->registers.f) & FLAG_Z) ? to_add : 1;
-
 	state->wait = 8;
+
+	if(*(state->registers.f) & FLAG_Z)
+	{
+		state->registers.pc += to_add;
+
+		state->wait += 4;
+	}
+	else
+	{
+		state->registers.pc++;
+	}
 }
 
 /*!
@@ -45,9 +63,18 @@ static inline void jr_nc_imm8(emu_state *restrict state)
 {
 	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->registers.pc += (*(state->registers.f) & FLAG_C) ? 1 : to_add;
-
 	state->wait = 8;
+
+	if(*(state->registers.f) & FLAG_C)
+	{
+		state->registers.pc++;
+	}
+	else
+	{
+		state->registers.pc += to_add;
+
+		state->wait += 4;
+	}
 }
 
 /*!
@@ -58,9 +85,18 @@ static inline void jr_c_imm8(emu_state *restrict state)
 {
 	int8_t to_add = mem_read8(state, ++state->registers.pc) + 1;
 
-	state->registers.pc += (*(state->registers.f) & FLAG_C) ? to_add : 1;
-
 	state->wait = 8;
+
+	if(*(state->registers.f) & FLAG_C)
+	{
+		state->registers.pc += to_add;
+
+		state->wait += 4;
+	}
+	else
+	{
+		state->registers.pc++;
+	}
 }
 
 /*!
@@ -69,13 +105,21 @@ static inline void jr_c_imm8(emu_state *restrict state)
  */
 static inline void jp_nz_imm16(emu_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->registers.pc);
-	uint8_t msb = mem_read8(state, ++state->registers.pc);
-
-	state->registers.pc = (*(state->registers.f) & FLAG_Z) ?
-		state->registers.pc+1 : (msb<<8 | lsb);
-
 	state->wait = 12;
+
+	if(*(state->registers.f) & FLAG_Z)
+	{
+		state->registers.pc++;
+	}
+	else
+	{
+		uint8_t lsb = mem_read8(state, ++state->registers.pc);
+		uint8_t msb = mem_read8(state, ++state->registers.pc);
+
+		state->registers.pc = (msb<<8 | lsb);
+
+		state->wait += 4;
+	}
 }
 
 /*!
@@ -163,12 +207,20 @@ static inline void retz(emu_state *restrict state)
  */
 static inline void jp_z_imm16(emu_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->registers.pc);
-	uint8_t msb = mem_read8(state, ++state->registers.pc);
-
-	state->registers.pc = (*(state->registers.f) & FLAG_Z) ? (msb<<8 | lsb) : state->registers.pc+1;
-
 	state->wait = 12;
+
+	if(*(state->registers.f) & FLAG_Z)
+	{
+		uint8_t lsb = mem_read8(state, ++state->registers.pc);
+		uint8_t msb = mem_read8(state, ++state->registers.pc);
+
+		state->registers = (msb<<8 | lsb);
+
+		state->wait += 4;
+	else
+	{
+		state->registers.pc++;
+	}
 }
 
 /*!
@@ -215,12 +267,21 @@ static inline void retnc(emu_state *restrict state)
  */
 static inline void jp_nc_imm16(emu_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->registers.pc);
-	uint8_t msb = mem_read8(state, ++state->registers.pc);
-
-	state->registers.pc = (*(state->registers.f) & FLAG_C) ? state->registers.pc+1 : (msb<<8 | lsb);
-
 	state->wait = 12;
+
+	if(*(state->registers.f) & FLAG_C)
+	{
+		state->registers.pc++;
+	}
+	else
+	{
+		uint8_t lsb = mem_read8(state, ++state->registers.pc);
+		uint8_t msb = mem_read8(state, ++state->registers.pc);
+
+		state->registers.pc = (msb<<8 | lsb);
+
+		state->wait += 4;
+	}
 }
 
 /*!
@@ -260,13 +321,21 @@ static inline void reti(emu_state *restrict state)
  */
 static inline void jp_c_imm16(emu_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->registers.pc);
-	uint8_t msb = mem_read8(state, ++state->registers.pc);
-
-	state->registers.pc = (*(state->registers.f) & FLAG_C) ? (msb<<8 | lsb)
-		: state->registers.pc+1;
-
 	state->wait = 12;
+
+	if(*(state->registers.f) & FLAG_C)
+	{
+		uint8_t lsb = mem_read8(state, ++state->registers.pc);
+		uint8_t msb = mem_read8(state, ++state->registers.pc);
+
+		state->registers.pc = (msb<<8 | lsb);
+
+		state->wait += 4;
+	}
+	else
+	{
+		state->registers.pc++;
+	}
 }
 
 /*!
