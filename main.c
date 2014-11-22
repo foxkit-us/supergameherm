@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 		timer_tick(state);
 		//clock_tick(state);
 
-		if(unlikely((++count_cur_second & state->freq) == state->freq))
+		if(unlikely(++count_cur_second == state->freq))
 		{
 			count_cur_second = 0;
 			debug("GBC seconds: %ld", ++gbc_seconds);
