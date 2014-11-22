@@ -40,6 +40,7 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 	}
 	else
 	{
+		signal_interrupt(state, INT_JOYPAD);
 		mem_write8(state, 0xFF00, report_key);
 	}
 }
