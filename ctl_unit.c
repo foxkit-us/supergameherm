@@ -2625,7 +2625,7 @@ static inline void cp_imm8(emu_state *restrict state)
 }
 
 // XXX this is exported for main
-static const opcode_t handlers[0x100] =
+static const opcode_t const handlers[0x100] =
 {
 	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, not_impl,
 	/* 0x08 */ not_impl, add_hl_bc, ld_a_bc, dec_bc, inc_c, dec_c, ld_c_imm8, not_impl,
@@ -2662,7 +2662,7 @@ static const opcode_t handlers[0x100] =
 };
 
 // FIXME not all instructions are constant-time!
-static const char cycles[0x100] =
+static const uint8_t const cycles[0x100] =
 {
 	/* 0x00 */ 4, 12, 8, 8, 4, 4, 8, 4,
 	/* 0x08 */ 20, 8, 8, 8, 4, 4, 8, 4,
