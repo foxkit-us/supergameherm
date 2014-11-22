@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
 		lcdc_tick(state);
 		serial_tick(state);
 		timer_tick(state);
+		sound_tick(state);
 		//clock_tick(state);
 
 		if(unlikely(++count_cur_second == state->freq))

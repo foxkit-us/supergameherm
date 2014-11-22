@@ -8,6 +8,7 @@
 #include "input.h"	// joypad_*
 #include "rom_read.h"	// OFF_CART_TYPE
 #include "serio.h"	// serial_*
+#include "sound.h"	// sound_*
 #include "timer.h"	// timer_*
 
 
@@ -30,12 +31,6 @@ static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 	return -1;
 }
 
-static inline uint8_t ugh_sound(emu_state *restrict state unused, uint16_t location unused)
-{
-	fatal("ask greaser or aji to write a sound module for this thing");
-	return -1;
-}
-
 /*! a table of hardware register read methods */
 static mem_read_fn hw_reg_read[0x80] =
 {
@@ -55,30 +50,30 @@ static mem_read_fn hw_reg_read[0x80] =
 	int_flag_read, /* 0F - IF - interrupt status.. also CPU-based */
 
 	/* 10..14 - sound mode 1 */
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound, ugh_sound,
+	sound_read, sound_read, sound_read, sound_read, sound_read,
 
 	no_hardware, /* 15 - NO HARDWARE */
 
 	/* 16..19 - sound mode 2 */
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound,
+	sound_read, sound_read, sound_read, sound_read,
 	/* 1A..1E - sound mode 3 */
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound, ugh_sound,
+	sound_read, sound_read, sound_read, sound_read, sound_read,
 
 	no_hardware, /* 1F - NO HARDWARE */
 
 	/* 20..23 - sound mode 4 */
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound,
+	sound_read, sound_read, sound_read, sound_read,
 	/* 24..26 - sound control */
-	ugh_sound, ugh_sound, ugh_sound,
+	sound_read, sound_read, sound_read,
 
 	/* 27..2F - NO HARDWARE */
 	no_hardware, no_hardware, no_hardware, no_hardware, no_hardware,
 	no_hardware, no_hardware, no_hardware, no_hardware,
 
 	/* 30..3F - WAV RAM */
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound, ugh_sound, ugh_sound,
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound, ugh_sound, ugh_sound,
-	ugh_sound, ugh_sound, ugh_sound, ugh_sound,
+	sound_read, sound_read, sound_read, sound_read, sound_read, sound_read,
+	sound_read, sound_read, sound_read, sound_read, sound_read, sound_read,
+	sound_read, sound_read, sound_read, sound_read,
 
 	/* 40..45 - LCD controller */
 	lcdc_read, lcdc_read, lcdc_read, lcdc_read, lcdc_read, lcdc_read,
@@ -237,25 +232,25 @@ static mem_write8_fn hw_reg_write[0x80] =
 	int_flag_write, /* 0F - IF - interrupt control */
 
 	/* 10..14 - sound bank 1 */
-	timer_write, doofus_write, timer_write, doofus_write,
-	timer_write,
+	sound_write, sound_write, sound_write, sound_write,
+	sound_write,
 
 	doofus_write, /* 15 - NO HARDWARE */
 
 	/* 16..19 - sound bank 2 */
-	doofus_write, timer_write, doofus_write, timer_write,
+	sound_write, sound_write, sound_write, sound_write,
 
 	/* 1A..1E - sound bank 3 */
-	timer_write, doofus_write, timer_write, doofus_write,
-	doofus_write,
+	sound_write, sound_write, sound_write, sound_write,
+	sound_write,
 
 	doofus_write, /* 1F - NO HARDWARE */
 
 	/* 20..23 - sound bank 4 */
-	doofus_write, timer_write, doofus_write, timer_write,
+	sound_write, sound_write, sound_write, sound_write,
 
 	/* 24..26 - sound control */
-	timer_write, timer_write, timer_write,
+	sound_write, sound_write, sound_write,
 
 	/* 27..2F - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write,
@@ -263,10 +258,10 @@ static mem_write8_fn hw_reg_write[0x80] =
 	doofus_write, doofus_write, doofus_write,
 
 	/* 30..3F - WAV RAM */
-	doofus_write, doofus_write, doofus_write, doofus_write,
-	doofus_write, doofus_write, doofus_write, doofus_write,
-	doofus_write, doofus_write, doofus_write, doofus_write,
-	doofus_write, doofus_write, doofus_write, doofus_write,
+	sound_write, sound_write, sound_write, sound_write,
+	sound_write, sound_write, sound_write, sound_write,
+	sound_write, sound_write, sound_write, sound_write,
+	sound_write, sound_write, sound_write, sound_write,
 
 	/* 40..45 - LCD controller */
 	lcdc_write, lcdc_write, lcdc_write,

@@ -43,4 +43,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DI
 
 
 add_executable(sgherm main.c ctl_unit.c input.c lcdc.c memory.c print.c
-	rom_read.c serio.c timer.c debug.c)
+	rom_read.c serio.c sound.c timer.c debug.c)
