@@ -36,14 +36,18 @@ static inline uint64_t get_time(void)
 
 static inline uint64_t get_time(void)
 {
-	clock_serv_t clock;
-	mach_timespec_t mtv;
+	static float adj_const = 0.0F;
 
-	host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &clock);
-	clock_get_time(clock, &mtv);
-	mach_port_deallocate(mach_task_self(), clock);
+	// Cache the value (it doesn't change)
+	if(adj_const == 0.0F)
+	{
+		mach_timebase_info_data_t ti;
+		mach_timebase_info(&ti);
 
-	return mtv.tv_sec * 1000000000L + mtv.tv_nsec;
+		adj_const = ti.numer / ti.denom;
+	}
+
+	return (uint64_t)mach_absolute_time() * adj_const;
 }
 
 #else
