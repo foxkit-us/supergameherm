@@ -422,9 +422,7 @@ static inline void cb_dispatch(emu_state *restrict state)
 	cb_regs reg = (cb_regs)(opcode & 0x7);
 	cb_ops op;
 
-	state->wait = 4;
-
-	// FIXME additional cycles depending on CB instruction
+	state->wait = 12;
 
 	if(opcode >= 0x40)
 	{
@@ -638,6 +636,7 @@ static inline void cb_dispatch(emu_state *restrict state)
 	if(reg == CB_REG_HL)
 	{
 		mem_write8(state, state->registers.hl, maybe_temp);
+		state->wait += 8;
 	}
 
 	state->registers.pc++;
