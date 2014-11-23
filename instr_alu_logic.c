@@ -4,21 +4,14 @@
  */
 static inline void rlca(emu_state *restrict state)
 {
-	if(*(state->registers.a) & 0x80)
-	{
-		*(state->registers.f) = FLAG_C;
-	}
-	else
-	{
-		*(state->registers.f) = 0x00;
-	}
-
-	*(state->registers.a) <<= 1;
-	*(state->registers.a) |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
-
+	*(state->registers.a) = rotl_8(*state->registers.a);
 	if(*(state->registers.a) == 0)
 	{
-		*(state->registers.f) |= FLAG_Z;
+		*(state->registers.f) = FLAG_Z;
+	}
+	else if(*(state->registers.a) & 0x80)
+	{
+		*(state->registers.f) = FLAG_C;
 	}
 
 	state->registers.pc++;
@@ -31,24 +24,14 @@ static inline void rlca(emu_state *restrict state)
  */
 static inline void rrca(emu_state *restrict state)
 {
-	if(*(state->registers.a) & 0x01)
-	{
-		*(state->registers.f) = FLAG_C;
-	}
-	else
-	{
-		*(state->registers.f) = 0x00;
-	}
-
-	*(state->registers.a) >>= 1;
-	if(*(state->registers.f) & FLAG_C)
-	{
-		*(state->registers.a) |= 0x80;
-	}
-
+	*(state->registers.a) = rotl_8(*state->registers.a);
 	if(*(state->registers.a) == 0)
 	{
-		*(state->registers.f) |= FLAG_Z;
+		*(state->registers.f) = FLAG_Z;
+	}
+	else if(*(state->registers.a) & 0x80)
+	{
+		*(state->registers.f) = FLAG_C;
 	}
 
 	state->registers.pc++;
@@ -751,8 +734,8 @@ static inline void cb_dispatch(emu_state *restrict state)
 	case CB_OP_SWAP:
 	{
 		/* swap higher and lower nibble of register <reg> */
-		uint8_t x = ((*write_to >> 1) ^ (*write_to >> 5)) & ((1U << 4) - 1);
-		if((*write_to ^= ((x << 1) | (x << 5))) == 0)
+		*write_to = swap_8(*write_to);
+		if(*write_to)
 		{
 			*(state->registers.f) |= FLAG_Z;
 		}
