@@ -138,10 +138,10 @@ static inline uint8_t ram_bank_read(emu_state *restrict state unused, uint16_t l
  */
 uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 {
-	if(state->dma_membar_wait && location >= 0xFE80 && location <= 0xFFFE)
+	if(state->dma_membar_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
 		// XXX check into it and see how this is done
-		fatal("Prohibited write during DMA transfer");
+		fatal("Prohibited read during DMA transfer");
 		return 0;
 	}
 
@@ -325,8 +325,9 @@ static mem_write8_fn hw_reg_write[0x80] =
  */
 void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	if(state->dma_membar_wait && location >= 0xFE80 && location <= 0xFFFE)
+	if(state->dma_membar_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
+		fatal("Prohibited write during DMA transfer");
 		return;
 	}
 
