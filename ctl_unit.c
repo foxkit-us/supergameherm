@@ -171,7 +171,7 @@ bool execute(emu_state *restrict state)
 	// Check for interrupts
 	if(state->registers.interrupts)
 	{
-		uint8_t interrupts = mem_read8(state, 0xFF0F) & ~(mem_read8(state, 0xFFFF));
+		uint8_t interrupts = mem_read8(state, 0xFF0F) & mem_read8(state, 0xFFFF);
 		if(interrupts)
 		{
 			call_interrupt(state, interrupts);
