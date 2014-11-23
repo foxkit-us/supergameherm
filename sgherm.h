@@ -95,11 +95,11 @@ typedef struct _emu_state
 		struct _ch3
 		{
 			bool enabled;		/*! channel enabled? */
+			uint8_t wave[16];	/*! waveform data */
 		} ch3;
 		struct _ch4
 		{
 			bool enabled;		/*! channel enabled? */
-			uint8_t wave[16];	/*! waveform data */
 		} ch4;
 		bool enabled;			/*! sound active? */
 	} snd_state;
