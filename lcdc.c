@@ -113,7 +113,7 @@ void lcdc_tick(emu_state *restrict state)
 
 uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 {
-	if(!reg & 0xFF00)
+	if(!(reg & 0xFF00))
 	{
 		/* this is raw video RAM read */
 		uint8_t curr_mode = state->memory[0xFF41] & 0x3;

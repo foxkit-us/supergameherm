@@ -8,42 +8,45 @@
 #include "sgherm.h"	// emu_state
 
 
-uint8_t joypad_read(emu_state *restrict state, uint16_t reg)
+uint8_t joypad_read(emu_state *restrict state, uint16_t reg unused)
 {
-	return state->memory[reg];
+	assert(reg == 0xFF00);
+	return (state->input_state.col_state << 6) | (state->input_state.row_state);
 }
 
-void joypad_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+void joypad_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
 {
-	// TODO fake propagation delay and maybe switch bounce
-	state->memory[reg] = data;
+	assert(reg == 0xFF00);
+
+	state->input_state.col_state = data >> 6;
+	state->input_state.row_state = data & 0xc0;
 	return;
 }
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
 {
-	uint8_t key_mask = mem_read8(state, 0xFF00);
-	uint8_t key_col = key_mask & (RAW_INPUT_P14 | RAW_INPUT_P15);
+	uint8_t col_sel = key >> 6;
+	uint8_t row_sel = key & 0xc0;
 
-	if(!(key & key_col))
+	// TODO fake propagation delay and maybe switch bounce
+
+	if(!(state->input_state.col_state & col_sel))
 	{
 		// Unsolicited key event
 		return;
 	}
 
-	uint8_t report_key = key & ~key_col;
-
 	if(down)
 	{
-		mem_write8(state, 0xFF00, ~report_key);
+		state->input_state.row_state &= ~row_sel;
 	}
 	else
 	{
 		// Bring system back up
-		// XXX does it come back on resume?
 		state->stop = false;
 
 		signal_interrupt(state, INT_JOYPAD);
-		mem_write8(state, 0xFF00, report_key);
+
+		state->input_state.row_state |= row_sel;
 	}
 }

@@ -115,6 +115,12 @@ typedef struct _emu_state
 		uint8_t curr_clk;		/*! ticks passed */
 		bool enabled;			/*! timer armed */
 	} timer_state;
+
+	struct _input_state
+	{
+		uint8_t col_state;		/*! P14 and P15 */
+		uint8_t row_state;		/*! P10 through P13 */
+	} input_state;
 } emu_state;
 
 emu_state * init_emulator(void);
