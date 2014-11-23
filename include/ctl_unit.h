@@ -94,9 +94,7 @@ uint8_t int_flag_read(emu_state *restrict, uint16_t);
 void int_flag_write(emu_state *restrict, uint16_t, uint8_t);
 void int_mask_flag_write(emu_state *restrict state, uint8_t data);
 
-static inline void signal_interrupt(emu_state *restrict state, uint8_t interrupt)
-{
-	mem_write8(state, 0xFF0F, interrupt);
-}
+#define signal_interrupt(state, interrupt) \
+	mem_write8((state), 0xFF0F, (interrupt) | ((state)->int_state.pending))
 
 #endif /*!__CTL_UNIT_H__*/

@@ -16,10 +16,12 @@ uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 
 void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	uint8_t mask = state->int_state.mask;
+	data &= 0x1F;
 
 	if(data > state->int_state.pending)
 	{
+		uint8_t mask = state->int_state.mask;
+
 		// Recompute jmp address
 		if((data & INT_VBLANK) && (mask & INT_VBLANK))
 		{
