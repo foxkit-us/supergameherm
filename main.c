@@ -15,6 +15,7 @@
 #include "timer.h"	// get_clock
 #include "debug.h"	// print_cycles
 #include "signals.h"	// register_handler
+#include "sound.h"	// sound_tick
 
 emu_state * init_emulator(void)
 {
