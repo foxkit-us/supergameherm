@@ -59,6 +59,51 @@ typedef struct _emu_state
 		bool use_internal;		/*! clock source */
 	} ser_state;
 
+	struct _snd_state
+	{
+		struct _ch1
+		{
+			/*! channel enabled? */
+			bool enabled;
+			/*! this/128Hz = sweep */
+			uint8_t sweep_time;
+			/*! if true, sweep decreases frequency.
+			 *  otherwise, sweep increases frequency. */
+			bool sweep_dec;
+			/*! number of shift */
+			uint8_t shift;
+			/*! wave pattern duty: 1=12.5%,2=25%,3=50%,4=75% */
+			uint8_t wave_duty;
+			/*! sound length */
+			uint8_t length;
+			/*! initial envelope volume */
+			uint8_t envelope_volume;
+			/*! if true, envelope amplifies.
+			 *  otherwise, envelope attenuates. */
+			bool envelope_amp;
+			/*! number of sweeps (0 = stop) */
+			uint8_t sweep;
+			/*! if true, one-shot.  otherwise, loop */
+			bool counter;
+			/*! 11-bit frequency (higher 5 = nothing) */
+			uint16_t frequency;
+		} ch1;
+		struct _ch2
+		{
+			bool enabled;		/*! channel enabled? */
+		} ch2;
+		struct _ch3
+		{
+			bool enabled;		/*! channel enabled? */
+		} ch3;
+		struct _ch4
+		{
+			bool enabled;		/*! channel enabled? */
+			uint8_t wave[16];	/*! waveform data */
+		} ch4;
+		bool enabled;			/*! sound active? */
+	} snd_state;
+
 	struct _tm_state
 	{
 		uint8_t div;			/*! DIV register */
