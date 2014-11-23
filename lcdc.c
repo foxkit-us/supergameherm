@@ -113,6 +113,16 @@ void lcdc_tick(emu_state *restrict state)
 
 uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 {
+	if(!reg & 0xFF00)
+	{
+		/* this is raw video RAM read */
+		uint8_t curr_mode = state->memory[0xFF41] & 0x3;
+		if(curr_mode > 1)
+		{
+			fatal("read from VRAM while not in h/v-blank");
+			return -1;
+		}
+	}
 	/* XXX TODO FIXME */
 	return state->memory[reg];
 }

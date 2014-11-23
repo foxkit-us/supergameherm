@@ -114,13 +114,6 @@ static inline uint8_t rom_bank_read(emu_state *restrict state unused, uint16_t l
 	return state->cart_data[addr + location];
 }
 
-static inline uint8_t not_impl(emu_state *restrict state unused, uint16_t location)
-{
-	fatal("reading from %04X is not yet implemented", location);
-	/* NOTREACHED */
-	return -1;
-}
-
 /*! read from the switchable RAM bank space */
 static inline uint8_t ram_bank_read(emu_state *restrict state unused, uint16_t location unused)
 {
@@ -156,7 +149,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	case 0x8:
 	case 0x9:
 		// video memory - 0x8000..0x9FFF
-		return not_impl(state, location);
+		return lcdc_read(state, location);
 	case 0xA:
 	case 0xB:
 		// switchable RAM bank - 0xA000-0xBFFF
