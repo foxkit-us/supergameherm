@@ -21,25 +21,11 @@
 emu_state * init_emulator(void)
 {
 	emu_state *state = (emu_state *)malloc(sizeof(emu_state));
-	emu_state state2 =
-	{
-		.registers = {
-			.a = ((uint8_t *)&(state->registers.af)) + 1,
-			.f = (uint8_t *)&(state->registers.af),
-			.b = ((uint8_t *)&(state->registers.bc)) + 1,
-			.c = (uint8_t *)&(state->registers.bc),
-			.d = ((uint8_t *)&(state->registers.de)) + 1,
-			.e = (uint8_t *)&(state->registers.de),
-			.h = ((uint8_t *)&(state->registers.hl)) + 1,
-			.l = (uint8_t *)&(state->registers.hl),
-			.interrupts = true,
-		},
-		.bank = 1,
-		.wait = 1,
-		.freq = CPU_FREQ_GB,
-	};
 
-	memcpy(state, &state2, sizeof(emu_state));
+	state->registers.interrupts = true;
+	state->bank = 1;
+	state->wait = 1;
+	state->freq = CPU_FREQ_GB;
 
 	return state;
 }

@@ -27,7 +27,7 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
  */
 static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 {
-	printf("%X\n", state->registers.pc);
+	printf("%X\n", REG_PC(state));
 	fatal("no device present at %04X (emulator bug?  incompatible GB?)",
 	      location);
 	/* NOTREACHED */
@@ -202,7 +202,7 @@ typedef void (*mem_write8_fn)(emu_state *restrict , uint16_t, uint8_t);
 static inline void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	fatal("[%4X] attempted write of %02X to read-only register %04X",
-	      state->registers.pc, data, location);
+	      REG_PC(state), data, location);
 }
 
 /*!
@@ -212,7 +212,7 @@ static inline void readonly_reg_write(emu_state *restrict state, uint16_t locati
 static inline void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	fatal("[%4X] attempted doofus write of %02X to non-existant device at %04X",
-	      state->registers.pc, data, location);
+	      REG_PC(state), data, location);
 }
 
 static inline void dma_write(emu_state *restrict state, uint16_t location unused, uint8_t data)

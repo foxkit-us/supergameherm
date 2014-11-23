@@ -5,9 +5,9 @@
  */
 static inline void not_impl(emu_state *restrict state)
 {
-	uint8_t opcode = mem_read8(state, state->registers.pc);
+	uint8_t opcode = mem_read8(state, REG_PC(state));
 	fatal("Unimplemented opcode %2X at %4X (mnemonic %s)", opcode,
-			state->registers.pc, lookup_mnemonic(opcode));
+			REG_PC(state), lookup_mnemonic(opcode));
 }
 
 /*!
@@ -16,8 +16,8 @@ static inline void not_impl(emu_state *restrict state)
  */
 static inline void invalid(emu_state *restrict state)
 {
-	uint8_t opcode = mem_read8(state, state->registers.pc);
-	fatal("Invalid opcode %2X at %4X", opcode, state->registers.pc);
+	uint8_t opcode = mem_read8(state, REG_PC(state));
+	fatal("Invalid opcode %2X at %4X", opcode, REG_PC(state));
 }
 
 /*!
@@ -26,7 +26,7 @@ static inline void invalid(emu_state *restrict state)
  */
 static inline void nop(emu_state *restrict state)
 {
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }

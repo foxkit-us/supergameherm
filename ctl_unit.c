@@ -72,35 +72,35 @@ static const opcode_t handlers[0x100] =
 /*! boot up */
 void init_ctl(emu_state *restrict state, system_types type)
 {
-	state->registers.pc = 0x0100;
+	REG_PC(state) = 0x0100;
 	switch(type)
 	{
 	case SYSTEM_SGB:
 		debug("Super Game Boy emulation");
-		*(state->registers.a) = 0x01;
+		REG_A(state) = 0x01;
 		break;
 	case SYSTEM_GBC:
 		debug("Game Boy Color emulation");
-		*(state->registers.a) = 0x11;
+		REG_A(state) = 0x11;
 		break;
 	case SYSTEM_GBP:
 		debug("Game Boy Portable emulation");
-		*(state->registers.a) = 0xFF;
+		REG_A(state) = 0xFF;
 		break;
 	case SYSTEM_GB:
 	default:
 		debug("original Game Boy emulation");
-		*(state->registers.a) = 0x01;
+		REG_A(state) = 0x01;
 		break;
 	}
-	*(state->registers.f) = 0xB0;
-	*(state->registers.b) = 0x00;
-	*(state->registers.c) = 0x13;
-	*(state->registers.d) = 0x00;
-	*(state->registers.e) = 0xD8;
-	*(state->registers.h) = 0x01;
-	*(state->registers.l) = 0x4D;
-	state->registers.sp = 0xFFFE;
+	REG_F(state) = 0xB0;
+	REG_B(state) = 0x00;
+	REG_C(state) = 0x13;
+	REG_D(state) = 0x00;
+	REG_E(state) = 0xD8;
+	REG_H(state) = 0x01;
+	REG_L(state) = 0x4D;
+	REG_SP(state) = 0xFFFE;
 }
 
 
@@ -142,11 +142,11 @@ static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
 	}
 
 	// Push pc to the stack
-	state->registers.sp -= 2;
-	mem_write16(state, state->registers.sp, state->registers.pc);
+	REG_SP(state) -= 2;
+	mem_write16(state, REG_SP(state), REG_PC(state));
 
 	// Jump!
-	state->registers.pc = jmp_offset;
+	REG_PC(state) = jmp_offset;
 
 	// Reset these states
 	state->halt = state->stop = false;
@@ -154,7 +154,7 @@ static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
 	// XXX is this right?
 	state->wait = 24;
 
-	debug("Interrupt jumping to %04X", state->registers.pc);
+	debug("Interrupt jumping to %04X", REG_PC(state));
 }
 
 
@@ -190,9 +190,9 @@ bool execute(emu_state *restrict state)
 		return true;
 	}
 
-	opcode = mem_read8(state, state->registers.pc);
+	opcode = mem_read8(state, REG_PC(state));
 	handler = handlers[opcode];
-	//fprintf(stderr, "pc=%04X\n", state->registers.pc);
+	//fprintf(stderr, "pc=%04X\n", REG_PC(state));
 	handler(state);
 
 	return true;

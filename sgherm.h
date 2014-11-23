@@ -26,12 +26,28 @@ typedef struct _emu_state
 
 	struct _registers
 	{
-		uint16_t af, bc, de, hl, sp, pc;	/*! Registers */
-		uint8_t *const a, *const f;		/*! Sub-registers */
-		uint8_t *const b, *const c;		/*! Sub-registers */
-		uint8_t *const d, *const e;		/*! Sub-registers */
-		uint8_t *const h, *const l;		/*! Sub-registers */
-		bool interrupts;			/*! Interrupts enabled */
+		union
+		{
+			struct __16
+			{
+				uint16_t af;
+				uint16_t bc;
+				uint16_t de;
+				uint16_t hl;
+			} _16;
+			struct __8
+			{
+				uint8_t f, a;
+				uint8_t c, b;
+				uint8_t e, d;
+				uint8_t l, h;
+			} _8;
+		} gp;
+
+		uint16_t pc;
+		uint16_t sp;
+
+		bool interrupts;		/*! Interrupts enabled */
 	} registers;
 
 	bool halt;				/*! waiting for interrupt */
@@ -123,6 +139,27 @@ typedef struct _emu_state
 		uint8_t row_state;		/*! P10 through P13 */
 	} input_state;
 } emu_state;
+
+
+// Register accesses
+#define REG_16(state, reg) ((state)->registers.gp._16.reg)
+#define REG_8(state, reg) ((state)->registers.gp._8.reg)
+
+#define REG_AF(state) REG_16(state, af)
+#define REG_BC(state) REG_16(state, bc)
+#define REG_DE(state) REG_16(state, de)
+#define REG_HL(state) REG_16(state, hl)
+#define REG_PC(state) ((state)->registers.pc)
+#define REG_SP(state) ((state)->registers.sp)
+
+#define REG_A(state) REG_8(state, a)
+#define REG_F(state) REG_8(state, f)
+#define REG_B(state) REG_8(state, b)
+#define REG_C(state) REG_8(state, c)
+#define REG_D(state) REG_8(state, d)
+#define REG_E(state) REG_8(state, e)
+#define REG_H(state) REG_8(state, h)
+#define REG_L(state) REG_8(state, l)
 
 emu_state * init_emulator(void);
 

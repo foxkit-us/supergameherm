@@ -4,9 +4,9 @@
  */
 static inline void pop_bc(emu_state *restrict state)
 {
-	state->registers.bc = mem_read16(state, state->registers.sp);
-	state->registers.sp += 2;
-	state->registers.pc++;
+	REG_BC(state) = mem_read16(state, REG_SP(state));
+	REG_SP(state) += 2;
+	REG_PC(state)++;
 
 	state->wait = 12;
 }
@@ -17,9 +17,9 @@ static inline void pop_bc(emu_state *restrict state)
  */
 static inline void push_bc(emu_state *restrict state)
 {
-	state->registers.sp -= 2;
-	mem_write16(state, state->registers.sp, state->registers.bc);
-	state->registers.pc++;
+	REG_SP(state) -= 2;
+	mem_write16(state, REG_SP(state), REG_BC(state));
+	REG_PC(state)++;
 
 	state->wait = 16;
 }
@@ -30,9 +30,9 @@ static inline void push_bc(emu_state *restrict state)
  */
 static inline void pop_de(emu_state *restrict state)
 {
-	state->registers.de = mem_read16(state, state->registers.sp);
-	state->registers.sp += 2;
-	state->registers.pc++;
+	REG_DE(state) = mem_read16(state, REG_SP(state));
+	REG_SP(state) += 2;
+	REG_PC(state)++;
 
 	state->wait = 12;
 }
@@ -43,9 +43,9 @@ static inline void pop_de(emu_state *restrict state)
  */
 static inline void push_de(emu_state *restrict state)
 {
-	state->registers.sp -= 2;
-	mem_write16(state, state->registers.sp, state->registers.de);
-	state->registers.pc++;
+	REG_SP(state) -= 2;
+	mem_write16(state, REG_SP(state), REG_DE(state));
+	REG_PC(state)++;
 
 	state->wait = 16;
 }
@@ -56,9 +56,9 @@ static inline void push_de(emu_state *restrict state)
  */
 static inline void pop_hl(emu_state *restrict state)
 {
-	state->registers.hl = mem_read16(state, state->registers.sp);
-	state->registers.sp += 2;
-	state->registers.pc++;
+	REG_HL(state) = mem_read16(state, REG_SP(state));
+	REG_SP(state) += 2;
+	REG_PC(state)++;
 
 	state->wait = 12;
 }
@@ -69,9 +69,9 @@ static inline void pop_hl(emu_state *restrict state)
  */
 static inline void push_hl(emu_state *restrict state)
 {
-	state->registers.sp -= 2;
-	mem_write16(state, state->registers.sp, state->registers.hl);
-	state->registers.pc++;
+	REG_SP(state) -= 2;
+	mem_write16(state, REG_SP(state), REG_HL(state));
+	REG_PC(state)++;
 
 	state->wait = 16;
 }
@@ -82,9 +82,9 @@ static inline void push_hl(emu_state *restrict state)
  */
 static inline void pop_af(emu_state *restrict state)
 {
-	state->registers.af = mem_read16(state, state->registers.sp);
-	state->registers.sp += 2;
-	state->registers.pc++;
+	REG_AF(state) = mem_read16(state, REG_SP(state));
+	REG_SP(state) += 2;
+	REG_PC(state)++;
 
 	state->wait = 12;
 }
@@ -95,9 +95,9 @@ static inline void pop_af(emu_state *restrict state)
  */
 static inline void push_af(emu_state *restrict state)
 {
-	state->registers.sp -= 2;
-	mem_write16(state, state->registers.sp, state->registers.af);
-	state->registers.pc++;
+	REG_SP(state) -= 2;
+	mem_write16(state, REG_SP(state), REG_AF(state));
+	REG_PC(state)++;
 
 	state->wait = 16;
 }

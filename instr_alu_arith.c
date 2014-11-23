@@ -4,8 +4,8 @@
  */
 static inline void inc_bc(emu_state *restrict state)
 {
-	state->registers.bc++;
-	state->registers.pc++;
+	REG_BC(state)++;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -16,23 +16,23 @@ static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 
 	if(*reg ^ 0x0F)
 	{
-		*(state->registers.f) &= ~FLAG_H;
+		REG_F(state) &= ~FLAG_H;
 	}
 	else
 	{
-		*(state->registers.f) |= FLAG_H;
+		REG_F(state) |= FLAG_H;
 	}
 
 	*reg += 1;
 
 	if(!(*reg))
 	{
-		*(state->registers.f) |= FLAG_Z;
+		REG_F(state) |= FLAG_Z;
 	}
 
-	*(state->registers.f) &= ~FLAG_N;
+	REG_F(state) &= ~FLAG_N;
 
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -44,31 +44,31 @@ static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
  */
 static inline void inc_b(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.b);
+	inc_r8(state, &REG_B(state));
 }
 
 static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 {
 	//uint8_t old = *reg;
 
-	*(state->registers.f) = FLAG_N;
+	REG_F(state) = FLAG_N;
 
 	if(*reg & 0x0F)
 	{
-		*(state->registers.f) &= ~FLAG_H;
+		REG_F(state) &= ~FLAG_H;
 	}
 	else
 	{
-		*(state->registers.f) |= FLAG_H;
+		REG_F(state) |= FLAG_H;
 	}
 
 	*reg -= 1;
 
 	if(!(*reg))
 	{
-		*(state->registers.f) |= FLAG_Z;
+		REG_F(state) |= FLAG_Z;
 	}
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -79,34 +79,34 @@ static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
  */
 static inline void dec_b(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.b);
+	dec_r8(state, &REG_B(state));
 }
 
 static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
 {
-	if((uint32_t)(state->registers.hl + to_add) > 0xFFFF)
+	if((uint32_t)(REG_HL(state) + to_add) > 0xFFFF)
 	{
-		*(state->registers.f) |= FLAG_C;
+		REG_F(state) |= FLAG_C;
 	}
 	else
 	{
-		*(state->registers.f) &= ~FLAG_C;
+		REG_F(state) &= ~FLAG_C;
 	}
 
-	if((state->registers.hl & 0xF) + (to_add & 0xF) > 0xF)
+	if((REG_HL(state) & 0xF) + (to_add & 0xF) > 0xF)
 	{
-		*(state->registers.f) |= FLAG_H;
+		REG_F(state) |= FLAG_H;
 	}
 	else
 	{
-		*(state->registers.f) &= ~FLAG_H;
+		REG_F(state) &= ~FLAG_H;
 	}
 
-	*(state->registers.f) &= ~FLAG_N;
+	REG_F(state) &= ~FLAG_N;
 
-	state->registers.hl += to_add;
+	REG_HL(state) += to_add;
 
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 12;
 }
@@ -117,7 +117,7 @@ static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
  */
 static inline void add_hl_bc(emu_state *restrict state)
 {
-	add_to_hl(state, state->registers.bc);
+	add_to_hl(state, REG_BC(state));
 }
 
 /*!
@@ -126,8 +126,8 @@ static inline void add_hl_bc(emu_state *restrict state)
  */
 static inline void dec_bc(emu_state *restrict state)
 {
-	state->registers.bc--;
-	state->registers.pc++;
+	REG_BC(state)--;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -138,7 +138,7 @@ static inline void dec_bc(emu_state *restrict state)
  */
 static inline void inc_c(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.c);
+	inc_r8(state, &REG_C(state));
 }
 
 /*!
@@ -147,7 +147,7 @@ static inline void inc_c(emu_state *restrict state)
  */
 static inline void dec_c(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.c);
+	dec_r8(state, &REG_C(state));
 }
 
 /*!
@@ -156,8 +156,8 @@ static inline void dec_c(emu_state *restrict state)
  */
 static inline void inc_de(emu_state *restrict state)
 {
-	state->registers.de++;
-	state->registers.pc++;
+	REG_DE(state)++;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -168,7 +168,7 @@ static inline void inc_de(emu_state *restrict state)
  */
 static inline void inc_d(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.d);
+	inc_r8(state, &REG_D(state));
 }
 
 /*!
@@ -177,7 +177,7 @@ static inline void inc_d(emu_state *restrict state)
  */
 static inline void dec_d(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.d);
+	dec_r8(state, &REG_D(state));
 }
 
 /*!
@@ -186,7 +186,7 @@ static inline void dec_d(emu_state *restrict state)
  */
 static inline void add_hl_de(emu_state *restrict state)
 {
-	add_to_hl(state, state->registers.de);
+	add_to_hl(state, REG_DE(state));
 }
 
 /*!
@@ -195,8 +195,8 @@ static inline void add_hl_de(emu_state *restrict state)
  */
 static inline void dec_de(emu_state *restrict state)
 {
-	state->registers.de--;
-	state->registers.pc++;
+	REG_DE(state)--;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -207,7 +207,7 @@ static inline void dec_de(emu_state *restrict state)
  */
 static inline void inc_e(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.e);
+	inc_r8(state, &REG_E(state));
 }
 
 /*!
@@ -216,7 +216,7 @@ static inline void inc_e(emu_state *restrict state)
  */
 static inline void dec_e(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.e);
+	dec_r8(state, &REG_E(state));
 }
 
 /*!
@@ -225,8 +225,8 @@ static inline void dec_e(emu_state *restrict state)
  */
 static inline void inc_hl(emu_state *restrict state)
 {
-	state->registers.hl++;
-	state->registers.pc++;
+	REG_HL(state)++;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -237,7 +237,7 @@ static inline void inc_hl(emu_state *restrict state)
  */
 static inline void inc_h(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.h);
+	inc_r8(state, &REG_H(state));
 }
 
 /*!
@@ -246,7 +246,7 @@ static inline void inc_h(emu_state *restrict state)
  */
 static inline void dec_h(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.h);
+	dec_r8(state, &REG_H(state));
 }
 
 /*!
@@ -255,46 +255,46 @@ static inline void dec_h(emu_state *restrict state)
  */
 static inline void daa(emu_state *restrict state)
 {
-	uint16_t val = *(state->registers.a);
+	uint16_t val = REG_A(state);
 
-	if(*(state->registers.f) & FLAG_N)
+	if(REG_F(state) & FLAG_N)
 	{
-		if(*(state->registers.f) & FLAG_H)
+		if(REG_F(state) & FLAG_H)
 		{
 			val = (val - 6) & 0xFF;
 		}
 
-		if(*(state->registers.f) & FLAG_C)
+		if(REG_F(state) & FLAG_C)
 		{
 			val -= 0x60;
 		}
 	}
 	else
 	{
-		if((*(state->registers.f) & FLAG_H) || (val & 0x0F) > 0x09)
+		if((REG_F(state) & FLAG_H) || (val & 0x0F) > 0x09)
 		{
 			val += 0x06;
 		}
 
-		if((*(state->registers.f) & FLAG_C) || (val > 0x9F))
+		if((REG_F(state) & FLAG_C) || (val > 0x9F))
 		{
 			val += 0x60;
 		}
 	}
 
-	*(state->registers.f) &= ~(FLAG_H | FLAG_Z);
+	REG_F(state) &= ~(FLAG_H | FLAG_Z);
 
 	if(val & 0x100)
 	{
-		*(state->registers.f) |= FLAG_C;
+		REG_F(state) |= FLAG_C;
 	}
 
-	if(!(*(state->registers.a) = val))
+	if(!(REG_A(state) = val))
 	{
-		*(state->registers.f) |= FLAG_Z;
+		REG_F(state) |= FLAG_Z;
 	}
 
-	state->registers.pc++;
+	REG_PC(state)++;
 	state->wait = 4;
 }
 
@@ -304,7 +304,7 @@ static inline void daa(emu_state *restrict state)
  */
 static inline void add_hl_hl(emu_state *restrict state)
 {
-	add_to_hl(state, state->registers.hl);
+	add_to_hl(state, REG_HL(state));
 }
 
 /*!
@@ -313,8 +313,8 @@ static inline void add_hl_hl(emu_state *restrict state)
  */
 static inline void dec_hl(emu_state *restrict state)
 {
-	state->registers.hl--;
-	state->registers.pc++;
+	REG_HL(state)--;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -325,7 +325,7 @@ static inline void dec_hl(emu_state *restrict state)
  */
 static inline void inc_l(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.l);
+	inc_r8(state, &REG_L(state));
 }
 
 /*!
@@ -334,7 +334,7 @@ static inline void inc_l(emu_state *restrict state)
  */
 static inline void dec_l(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.l);
+	dec_r8(state, &REG_L(state));
 }
 
 /*!
@@ -343,8 +343,8 @@ static inline void dec_l(emu_state *restrict state)
  */
 static inline void inc_sp(emu_state *restrict state)
 {
-	state->registers.sp++;
-	state->registers.pc++;
+	REG_SP(state)++;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -355,7 +355,7 @@ static inline void inc_sp(emu_state *restrict state)
  */
 static inline void add_hl_sp(emu_state *restrict state)
 {
-	add_to_hl(state, state->registers.sp);
+	add_to_hl(state, REG_SP(state));
 
 	state->wait = 8;
 }
@@ -366,8 +366,8 @@ static inline void add_hl_sp(emu_state *restrict state)
  */
 static inline void dec_sp(emu_state *restrict state)
 {
-	state->registers.sp--;
-	state->registers.pc++;
+	REG_SP(state)--;
+	REG_PC(state)++;
 
 	state->wait = 8;
 }
@@ -378,7 +378,7 @@ static inline void dec_sp(emu_state *restrict state)
  */
 static inline void inc_a(emu_state *restrict state)
 {
-	inc_r8(state, state->registers.a);
+	inc_r8(state, &REG_A(state));
 }
 
 /*!
@@ -387,35 +387,35 @@ static inline void inc_a(emu_state *restrict state)
  */
 static inline void dec_a(emu_state *restrict state)
 {
-	dec_r8(state, state->registers.a);
+	dec_r8(state, &REG_A(state));
 }
 
 static inline void add_common(emu_state *restrict state, uint8_t to_add)
 {
-	uint32_t temp = *(state->registers.a) + to_add;
+	uint32_t temp = REG_A(state) + to_add;
 
-	*(state->registers.f) = 0;
+	REG_F(state) = 0;
 
 	if(temp)
 	{
 		if(temp & 0x100)
 		{
-			*(state->registers.f) |= FLAG_C;
+			REG_F(state) |= FLAG_C;
 		}
 
 		// Half carry
-		if(((*(state->registers.a) & 0xF) + (to_add & 0xF)) & 0x10)
+		if(((REG_A(state) & 0xF) + (to_add & 0xF)) & 0x10)
 		{
-			*(state->registers.f) |= FLAG_H;
+			REG_F(state) |= FLAG_H;
 		}
 	}
 	else
 	{
-		*(state->registers.f) |= FLAG_Z;
+		REG_F(state) |= FLAG_Z;
 	}
 
-	*(state->registers.a) = (uint8_t)temp;
-	state->registers.pc++;
+	REG_A(state) = (uint8_t)temp;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -426,7 +426,7 @@ static inline void add_common(emu_state *restrict state, uint8_t to_add)
  */
 static inline void add_b(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.b));
+	add_common(state, REG_B(state));
 }
 
 /*!
@@ -435,7 +435,7 @@ static inline void add_b(emu_state *restrict state)
  */
 static inline void add_c(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.c));
+	add_common(state, REG_C(state));
 }
 
 /*!
@@ -444,7 +444,7 @@ static inline void add_c(emu_state *restrict state)
  */
 static inline void add_d(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.d));
+	add_common(state, REG_D(state));
 }
 
 /*!
@@ -453,7 +453,7 @@ static inline void add_d(emu_state *restrict state)
  */
 static inline void add_e(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.e));
+	add_common(state, REG_E(state));
 }
 
 /*!
@@ -462,7 +462,7 @@ static inline void add_e(emu_state *restrict state)
  */
 static inline void add_h(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.h));
+	add_common(state, REG_H(state));
 }
 
 /*!
@@ -471,7 +471,7 @@ static inline void add_h(emu_state *restrict state)
  */
 static inline void add_l(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.l));
+	add_common(state, REG_L(state));
 }
 
 /*!
@@ -480,7 +480,7 @@ static inline void add_l(emu_state *restrict state)
  */
 static inline void add_hl(emu_state *restrict state)
 {
-	add_common(state, mem_read8(state, state->registers.hl));
+	add_common(state, mem_read8(state, REG_HL(state)));
 
 	// add_common already adds 4
 	state->wait = 4;
@@ -492,12 +492,12 @@ static inline void add_hl(emu_state *restrict state)
  */
 static inline void add_a(emu_state *restrict state)
 {
-	add_common(state, *(state->registers.a));
+	add_common(state, REG_A(state));
 }
 
 static inline void adc_common(emu_state *restrict state, uint8_t to_add)
 {
-	if(*(state->registers.f) & FLAG_C)
+	if(REG_F(state) & FLAG_C)
 	{
 		to_add++;
 	}
@@ -511,7 +511,7 @@ static inline void adc_common(emu_state *restrict state, uint8_t to_add)
  */
 static inline void adc_b(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.b));
+	adc_common(state, REG_B(state));
 }
 
 /*!
@@ -520,7 +520,7 @@ static inline void adc_b(emu_state *restrict state)
  */
 static inline void adc_c(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.c));
+	adc_common(state, REG_C(state));
 }
 
 /*!
@@ -529,7 +529,7 @@ static inline void adc_c(emu_state *restrict state)
  */
 static inline void adc_d(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.d));
+	adc_common(state, REG_D(state));
 }
 
 /*!
@@ -538,7 +538,7 @@ static inline void adc_d(emu_state *restrict state)
  */
 static inline void adc_e(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.e));
+	adc_common(state, REG_E(state));
 }
 
 /*!
@@ -547,7 +547,7 @@ static inline void adc_e(emu_state *restrict state)
  */
 static inline void adc_h(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.h));
+	adc_common(state, REG_H(state));
 }
 
 /*!
@@ -556,7 +556,7 @@ static inline void adc_h(emu_state *restrict state)
  */
 static inline void adc_l(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.l));
+	adc_common(state, REG_L(state));
 }
 
 /*!
@@ -565,7 +565,7 @@ static inline void adc_l(emu_state *restrict state)
  */
 static inline void adc_hl(emu_state *restrict state)
 {
-	adc_common(state, mem_read8(state, state->registers.hl));
+	adc_common(state, mem_read8(state, REG_HL(state)));
 
 	// adc_common already adds 4
 	state->wait += 4;
@@ -577,7 +577,7 @@ static inline void adc_hl(emu_state *restrict state)
  */
 static inline void adc_a(emu_state *restrict state)
 {
-	adc_common(state, *(state->registers.a));
+	adc_common(state, REG_A(state));
 }
 
 static inline void sub_common(emu_state *restrict state, uint8_t to_sub)
@@ -591,7 +591,7 @@ static inline void sub_common(emu_state *restrict state, uint8_t to_sub)
  */
 static inline void sub_b(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.b));
+	sub_common(state, REG_B(state));
 }
 
 /*!
@@ -600,7 +600,7 @@ static inline void sub_b(emu_state *restrict state)
  */
 static inline void sub_c(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.c));
+	sub_common(state, REG_C(state));
 }
 
 /*!
@@ -609,7 +609,7 @@ static inline void sub_c(emu_state *restrict state)
  */
 static inline void sub_d(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.d));
+	sub_common(state, REG_D(state));
 }
 
 /*!
@@ -618,7 +618,7 @@ static inline void sub_d(emu_state *restrict state)
  */
 static inline void sub_e(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.e));
+	sub_common(state, REG_E(state));
 }
 
 /*!
@@ -627,7 +627,7 @@ static inline void sub_e(emu_state *restrict state)
  */
 static inline void sub_h(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.h));
+	sub_common(state, REG_H(state));
 }
 
 /*!
@@ -636,7 +636,7 @@ static inline void sub_h(emu_state *restrict state)
  */
 static inline void sub_l(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.l));
+	sub_common(state, REG_L(state));
 }
 
 /*!
@@ -645,7 +645,7 @@ static inline void sub_l(emu_state *restrict state)
  */
 static inline void sub_hl(emu_state *restrict state)
 {
-	sub_common(state, mem_read8(state, state->registers.hl));
+	sub_common(state, mem_read8(state, REG_HL(state)));
 
 	// sub_common already adds 4
 	state->wait += 4;
@@ -657,12 +657,12 @@ static inline void sub_hl(emu_state *restrict state)
  */
 static inline void sub_a(emu_state *restrict state)
 {
-	sub_common(state, *(state->registers.a));
+	sub_common(state, REG_A(state));
 }
 
 static inline void sbc_common(emu_state *restrict state, uint8_t to_sub)
 {
-	if(*(state->registers.f) & FLAG_C)
+	if(REG_F(state) & FLAG_C)
 	{
 		to_sub++;
 	}
@@ -676,7 +676,7 @@ static inline void sbc_common(emu_state *restrict state, uint8_t to_sub)
  */
 static inline void sbc_b(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.b));
+	sbc_common(state, REG_B(state));
 }
 
 /*!
@@ -685,7 +685,7 @@ static inline void sbc_b(emu_state *restrict state)
  */
 static inline void sbc_c(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.c));
+	sbc_common(state, REG_C(state));
 }
 
 /*!
@@ -694,7 +694,7 @@ static inline void sbc_c(emu_state *restrict state)
  */
 static inline void sbc_d(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.d));
+	sbc_common(state, REG_D(state));
 }
 
 /*!
@@ -703,7 +703,7 @@ static inline void sbc_d(emu_state *restrict state)
  */
 static inline void sbc_e(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.e));
+	sbc_common(state, REG_E(state));
 }
 
 /*!
@@ -712,7 +712,7 @@ static inline void sbc_e(emu_state *restrict state)
  */
 static inline void sbc_h(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.h));
+	sbc_common(state, REG_H(state));
 }
 
 /*!
@@ -721,7 +721,7 @@ static inline void sbc_h(emu_state *restrict state)
  */
 static inline void sbc_l(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.l));
+	sbc_common(state, REG_L(state));
 }
 
 /*!
@@ -730,7 +730,7 @@ static inline void sbc_l(emu_state *restrict state)
  */
 static inline void sbc_hl(emu_state *restrict state)
 {
-	sbc_common(state, mem_read8(state, state->registers.hl));
+	sbc_common(state, mem_read8(state, REG_HL(state)));
 
 	// sbc_common already adds 4
 	state->wait += 4;
@@ -742,7 +742,7 @@ static inline void sbc_hl(emu_state *restrict state)
  */
 static inline void sbc_a(emu_state *restrict state)
 {
-	sbc_common(state, *(state->registers.a));
+	sbc_common(state, REG_A(state));
 }
 
 /*!
@@ -751,7 +751,7 @@ static inline void sbc_a(emu_state *restrict state)
  */
 static inline void add_imm8(emu_state *restrict state)
 {
-	add_common(state, mem_read8(state, ++state->registers.pc));
+	add_common(state, mem_read8(state, ++REG_PC(state)));
 
 	// add_common already adds 4
 	state->wait += 4;
@@ -763,7 +763,7 @@ static inline void add_imm8(emu_state *restrict state)
  */
 static inline void adc_imm8(emu_state *restrict state)
 {
-	adc_common(state, mem_read8(state, ++state->registers.pc));
+	adc_common(state, mem_read8(state, ++REG_PC(state)));
 
 	// adc_common already adds 4
 	state->wait += 4;
@@ -775,7 +775,7 @@ static inline void adc_imm8(emu_state *restrict state)
  */
 static inline void sub_imm8(emu_state *restrict state)
 {
-	sub_common(state, mem_read8(state, ++state->registers.pc));
+	sub_common(state, mem_read8(state, ++REG_PC(state)));
 
 	// sub_common already adds 4
 	state->wait += 4;
@@ -787,7 +787,7 @@ static inline void sub_imm8(emu_state *restrict state)
  */
 static inline void sbc_imm8(emu_state *restrict state)
 {
-	sbc_common(state, mem_read8(state, ++state->registers.pc));
+	sbc_common(state, mem_read8(state, ++REG_PC(state)));
 
 	// sbc_common already adds 4
 	state->wait += 4;

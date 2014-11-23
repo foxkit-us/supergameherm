@@ -18,7 +18,7 @@ static inline void stop(emu_state *restrict state)
 		state->stop = true;
 	}
 
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -30,7 +30,7 @@ static inline void stop(emu_state *restrict state)
 static inline void di(emu_state *restrict state)
 {
 	state->registers.interrupts = false;
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -42,7 +42,7 @@ static inline void di(emu_state *restrict state)
 static inline void ei(emu_state *restrict state)
 {
 	state->registers.interrupts = true;
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -59,7 +59,7 @@ static inline void halt(emu_state *restrict state)
 		state->halt = true;
 	}
 
-	state->registers.pc++;
+	REG_PC(state)++;
 
 	state->wait = 4;
 }
