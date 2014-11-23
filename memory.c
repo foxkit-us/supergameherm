@@ -1,5 +1,7 @@
 #include "config.h"	// macros
 #include <stdint.h>	// uint[XX]_t
+#include <assert.h>	// assert
+#include <string.h>	// memmove
 
 #include "print.h"	// fatal
 #include "memory.h"	// Constants and what have you */
@@ -214,6 +216,18 @@ static inline void doofus_write(emu_state *restrict state, uint16_t location, ui
 	      state->registers.pc, data, location);
 }
 
+static inline void dma_write(emu_state *restrict state, uint16_t location, uint8_t data)
+{
+	/* TODO FIXME XXX OMG HAX */
+	/* this is 'correct' but horribly inaccurate:
+	 * this transfer should take 160 µs (640 clocks), and during the
+	 * transfer, the CPU locks all memory reads except FE80-FFFE.
+	 */
+	uint16_t start = data << 8;
+	assert(location == 0xFF46);
+	memmove(state->memory + 0xFE00, state->memory + start, 160);
+}
+
 static mem_write8_fn hw_reg_write[0x80] =
 {
 	joypad_write, /* 00 - P1 - joypad */
@@ -267,7 +281,7 @@ static mem_write8_fn hw_reg_write[0x80] =
 	lcdc_write, lcdc_write, lcdc_write,
 	lcdc_write, lcdc_write, lcdc_write,
 
-	doofus_write, /* 46 - DMA */
+	dma_write, /* 46 - DMA */
 
 	/* 47..4B - more video */
 	lcdc_write, lcdc_write, lcdc_write, lcdc_write, lcdc_write,
