@@ -1,11 +1,12 @@
 #include "config.h"	// macros
 
-#include <stdbool.h>	// bool
 #include <stdlib.h>	// atexit
 
 #include "print.h"	// error
-#include "sgherm.h"	// emu_state
 #include "debug.h"	// print_cycles
+#include "util.h"	// unused
+#include "sgherm.h"	// emu_state
+
 
 volatile bool do_exit = false;
 
@@ -20,7 +21,6 @@ void exit_print_stats(void)
 
 #ifdef HAVE_POSIX
 
-#include <stdbool.h>
 #include <signal.h>	// sigaction
 
 static void sig_handler(int signal unused)
@@ -33,7 +33,7 @@ void register_handlers(void)
 	struct sigaction sa;
 
 	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = sig_handler;
+	sa.sa_handler = &sig_handler;
 	sa.sa_flags = 0;
 	if (sigaction(SIGHUP, &sa, NULL) ||
 		sigaction(SIGINT, &sa, NULL) ||

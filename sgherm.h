@@ -125,26 +125,4 @@ typedef struct _emu_state
 
 emu_state * init_emulator(void);
 
-#ifdef unused
-#	undef unused
-#endif
-
-#ifdef likely
-#	undef likely
-#endif
-
-#ifdef unlikely
-#	undef unlikely
-#endif
-
-#ifdef __GNUC__
-#	define unused __attribute__((unused))
-#	define unlikely(x) (!!__builtin_expect((x), 0))
-#	define likely(x) (!!__builtin_expect((x), 1))
-#else
-#	define unused
-#	define unlikely(x) (x)
-#	define likely(x) (x)
-#endif
-
 #endif /*!__SGHERM_H_*/

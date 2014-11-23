@@ -7,6 +7,7 @@
 #include <stdint.h>	// uint[XX]_t
 
 #include "print.h"	// fatal
+#include "util.h"	// likely/unlikely
 #include "sgherm.h"	// emu_state
 
 

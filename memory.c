@@ -12,6 +12,7 @@
 #include "serio.h"	// serial_*
 #include "sound.h"	// sound_*
 #include "timer.h"	// timer_*
+#include "util.h"	// likely/unlikely
 
 
 /***********************************************************************

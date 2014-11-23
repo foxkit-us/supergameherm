@@ -3,7 +3,7 @@
 #include <stdio.h>	// ?fprintf
 #include <stdlib.h>	// exit
 
-#include "sgherm.h"	// unused
+#include "util.h"	// unused
 
 void fatal(const char *str, ...)
 {

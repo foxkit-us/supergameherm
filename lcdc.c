@@ -1,6 +1,8 @@
 #include "config.h"	// macros
+
 #include "print.h"	// fatal
 #include "ctl_unit.h"	// signal_interrupt
+#include "util.h"	// likely/unlikely
 #include "sgherm.h"	// emu_state
 
 

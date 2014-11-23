@@ -5,17 +5,10 @@
 #include <stdlib.h>	// malloc
 #include <string.h>	// memcmp
 
-#ifndef _MSC_VER
-/*
- * surprisingly, MSVC++ includes __bswap_16 natively, without header...
- * (and byteswap.h does not exist on it)
- */
-#	include <byteswap.h>	// __bswap_16
-#endif
-
 #include "sgherm.h"	// emu_state
 #include "print.h"	// fatal, error, debug
 #include "rom_read.h"	// constants, cart_header, etc.
+#include "util.h"	// likely/unlikely
 
 
 static const unsigned char graphic_expected[] =

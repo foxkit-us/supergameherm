@@ -16,6 +16,7 @@
 #include "debug.h"	// print_cycles
 #include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
+#include "util.h"	// likely/unlikely
 
 emu_state * init_emulator(void)
 {

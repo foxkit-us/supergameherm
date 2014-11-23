@@ -5,6 +5,7 @@
 #include "ctl_unit.h"	// signal_interrupt
 #include "print.h"	// error
 #include "input.h"	// input_key, defines
+#include "util.h"	// unused
 #include "sgherm.h"	// emu_state
 
 
