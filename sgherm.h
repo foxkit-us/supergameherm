@@ -37,6 +37,8 @@ typedef struct _emu_state
 	bool halt;				/*! waiting for interrupt */
 	bool stop;				/*! deep sleep state (disable LCDC) */
 
+	uint16_t dma_membar_wait;		/*! Clocks left on DMA membar */
+
 	unsigned int wait;			/*! number of clocks */
 
 	uint8_t bank;				/*! current bank */

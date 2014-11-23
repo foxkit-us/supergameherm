@@ -168,6 +168,11 @@ bool execute(emu_state *restrict state)
 		return true;
 	}
 
+	if(state->dma_membar_wait)
+	{
+		state->dma_membar_wait--;
+	}
+
 	// Check for interrupts
 	if(state->registers.interrupts)
 	{

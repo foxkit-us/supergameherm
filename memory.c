@@ -138,6 +138,13 @@ static inline uint8_t ram_bank_read(emu_state *restrict state unused, uint16_t l
  */
 uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 {
+	if(state->dma_membar_wait && location >= 0xFE80 && location <= 0xFFFE)
+	{
+		// XXX check into it and see how this is done
+		fatal("Prohibited write during DMA transfer");
+		return;
+	}
+
 	switch(location >> 12)
 	{
 	case 0x4:
@@ -216,16 +223,22 @@ static inline void doofus_write(emu_state *restrict state, uint16_t location, ui
 	      state->registers.pc, data, location);
 }
 
-static inline void dma_write(emu_state *restrict state, uint16_t location, uint8_t data)
+static inline void dma_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
 	/* TODO FIXME XXX OMG HAX */
 	/* this is 'correct' but horribly inaccurate:
 	 * this transfer should take 160 µs (640 clocks), and during the
 	 * transfer, the CPU locks all memory reads except FE80-FFFE.
+	 *
+	 * NOTE
+	 * The above may not be true anymore, but I'm not sure I implemented
+	 * this correctly. --Elizabeth
 	 */
 	uint16_t start = data << 8;
 	assert(location == 0xFF46);
 	memmove(state->memory + 0xFE00, state->memory + start, 160);
+
+	state->dma_membar_wait = 640;
 }
 
 static mem_write8_fn hw_reg_write[0x80] =
@@ -312,6 +325,11 @@ static mem_write8_fn hw_reg_write[0x80] =
  */
 void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 {
+	if(state->dma_membar_wait && location >= 0xFE80 && location <= 0xFFFE)
+	{
+		return;
+	}
+
 	switch(location >> 12)
 	{
 	case 0x2:
