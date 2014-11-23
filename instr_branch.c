@@ -136,6 +136,40 @@ static inline void jp_imm16(emu_state *restrict state)
 	state->wait = 16;
 }
 
+/*!
+ * @brief CALL nn (0xCD)
+ * @result next pc stored in stack; jump to nn
+ */
+static inline void call_imm16(emu_state *restrict state)
+{
+	uint8_t lsb = mem_read8(state, ++state->registers.pc);
+	uint8_t msb = mem_read8(state, ++state->registers.pc);
+
+	state->registers.sp -= 2;
+	mem_write16(state, state->registers.sp, ++state->registers.pc);
+
+	state->registers.pc = (msb<<8 | lsb);
+
+	state->wait = 24;
+}
+
+/*!
+ * @brief CALL NZ,nn (0xC4)
+ * @result CALL nn if Z flag is not set
+ */
+static inline void call_nz_imm16(emu_state *restrict state)
+{
+	if(*(state->registers.f) & FLAG_Z)
+	{
+		state->wait = 12;
+		state->registers.pc += 3;
+	}
+	else
+	{
+		call_imm16(state);
+	}
+}
+
 static inline void reset_common(emu_state *restrict state)
 {
 	uint16_t to = mem_read8(state, state->registers.pc) - 0xC7;
@@ -225,20 +259,20 @@ static inline void jp_z_imm16(emu_state *restrict state)
 }
 
 /*!
- * @brief CALL nn (0xCD)
- * @result next pc stored in stack; jump to nn
+ * @brief CALL Z,nn (0xCC)
+ * @result CALL nn if Z flag is set
  */
-static inline void call_imm16(emu_state *restrict state)
+static inline void call_z_imm16(emu_state *restrict state)
 {
-	uint8_t lsb = mem_read8(state, ++state->registers.pc);
-	uint8_t msb = mem_read8(state, ++state->registers.pc);
-
-	state->registers.sp -= 2;
-	mem_write16(state, state->registers.sp, ++state->registers.pc);
-
-	state->registers.pc = (msb<<8 | lsb);
-
-	state->wait = 24;
+	if(*(state->registers.f) & FLAG_Z)
+	{
+		call_imm16(state);
+	}
+	else
+	{
+		state->wait = 12;
+		state->registers.pc += 3;
+	}
 }
 
 /*!
@@ -282,6 +316,23 @@ static inline void jp_nc_imm16(emu_state *restrict state)
 		state->registers.pc = (msb<<8 | lsb);
 
 		state->wait += 4;
+	}
+}
+
+/*!
+ * @brief CALL NC,nn (0xD4)
+ * @result CALL nn if C flag is not set
+ */
+static inline void call_nc_imm16(emu_state *restrict state)
+{
+	if(*(state->registers.f) & FLAG_C)
+	{
+		state->wait = 12;
+		state->registers.pc += 3;
+	}
+	else
+	{
+		call_imm16(state);
 	}
 }
 
@@ -335,6 +386,23 @@ static inline void jp_c_imm16(emu_state *restrict state)
 	}
 	else
 	{
+		state->registers.pc += 3;
+	}
+}
+
+/*!
+ * @brief CALL C,nn (0xDC)
+ * @result CALL nn if C flag is set
+ */
+static inline void call_c_imm16(emu_state *restrict state)
+{
+	if(*(state->registers.f) & FLAG_C)
+	{
+		call_imm16(state);
+	}
+	else
+	{
+		state->wait = 12;
 		state->registers.pc += 3;
 	}
 }
