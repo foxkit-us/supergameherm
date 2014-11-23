@@ -334,6 +334,12 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		case CART_ROM_ONLY:
 			fatal("invalid memory write at %04X (%02X)",
 			      location, data);
+		case CART_MBC1:
+		case CART_MBC1_RAM:
+		case CART_MBC1_RAM_BATT:
+			state->bank = data & 0x1F;
+			debug("switching to bank %04X", state->bank);
+			return;
 		case CART_MBC3:
 		case CART_MBC3_RAM:
 		case CART_MBC3_RAM_BATT:
@@ -344,6 +350,24 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			return;
 		default:
 			fatal("banks for this cart aren't done yet sorry :(");
+		}
+	case 0x4:
+	case 0x5:
+		switch(state->cart_data[OFF_CART_TYPE])
+		{
+		case CART_ROM_ONLY:
+			fatal("invalid memory write at %04X (%02X)",
+				location, data);
+		case CART_MBC3:
+		case CART_MBC3_RAM:
+		case CART_MBC3_RAM_BATT:
+		case CART_MBC3_TIMER_BATT:
+		case CART_MBC3_TIMER_RAM_BATT:
+			state->ram_bank = data & 0x3;
+			debug("switching to RAM bank %04X", state->ram_bank);
+			return;
+		default:
+			fatal("RAM banks for this cart aren't done yet sorry :(");
 		}
 	case 0xA:
 	case 0xB:

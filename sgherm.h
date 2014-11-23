@@ -41,7 +41,8 @@ typedef struct _emu_state
 
 	unsigned int wait;			/*! number of clocks */
 
-	uint8_t bank;				/*! current bank */
+	uint8_t bank;				/*! current ROM bank */
+	uint8_t ram_bank;			/*! current RAM bank */
 
 	uint64_t cycles;			/*! Present cycle count */
 	uint64_t start_time;			/*! Time started */
