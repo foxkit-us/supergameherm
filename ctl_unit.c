@@ -37,7 +37,7 @@ static const opcode_t handlers[0x100] =
 	/* 0x08 */ not_impl, add_hl_bc, ld_a_bc, dec_bc, inc_c, dec_c, ld_c_imm8, rrca,
 	/* 0x10 */ stop, ld_de_imm16, ld_de_a, inc_de, inc_d, dec_d, ld_d_imm8, rla,
 	/* 0x18 */ jr_imm8, add_hl_de, ld_a_de, dec_de, inc_e, dec_e, ld_e_imm8, rra,
-	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, not_impl,
+	/* 0x20 */ jr_nz_imm8, ld_hl_imm16, ldi_hl_a, inc_hl, inc_h, dec_h, ld_h_imm8, daa,
 	/* 0x28 */ jr_z_imm8, add_hl_hl, ldi_a_hl, dec_hl, inc_l, dec_l, ld_l_imm8, cpl,
 	/* 0x30 */ jr_nc_imm8, ld_sp_imm16, ldd_hl_a, inc_sp, inc_hl, dec_hl, ld_hl_imm8, scf,
 	/* 0x38 */ jr_c_imm8, add_hl_sp, ldd_a_hl, dec_sp, inc_a, dec_a, ld_a_imm8, ccf,
@@ -191,6 +191,7 @@ bool execute(emu_state *restrict state)
 
 	opcode = mem_read8(state, state->registers.pc);
 	handler = handlers[opcode];
+	//fprintf(stderr, "pc=%04X\n", state->registers.pc);
 	handler(state);
 
 	return true;

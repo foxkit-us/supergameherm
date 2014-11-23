@@ -250,6 +250,54 @@ static inline void dec_h(emu_state *restrict state)
 }
 
 /*!
+ * @brief DAA (0x27)
+ * @result Decimal-Adjust A.
+ */
+static inline void daa(emu_state *restrict state)
+{
+	uint16_t val = *(state->registers.a);
+
+	if(*(state->registers.f) & FLAG_N)
+	{
+		if((*(state->registers.f) & FLAG_H) || (val & 0x0F) > 0x9)
+		{
+			val += 0x06;
+		}
+		if((*(state->registers.f) & FLAG_C) || (val & 0xF0) > 0x90)
+		{
+			val += 0x60;
+		}
+	}
+	else
+	{
+		if(*(state->registers.f) & FLAG_H)
+		{
+			val = (val - 0x06) & 0xFF;
+		}
+
+		if(*(state->registers.f) & FLAG_C)
+		{
+			val -= 0x60;
+		}
+	}
+
+	*(state->registers.f) &= ~FLAG_H;
+
+	if((val & 0x100) == 0x100)
+	{
+		*(state->registers.f) |= FLAG_C;
+	}
+
+	if((*(state->registers.a) = (val & 0xFF)) == 0)
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
+
+	state->registers.pc++;
+	state->wait = 4;
+}
+
+/*!
  * @brief ADD HL,HL (0x29)
  * @result HL += HL; N flag reset, H if carry from bit 11, C if overflow
  */
