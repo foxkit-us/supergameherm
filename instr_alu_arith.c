@@ -271,7 +271,7 @@ static inline void daa(emu_state *restrict state)
 	}
 	else
 	{
-		if((*(state->registers.f) & FLAG_H) || (val & 0x0F))
+		if((*(state->registers.f) & FLAG_H) || (val & 0x0F) > 0x09)
 		{
 			val += 0x06;
 		}
