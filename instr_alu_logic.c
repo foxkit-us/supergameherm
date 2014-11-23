@@ -1,4 +1,127 @@
 /*!
+ * @brief RLCA (0x07)
+ * @result A is rotated left; C = old bit 7
+ */
+static inline void rlca(emu_state *restrict state)
+{
+	if(*(state->registers.a) & 0x80)
+	{
+		*(state->registers.f) = FLAG_C;
+	}
+	else
+	{
+		*(state->registers.f) = 0x00;
+	}
+
+	*(state->registers.a) <<= 1;
+	*(state->registers.a) |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
+
+	if(*(state->registers.a) == 0)
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
+
+	state->registers.pc++;
+	state->wait = 4;
+}
+
+/*!
+ * @brief RRCA (0x0F)
+ * @result A is rotated right; C = old bit 0
+ */
+static inline void rrca(emu_state *restrict state)
+{
+	if(*(state->registers.a) & 0x01)
+	{
+		*(state->registers.f) = FLAG_C;
+	}
+	else
+	{
+		*(state->registers.f) = 0x00;
+	}
+
+	*(state->registers.a) >>= 1;
+	if(*(state->registers.f) & FLAG_C)
+	{
+		*(state->registers.a) |= 0x80;
+	}
+
+	if(*(state->registers.a) == 0)
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
+
+	state->registers.pc++;
+	state->wait = 4;
+}
+
+/*!
+ * @brief RLA (0x17)
+ * @result A is rotated left through the carry flag
+ */
+static inline void rla(emu_state *restrict state)
+{
+	/* abusing FLAG_H as a temp var. */
+	if(*(state->registers.a) & 0x80)
+	{
+		*(state->registers.f) = FLAG_H;
+	}
+	else
+	{
+		*(state->registers.f) = 0x00;
+	}
+
+	*(state->registers.a) <<= 1;
+	*(state->registers.a) |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
+
+	if(*(state->registers.f) & FLAG_H)
+	{
+		*(state->registers.f) = FLAG_C;
+	}
+
+	if(*(state->registers.a) == 0)
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
+
+	state->registers.pc++;
+	state->wait = 4;
+}
+
+/*!
+ * @brief RRA (0x1F)
+ * @result A is rotated right through the carry flag
+ */
+static inline void rra(emu_state *restrict state)
+{
+	/* same as above */
+	if(*(state->registers.a) & 0x01)
+	{
+		*(state->registers.f) = FLAG_H;
+	}
+	else
+	{
+		*(state->registers.f) = 0x00;
+	}
+
+	*(state->registers.a) >>= 1;
+	*(state->registers.a) |= ((*(state->registers.f) & FLAG_C) == FLAG_C);
+
+	if(*(state->registers.f) & FLAG_H)
+	{
+		*(state->registers.f) = FLAG_C;
+	}
+
+	if(*(state->registers.a) == 0)
+	{
+		*(state->registers.f) |= FLAG_Z;
+	}
+
+	state->registers.pc++;
+	state->wait = 4;
+}
+
+/*!
 * @brief CPL (0x2F)
 * @result all bits of A are negated
 */
