@@ -53,5 +53,6 @@ platform_checks()
 compiler_checks()
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
-subdirs(src)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
+
+subdirs(src)
