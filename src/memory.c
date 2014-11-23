@@ -347,7 +347,8 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			debug("switching to bank %04X", state->bank);
 			return;
 		default:
-			fatal("banks for this cart aren't done yet sorry :(");
+			fatal("banks for this cart (type %04X) aren't done yet sorry :(",
+					state->cart_data[OFF_CART_TYPE]);
 		}
 	case 0x4:
 	case 0x5:
@@ -365,7 +366,8 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			debug("switching to RAM bank %04X", state->ram_bank);
 			return;
 		default:
-			fatal("RAM banks for this cart aren't done yet sorry :(");
+			fatal("RAM banks for this cart (type %04X) aren't done yet sorry :(",
+					state->cart_data[OFF_CART_TYPE]);
 		}
 	case 0xA:
 	case 0xB:

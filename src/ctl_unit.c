@@ -3,6 +3,7 @@
 #include "print.h"	// fatal
 #include "debug.h"	// lookup_mnemonic
 
+#include <assert.h>	// assert
 #include <stdbool.h>	// bool
 #include <stdint.h>	// integer types
 #include <stdlib.h>	// NULL
@@ -20,23 +21,23 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 	if(data > state->int_state.pending)
 	{
 		// Recompute jmp address
-		if((data & INT_VBLANK) && !(mask & INT_VBLANK))
+		if((data & INT_VBLANK) && (mask & INT_VBLANK))
 		{
 			state->int_state.next_jmp = INT_ID_VBLANK;
 		}
-		else if((data & INT_LCD_STAT) && !(mask & INT_LCD_STAT))
+		else if((data & INT_LCD_STAT) && (mask & INT_LCD_STAT))
 		{
 			state->int_state.next_jmp = INT_ID_LCD_STAT;
 		}
-		else if((data & INT_TIMER) && !(mask & INT_TIMER))
+		else if((data & INT_TIMER) && (mask & INT_TIMER))
 		{
 			state->int_state.next_jmp = INT_ID_TIMER;
 		}
-		else if((data & INT_SERIAL) && !(mask & INT_SERIAL))
+		else if((data & INT_SERIAL) && (mask & INT_SERIAL))
 		{
 			state->int_state.next_jmp = INT_ID_SERIAL;
 		}
-		else if((data & INT_JOYPAD) && !(mask & INT_JOYPAD))
+		else if((data & INT_JOYPAD) && (mask & INT_JOYPAD))
 		{
 			state->int_state.next_jmp = INT_ID_JOYPAD;
 		}
@@ -45,8 +46,6 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 			state->int_state.next_jmp = INT_ID_NONE;
 		}
 	}
-
-	printf("[triggered] Next jump point: %04X\n", state->int_state.next_jmp);
 
 	state->int_state.pending = data;
 }
@@ -57,29 +56,31 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 
 	if(!mask)
 	{
-		// Masked
+		// All interrupts masked
 		state->int_state.next_jmp = INT_ID_NONE;
+
+		debug("Interrupts locked out");
 	}
 	else
 	{
-		// Recompute jmp address
-		if(mask & INT_VBLANK)
+		// Unmasked, recompute jmp address
+		if(data & INT_VBLANK)
 		{
 			state->int_state.next_jmp = INT_ID_VBLANK;
 		}
-		else if(mask & INT_LCD_STAT)
+		else if(data & INT_LCD_STAT)
 		{
 			state->int_state.next_jmp = INT_ID_LCD_STAT;
 		}
-		else if(mask & INT_TIMER)
+		else if(data & INT_TIMER)
 		{
 			state->int_state.next_jmp = INT_ID_TIMER;
 		}
-		else if(mask & INT_SERIAL)
+		else if(data & INT_SERIAL)
 		{
 			state->int_state.next_jmp = INT_ID_SERIAL;
 		}
-		else if(mask & INT_JOYPAD)
+		else if(data & INT_JOYPAD)
 		{
 			state->int_state.next_jmp = INT_ID_JOYPAD;
 		}
@@ -87,9 +88,10 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 		{
 			state->int_state.next_jmp = INT_ID_NONE;
 		}
-	}
 
-	printf("[masked] Next jump point: %04X\n", state->int_state.next_jmp);
+		debug("[masked] Next jump point: %04X\n", state->int_state.next_jmp);
+		debug("Mask: %04X Wait: %04X", state->int_state.mask, state->int_state.pending);
+	}
 
 	state->int_state.mask = data;
 }
@@ -175,57 +177,23 @@ void init_ctl(emu_state *restrict state, system_types type)
 }
 
 
-/*! Do a call to an interrupt handler */
-static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
+/*! Call the needed interrupt handler */
+static inline void call_interrupt(emu_state *restrict state)
 {
-	interrupt_list jmp_offset;
+	assert(state->int_state.mask != 0);
 
 	// Clear interrupts
-	mem_write8(state, 0xFF0F, 0);
+	state->int_state.pending = 0;
 
 	// Interrupts are locked out before handling
 	state->int_state.enabled = false;
-
-	if(interrupts & INT_VBLANK)
-	{
-		jmp_offset = INT_ID_VBLANK;
-	}
-	else if(interrupts & INT_LCD_STAT)
-	{
-		jmp_offset = INT_ID_LCD_STAT;
-	}
-	else if(interrupts & INT_TIMER)
-	{
-		jmp_offset = INT_ID_TIMER;
-	}
-	else if(interrupts & INT_SERIAL)
-	{
-		jmp_offset = INT_ID_SERIAL;
-	}
-	else if(interrupts & INT_JOYPAD)
-	{
-		jmp_offset = INT_ID_JOYPAD;
-	}
-	else
-	{
-		fatal("Unknown interrupt caught (mask: %X)", interrupts);
-		return;
-	}
-
-	// I don't trust my interrupt write code yet, so...
-	if(state->int_state.next_jmp != jmp_offset)
-	{
-		fatal("jmp_offset/next_jmp mismatch: %4X vs %4X",
-				state->int_state.next_jmp, jmp_offset);
-		return;
-	}
 
 	// Push pc to the stack
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_PC(state));
 
 	// Jump!
-	REG_PC(state) = jmp_offset;
+	REG_PC(state) = state->int_state.next_jmp;
 
 	// Reset these states
 	state->halt = state->stop = false;
@@ -254,13 +222,9 @@ bool execute(emu_state *restrict state)
 	}
 
 	// Check for interrupts
-	if(state->int_state.enabled)
+	if(state->int_state.enabled && state->int_state.next_jmp != INT_ID_NONE)
 	{
-		uint8_t interrupts = mem_read8(state, 0xFF0F) & mem_read8(state, 0xFFFF);
-		if(interrupts)
-		{
-			call_interrupt(state, interrupts);
-		}
+		call_interrupt(state);
 	}
 
 	if(state->halt || state->stop)
