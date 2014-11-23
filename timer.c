@@ -1,5 +1,6 @@
 #include "config.h"	// macros
 
+#include "ctl_unit.h"	// signal_interrupt, INT_TIMER
 #include "print.h"	// error
 #include "sgherm.h"	// emu_state
 
@@ -116,7 +117,7 @@ void timer_tick(emu_state *restrict state)
 		if(++state->timer_state.tima == 0)	/* overflow! */
 		{
 			state->timer_state.rounds++;
-			/* TODO raise an interrupt */
+			signal_interrupt(state, INT_TIMER);
 		}
 	}
 }
