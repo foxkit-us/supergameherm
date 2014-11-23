@@ -142,7 +142,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	{
 		// XXX check into it and see how this is done
 		fatal("Prohibited write during DMA transfer");
-		return;
+		return 0;
 	}
 
 	switch(location >> 12)
