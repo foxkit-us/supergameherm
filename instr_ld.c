@@ -1080,6 +1080,50 @@ static inline void ld_a_ff00_c(emu_state *restrict state)
 }
 
 /*!
+ * @brief LD HL,SP+n (0xF8) - add n to SP giving HL
+ * @result HL = SP + n
+ */
+static inline void ld_hl_sp_imm8(emu_state *restrict state)
+{
+	/* per docs, this is a SIGNED add */
+	int8_t n = mem_read8(state, ++state->registers.pc);
+	uint32_t temp = state->registers.pc + n;
+
+	state->registers.hl = temp;
+
+	*(state->registers.f) = 0x00;
+
+	if(temp)
+	{
+		if(temp & 0x10000)
+		{
+			*(state->registers.f) |= FLAG_C;
+		}
+
+		// Half carry
+		if(((state->registers.pc & 0x7FF) + (n & 0x7FF)) & 0x800)
+		{
+			*(state->registers.f) |= FLAG_H;
+		}
+	}
+
+	state->wait = 12;
+}
+
+/*!
+ * @brief LD SP,HL (0xF9)
+ * @result SP = HL
+ */
+static inline void ld_sp_hl(emu_state *restrict state)
+{
+	state->registers.sp = state->registers.hl;
+
+	state->registers.pc++;
+
+	state->wait = 8;
+}
+
+/*!
  * @brief LD A,(nn) (0xFA) - write *nn to A
  * @result A will contain the value of memory at address nn
  */
