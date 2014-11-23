@@ -26,9 +26,10 @@ void init_lcdc(emu_state *restrict state)
 static inline void _lcdc_inc_mode(emu_state *restrict state)
 {
 	uint8_t *byte = state->memory + 0xFF41;
-	if(*byte & 0x3)
+
+	if((*byte & 0x3) == 0x3)
 	{
-		*byte &= 0x78;
+		*byte &= ~0x3;
 	}
 	else
 	{
@@ -86,6 +87,12 @@ void lcdc_tick(emu_state *restrict state)
 		break;
 	case 1:
 		/* v-blank */
+		if(*ly == 144 && *clk == 1)
+		{
+			// Fire the vblank interrupt
+			signal_interrupt(state, INT_VBLANK);
+		}
+
 		if(*clk % 456 == 0)
 		{
 			*ly += 1;
@@ -94,11 +101,10 @@ void lcdc_tick(emu_state *restrict state)
 		if(*ly == 153)
 		{
 			*clk = 0;
+			*ly = 0;
 			_lcdc_inc_mode(state);
 		}
 
-		// Fire the vblank interrupt
-		signal_interrupt(state, INT_VBLANK);
 		break;
 	default:
 		fatal("somehow wound up in an unknown impossible video mode");
