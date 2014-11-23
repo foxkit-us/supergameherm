@@ -8,6 +8,7 @@
 #include "serio.h"	// ser
 #include "sound.h"	// snd
 #include "input.h"	// input
+#include "ctl_unit.h"	// interrupts
 
 #include <stdbool.h>	// bool
 #include <stdint.h>	// uint[XX]_t
@@ -15,15 +16,6 @@
 
 // 8-bit address space
 #define MEM_SIZE	0x10000
-
-
-typedef enum
-{
-	SYSTEM_GB,
-	SYSTEM_GBP,
-	SYSTEM_SGB,
-	SYSTEM_GBC
-} system_types;
 
 
 typedef struct _registers
@@ -51,8 +43,6 @@ typedef struct _registers
 
 	uint16_t pc;		/*! Program counter */
 	uint16_t sp;		/*! Stack pointer */
-
-	bool interrupts;	/*! Interrupts enabled */
 } register_map;
 
 /*! The main emulation state structure */
@@ -76,6 +66,8 @@ typedef struct _emu_state
 	uint64_t cycles;		/*! Present cycle count */
 	uint64_t start_time;		/*! Time started */
 	cpu_freq freq;			/*! CPU frequency */
+
+	interrupts int_state;
 
 	// hardware
 	lcdc lcdc_state;

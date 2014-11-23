@@ -120,7 +120,7 @@ void dump_all_state(emu_state *restrict state)
 	REG_BC(state),
 	REG_DE(state),
 	REG_HL(state));
-	debug("interrupts are %s\n", (state->registers.interrupts ? "ENABLED" : "DISABLED"));
+	debug("interrupts are %s\n", (state->int_state.enabled ? "ENABLED" : "DISABLED"));
 	print_flags(state);
 	debug("bytes at pc: %02X %02X %02X %02X\n",
 		mem_read8(state, REG_PC(state)),

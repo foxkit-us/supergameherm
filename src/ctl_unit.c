@@ -8,15 +8,90 @@
 #include <stdlib.h>	// NULL
 
 
-uint8_t int_flag_read(emu_state *restrict state, uint16_t location)
+uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 {
-	return state->memory[location];
+	return state->int_state.pending;
 }
 
-void int_flag_write(emu_state *restrict state, uint16_t location, uint8_t data)
+void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	/* only allow setting of the first five bits. */
-	state->memory[location] = data & 0x1F;
+	uint8_t mask = state->int_state.mask;
+
+	if(data > state->int_state.pending)
+	{
+		// Recompute jmp address
+		if((data & INT_VBLANK) && !(mask & INT_VBLANK))
+		{
+			state->int_state.next_jmp = INT_ID_VBLANK;
+		}
+		else if((data & INT_LCD_STAT) && !(mask & INT_LCD_STAT))
+		{
+			state->int_state.next_jmp = INT_ID_LCD_STAT;
+		}
+		else if((data & INT_TIMER) && !(mask & INT_TIMER))
+		{
+			state->int_state.next_jmp = INT_ID_TIMER;
+		}
+		else if((data & INT_SERIAL) && !(mask & INT_SERIAL))
+		{
+			state->int_state.next_jmp = INT_ID_SERIAL;
+		}
+		else if((data & INT_JOYPAD) && !(mask & INT_JOYPAD))
+		{
+			state->int_state.next_jmp = INT_ID_JOYPAD;
+		}
+		else
+		{
+			state->int_state.next_jmp = INT_ID_NONE;
+		}
+	}
+
+	printf("[triggered] Next jump point: %04X\n", state->int_state.next_jmp);
+
+	state->int_state.pending = data;
+}
+
+void int_mask_flag_write(emu_state *restrict state, uint8_t data)
+{
+	uint8_t mask = state->int_state.pending & data;
+
+	if(!mask)
+	{
+		// Masked
+		state->int_state.next_jmp = INT_ID_NONE;
+	}
+	else
+	{
+		// Recompute jmp address
+		if(mask & INT_VBLANK)
+		{
+			state->int_state.next_jmp = INT_ID_VBLANK;
+		}
+		else if(mask & INT_LCD_STAT)
+		{
+			state->int_state.next_jmp = INT_ID_LCD_STAT;
+		}
+		else if(mask & INT_TIMER)
+		{
+			state->int_state.next_jmp = INT_ID_TIMER;
+		}
+		else if(mask & INT_SERIAL)
+		{
+			state->int_state.next_jmp = INT_ID_SERIAL;
+		}
+		else if(mask & INT_JOYPAD)
+		{
+			state->int_state.next_jmp = INT_ID_JOYPAD;
+		}
+		else
+		{
+			state->int_state.next_jmp = INT_ID_NONE;
+		}
+	}
+
+	printf("[masked] Next jump point: %04X\n", state->int_state.next_jmp);
+
+	state->int_state.mask = data;
 }
 
 #include "instr_alu_arith.c"
@@ -109,7 +184,7 @@ static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
 	mem_write8(state, 0xFF0F, 0);
 
 	// Interrupts are locked out before handling
-	state->registers.interrupts = false;
+	state->int_state.enabled = false;
 
 	if(interrupts & INT_VBLANK)
 	{
@@ -134,6 +209,14 @@ static inline void call_interrupt(emu_state *restrict state, uint8_t interrupts)
 	else
 	{
 		fatal("Unknown interrupt caught (mask: %X)", interrupts);
+		return;
+	}
+
+	// I don't trust my interrupt write code yet, so...
+	if(state->int_state.next_jmp != jmp_offset)
+	{
+		fatal("jmp_offset/next_jmp mismatch: %4X vs %4X",
+				state->int_state.next_jmp, jmp_offset);
 		return;
 	}
 
@@ -171,7 +254,7 @@ bool execute(emu_state *restrict state)
 	}
 
 	// Check for interrupts
-	if(state->registers.interrupts)
+	if(state->int_state.enabled)
 	{
 		uint8_t interrupts = mem_read8(state, 0xFF0F) & mem_read8(state, 0xFFFF);
 		if(interrupts)

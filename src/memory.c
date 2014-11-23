@@ -162,7 +162,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 		case 0xFE:
 			break;
 		case 0xFF:
-			if(likely(location < 0xFF80))
+			if(location < 0xFF80)
 			{
 				return hw_reg_read[location - 0xFF00](state, location);
 			}
@@ -379,9 +379,14 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		case 0xFE:
 			break;
 		case 0xFF:
-			if(likely(location < 0xFF80))
+			if(location < 0xFF80)
 			{
 				hw_reg_write[location - 0xFF00](state, location, data);
+				return;
+			}
+			else if(location == 0xFFFF)
+			{
+				int_mask_flag_write(state, data);
 				return;
 			}
 
