@@ -259,20 +259,9 @@ static inline void daa(emu_state *restrict state)
 
 	if(*(state->registers.f) & FLAG_N)
 	{
-		if((*(state->registers.f) & FLAG_H) || (val & 0x0F) > 0x9)
-		{
-			val += 0x06;
-		}
-		if((*(state->registers.f) & FLAG_C) || (val & 0xF0) > 0x90)
-		{
-			val += 0x60;
-		}
-	}
-	else
-	{
 		if(*(state->registers.f) & FLAG_H)
 		{
-			val = (val - 0x06) & 0xFF;
+			val = (val - 6) & 0xFF;
 		}
 
 		if(*(state->registers.f) & FLAG_C)
@@ -280,15 +269,27 @@ static inline void daa(emu_state *restrict state)
 			val -= 0x60;
 		}
 	}
+	else
+	{
+		if((*(state->registers.f) & FLAG_H) || (val & 0x0F))
+		{
+			val += 0x06;
+		}
 
-	*(state->registers.f) &= ~FLAG_H;
+		if((*(state->registers.f) & FLAG_C) || (val > 0x9F))
+		{
+			val += 0x60;
+		}
+	}
 
-	if((val & 0x100) == 0x100)
+	*(state->registers.f) &= ~(FLAG_H | FLAG_Z);
+
+	if(val & 0x100)
 	{
 		*(state->registers.f) |= FLAG_C;
 	}
 
-	if((*(state->registers.a) = (val & 0xFF)) == 0)
+	if(!(*(state->registers.a) = val))
 	{
 		*(state->registers.f) |= FLAG_Z;
 	}
