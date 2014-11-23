@@ -709,6 +709,18 @@ static inline void add_imm8(emu_state *restrict state)
 }
 
 /*!
+ * @brief ADC n (0xCE)
+ * @result A += immediate (n) (+1 if C flag set)
+ */
+static inline void adc_imm8(emu_state *restrict state)
+{
+	adc_common(state, mem_read8(state, ++state->registers.pc));
+
+	// adc_common already adds 4
+	state->wait += 4;
+}
+
+/*!
  * @brief SUB n (0xD6)
  * @result A -= n; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
@@ -717,5 +729,17 @@ static inline void sub_imm8(emu_state *restrict state)
 	sub_common(state, mem_read8(state, ++state->registers.pc));
 
 	// sub_common already adds 4
+	state->wait += 4;
+}
+
+/*!
+ * @brief SBC n (0xDE)
+ * @result A -= n (+1 if C flag set)
+ */
+static inline void sbc_imm8(emu_state *restrict state)
+{
+	sbc_common(state, mem_read8(state, ++state->registers.pc));
+
+	// sbc_common already adds 4
 	state->wait += 4;
 }

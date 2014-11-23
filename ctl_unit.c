@@ -58,12 +58,12 @@ static const opcode_t handlers[0x100] =
 	/* 0xB0 */ or_b, or_c, or_d, or_e, or_h, or_l, or_hl, or_a,
 	/* 0xB8 */ cp_b, cp_c, cp_d, cp_e, cp_h, cp_l, cp_hl, cp_a,
 	/* 0xC0 */ retnz, pop_bc, jp_nz_imm16, jp_imm16, call_nz_imm16, push_bc, add_imm8, reset_common,
-	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, call_z_imm16, call_imm16, not_impl, reset_common,
+	/* 0xC8 */ retz, ret, jp_z_imm16, cb_dispatch, call_z_imm16, call_imm16, adc_imm8, reset_common,
 	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, call_nc_imm16, push_de, sub_imm8, reset_common,
-	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, call_c_imm16, invalid, not_impl, reset_common,
+	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, call_c_imm16, invalid, sbc_imm8, reset_common,
 	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, invalid, invalid, push_hl, and_imm8, reset_common,
-	/* 0xE8 */ not_impl, jp_hl, ld_d16_a, invalid, invalid, invalid, not_impl, reset_common,
-	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, not_impl, reset_common,
+	/* 0xE8 */ not_impl, jp_hl, ld_d16_a, invalid, invalid, invalid, xor_imm8, reset_common,
+	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, or_imm8, reset_common,
 	/* 0xF8 */ ld_hl_sp_imm8, ld_sp_hl, ld_a_d16, ei, invalid, invalid, cp_imm8, reset_common
 };
 

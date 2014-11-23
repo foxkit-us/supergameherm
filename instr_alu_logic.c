@@ -782,13 +782,39 @@ static inline void cb_dispatch(emu_state *restrict state)
 }
 
 /*!
- * @brief AND nn (0xE6)
- * @result A &= nn
+ * @brief AND n (0xE6)
+ * @result A &= n
  */
 static inline void and_imm8(emu_state *restrict state)
 {
-	uint8_t nn = mem_read8(state, ++state->registers.pc);
-	and_common(state, nn);
+	uint8_t n = mem_read8(state, ++state->registers.pc);
+	and_common(state, n);
+
+	// and_common already adds 4
+	state->wait += 4;
+}
+
+/*!
+ * @brief XOR n (0xEE)
+ * @result A ^= n
+ */
+static inline void xor_imm8(emu_state *restrict state)
+{
+	uint8_t n = mem_read8(state, ++state->registers.pc);
+	xor_common(state, n);
+
+	// xor_common already adds 4
+	state->wait += 4;
+}
+
+/*!
+ * @brief OR n (0xF6)
+ * @result A |= n
+ */
+static inline void or_imm8(emu_state *restrict state)
+{
+	uint8_t n = mem_read8(state, ++state->registers.pc);
+	or_common(state, n);
 
 	// and_common already adds 4
 	state->wait += 4;
