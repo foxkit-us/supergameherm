@@ -27,7 +27,7 @@ void int_flag_write(emu_state *restrict state, uint16_t location, uint8_t data)
 #include "instr_misc.c"
 #include "instr_stack.c"
 
-// XXX this is exported for main
+
 static const opcode_t handlers[0x100] =
 {
 	/* 0x00 */ nop, ld_bc_imm16, ld_bc_a, inc_bc, inc_b, dec_b, ld_b_imm8, rlca,
