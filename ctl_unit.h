@@ -1,12 +1,10 @@
 #ifndef __CTL_UNIT_H__
 #define __CTL_UNIT_H__
 
-#include "config.h"	// Macros
+#include "sgherm.h"	// emu_state
 
 #include <stdint.h>	// uint[XX]_t
 
-#include "sgherm.h"	// emu_state
-#include "params.h"	// system_types
 #include "memory.h"	// mem_write8
 
 /*! Zero Flag */

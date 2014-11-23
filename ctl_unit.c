@@ -1,16 +1,12 @@
-#include "config.h"	// macros
+#include "sgherm.h"	// emu_state, etc.
+#include "ctl_unit.h"	// prototypes, constants, etc.
+#include "print.h"	// fatal
+#include "debug.h"	// lookup_mnemonic
 
 #include <stdbool.h>	// bool
 #include <stdint.h>	// integer types
 #include <stdlib.h>	// NULL
 
-#include "ctl_unit.h"	// constants
-#include "memory.h"	// mem_[read|write][8|16]
-#include "params.h"	// system_types
-#include "print.h"	// fatal
-#include "debug.h"	// lookup_mnemonic
-#include "util.h"	// likely/unlikely
-#include "sgherm.h"	// emu_state, etc
 
 uint8_t int_flag_read(emu_state *restrict state, uint16_t location)
 {

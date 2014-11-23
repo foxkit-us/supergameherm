@@ -1,8 +1,6 @@
 #ifndef __PRINT_H_
 #define __PRINT_H_
 
-#include "params.h"	// macros
-
 /*!
  * @brief	Display an error and quit fast.
  * @param	str	The format of the error to print.

@@ -27,6 +27,14 @@ typedef enum
 	INPUT_START = (RAW_INPUT_P13 | RAW_INPUT_P15),
 } input_key;
 
+typedef struct _input_state
+{
+	uint8_t col_state;		/*! P14 and P15 */
+	uint8_t row_state;		/*! P10 through P13 */
+} input;
+
+
+typedef struct _emu_state emu_state;
 
 uint8_t joypad_read(emu_state *restrict, uint16_t);
 void joypad_write(emu_state *restrict, uint16_t, uint8_t);

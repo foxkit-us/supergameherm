@@ -7,9 +7,8 @@
 #include <stdbool.h>	// bool
 #include <stdio.h>	// FILE
 
-#include "sgherm.h"	//emu_state
-#include "params.h"	// system_types
 
+typedef struct _emu_state emu_state;
 
 uint8_t mem_read8(emu_state *restrict, uint16_t);
 uint16_t mem_read16(emu_state *restrict, uint16_t);

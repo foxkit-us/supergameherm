@@ -1,10 +1,32 @@
-#ifndef __UTIL_H_
-#define __UTIL_H_
+#ifndef __UTIL_H__
+#define __UTIL_H__
 
 #include "config.h"	// macros
 
+#include <stdio.h>	// perror
 #include <stdbool.h>	// bool
 #include <stdint.h>	// uint[XX]_t
+
+// Clobber previous definitions with extreme prejudice
+#ifdef unused
+#	undef unused
+#endif
+#ifdef likely
+#	undef likely
+#endif
+#ifdef unlikely
+#	undef unlikely
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#	define unused __attribute__((unused))
+#	define unlikely(x) (!!__builtin_expect((x), 0))
+#	define likely(x) (!!__builtin_expect((x), 1))
+#else
+#	define unused
+#	define unlikely(x) (x)
+#	define likely(x) (x)
+#endif
 
 // Endianness goop (HERE BE DRAGONS)
 #ifdef HAVE_ENDIAN_H
@@ -112,25 +134,51 @@ static inline uint16_t rotl_16(uint16_t number)
 	return (number << 1) | (number >> 15);
 }
 
-// Clobber previous definitions with extreme prejudice
-#ifdef unused
-#	undef unused
-#endif
-#ifdef likely
-#	undef likely
-#endif
-#ifdef unlikely
-#	undef unlikely
-#endif
+// Clock functions
+#ifdef HAVE_CLOCK_GETTIME
+#include <time.h>	// clock_gettime
 
-#if defined(__GNUC__) || defined(__clang__)
-#	define unused __attribute__((unused))
-#	define unlikely(x) (!!__builtin_expect((x), 0))
-#	define likely(x) (!!__builtin_expect((x), 1))
+static inline uint64_t get_time(void)
+{
+	struct timespec tv;
+
+	if(unlikely(clock_gettime(CLOCK_MONOTONIC, &tv) == -1))
+	{
+		perror("clock_gettime");
+		return 0;
+	}
+
+	return tv.tv_sec * 1000000000L + tv.tv_nsec;
+}
+
+#elif defined(HAVE_MACH_CLOCK_H)
+#include <mach/clock.h>	// clock_serv_t, mach_timespec_t, etc.
+#include <mach/mach.h>	// mach_port_deallocate
+
+static inline uint64_t get_time(void)
+{
+	static float adj_const = 0.0F;
+
+	// Cache the value (it doesn't change)
+	if(adj_const == 0.0F)
+	{
+		mach_timebase_info_data_t ti;
+		mach_timebase_info(&ti);
+
+		adj_const = ti.numer / ti.denom;
+	}
+
+	return (uint64_t)mach_absolute_time() * adj_const;
+}
+
 #else
-#	define unused
-#	define unlikely(x) (x)
-#	define likely(x) (x)
-#endif
 
-#endif /*!__UTIL_H_*/
+static inline uint64_t get_time(void)
+{
+	// FIXME Windows, etc.
+	return 0;
+}
+
+#endif /*defined HAVE_CLOCK_GETTIME*/
+
+#endif /*__UTIL_H__*/

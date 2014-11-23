@@ -1,22 +1,19 @@
-#include "config.h"	// macros
+#include "sgherm.h"	// emu_state, constants
+#include "debug.h"	// print_cycles
+#include "ctl_unit.h"	// init_ctl, execute
+#include "lcdc.h"	// lcdc_tick
+#include "serio.h"	// serial_tick
+#include "timer.h"	// get_clock
+#include "print.h"	// fatal, error, debug
+#include "rom_read.h"	// offsets
+#include "signals.h"	// register_handler
+#include "sound.h"	// sound_tick
 
 #include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
-#include "ctl_unit.h"	// init_ctl, execute
-#include "lcdc.h"	// lcdc_tick
-#include "sgherm.h"	// emu_state
-#include "rom_read.h"	// offsets
-#include "params.h"	// system_types
-#include "print.h"	// fatal, error, debug
-#include "serio.h"	// serial_tick
-#include "timer.h"	// get_clock
-#include "debug.h"	// print_cycles
-#include "signals.h"	// register_handler
-#include "sound.h"	// sound_tick
-#include "util.h"	// likely/unlikely
 
 emu_state * init_emulator(void)
 {
@@ -46,6 +43,8 @@ int main(int argc, char *argv[])
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
+
+	printf("sizeof state: %zd\n", sizeof(emu_state));
 
 	if(argc < 2)
 	{

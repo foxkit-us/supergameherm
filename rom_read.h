@@ -6,7 +6,6 @@
 #include <stdbool.h>	// bool
 
 #include "sgherm.h"	// emu_state
-#include "params.h"	// system_types
 
 typedef enum
 {
