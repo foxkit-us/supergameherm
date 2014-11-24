@@ -145,3 +145,52 @@ void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	/* XXX TODO FIXME */
 	state->memory[reg] = data;
 }
+
+uint8_t bg_pal_ind_read(emu_state *restrict state, uint16_t reg)
+{
+	// TODO
+	return state->memory[reg];
+}
+
+uint8_t bg_pal_data_read(emu_state *restrict state, uint16_t reg)
+{
+	// TODO
+	return state->memory[reg];
+}
+
+uint8_t sprite_pal_ind_read(emu_state *restrict state, uint16_t reg)
+{
+	// TODO
+	return state->memory[reg];
+}
+
+uint8_t sprite_pal_data_read(emu_state *restrict state, uint16_t reg)
+{
+	// TODO
+	return state->memory[reg];
+}
+
+void bg_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	// TODO
+	state->memory[reg] = data;
+}
+
+void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	// TODO
+	state->memory[reg] = data;
+}
+
+void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	// TODO
+	state->memory[reg] = data;
+}
+
+void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	// TODO
+	state->memory[reg] = data;
+}
+

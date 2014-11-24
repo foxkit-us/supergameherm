@@ -94,7 +94,11 @@ static mem_read_fn hw_reg_read[0x80] =
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x5F */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x63 */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x67 */
-	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x6B */
+
+	/* 68..6B - GBC palette stuff (nothing on GB) */
+	bg_pal_ind_read, bg_pal_data_read, sprite_pal_ind_read, sprite_pal_data_read,
+
+	/* 6C..7F - NO HARDWARE */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x6F */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x73 */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x77 */
@@ -301,7 +305,11 @@ static mem_write8_fn hw_reg_write[0x80] =
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x5F */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x63 */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x67 */
-	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x6B */
+
+	/* 68..6B - GBC palette stuff (nothing on GB) */
+	bg_pal_ind_write, bg_pal_data_write, sprite_pal_ind_write, sprite_pal_data_write,
+
+	/* 6C..7F - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x6F */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x73 */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x77 */
