@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	do
 	{
 		int val = CALL_FRONTEND(state, event_loop);
-		if(val)
+		if(unlikely(val))
 		{
 			do_exit = true;
 			code = val;
