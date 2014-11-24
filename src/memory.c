@@ -34,6 +34,11 @@ static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 	return -1;
 }
 
+static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)
+{
+	return state->vram_bank;
+}
+
 /*! a table of hardware register read methods */
 static mem_read_fn hw_reg_read[0x80] =
 {
@@ -86,8 +91,13 @@ static mem_read_fn hw_reg_read[0x80] =
 	/* 47..4B - more graphics stuff */
 	lcdc_read, lcdc_read, lcdc_read, lcdc_read, lcdc_read,
 
-	/* 4C..7F - NO HARDWARE */
-	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x4F */
+	/* 4C..4E - NO HARDWARE */
+	no_hardware, no_hardware, no_hardware,
+
+	/* 4F - switch VRAM bank (GBC only) */
+	vram_bank_switch_read,
+
+	/* 50..67 - NO HARDWARE */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x53 */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x57 */
 	no_hardware, no_hardware, no_hardware, no_hardware, /* 0x5B */
@@ -239,6 +249,12 @@ static inline void dma_write(emu_state *restrict state, uint16_t location unused
 	state->dma_membar_wait = 640;
 }
 
+static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
+{
+	// TODO FIXME actual switching of the banks
+	state->vram_bank = data;
+}
+
 static mem_write8_fn hw_reg_write[0x80] =
 {
 	joypad_write, /* 00 - P1 - joypad */
@@ -297,8 +313,13 @@ static mem_write8_fn hw_reg_write[0x80] =
 	/* 47..4B - more video */
 	lcdc_write, lcdc_write, lcdc_write, lcdc_write, lcdc_write,
 
-	/* 4C..7F - NO HARDWARE */
-	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x4F */
+	/* 4C..4E - NO HARDWARE */
+	doofus_write, doofus_write, doofus_write,
+
+	/* 4F - VRAM bank switch */
+	vram_bank_switch_write,
+
+	/* 50..67 - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x53 */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x57 */
 	doofus_write, doofus_write, doofus_write, doofus_write, /* 0x5B */
