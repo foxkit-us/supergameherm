@@ -9,6 +9,7 @@
 #include "sound.h"	// snd
 #include "input.h"	// input
 #include "ctl_unit.h"	// interrupts
+#include "frontend.h"	// frontend
 
 #include <stdbool.h>	// bool
 #include <stdint.h>	// uint[XX]_t
@@ -75,6 +76,8 @@ typedef struct _emu_state
 	timer timer_state;
 	input input_state;
 	ser ser_state;
+
+	frontend front;
 } emu_state;
 
 
