@@ -85,7 +85,7 @@ void serial_tick(emu_state *restrict state)
 		if(state->ser_state.cur_bit-- == -1)
 		{
 			state->ser_state.enabled = false;
-			// TODO raise interrupt
+			signal_interrupt(state, INT_SERIAL);
 			state->ser_state.curr_clk = 0;
 		}
 	}
