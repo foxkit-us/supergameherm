@@ -166,6 +166,10 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 			{
 				return hw_reg_read[location - 0xFF00](state, location);
 			}
+			else if(location == 0xFFFF)
+			{
+				return state->int_state.mask;
+			}
 
 			break;
 		default:
