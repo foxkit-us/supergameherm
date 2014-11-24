@@ -130,6 +130,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	debug("loading cart %s", title);
 	if(*publisher)
 		debug("publisher %s", publisher);
+	debug("type: %s", friendly_cart_names[(*header)->cart_type]);
 
 	debug("Header size is %d\n", (*header)->rom_size);
 	size_in_bytes = 0x8000 << (*header)->rom_size;
