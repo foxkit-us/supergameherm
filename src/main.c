@@ -8,6 +8,7 @@
 #include "rom_read.h"	// offsets
 #include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
+#include "frontend.h"	// null_frontend
 
 #include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
@@ -23,6 +24,8 @@ emu_state * init_emulator(void)
 	state->bank = 1;
 	state->wait = 1;
 	state->freq = CPU_FREQ_GB;
+
+	state->front = null_frontend;
 
 	return state;
 }
@@ -40,6 +43,7 @@ int main(int argc, char *argv[])
 	emu_state *state;
 	cart_header *header;
 	uint32_t count_cur_second = 0, gbc_seconds = 0;
+	int code = EXIT_SUCCESS;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -83,6 +87,13 @@ int main(int argc, char *argv[])
 
 	do
 	{
+		int val = CALL_FRONTEND(state, event_loop);
+		if(val)
+		{
+			do_exit = true;
+			code = val;
+		}
+
 		execute(state);
 		lcdc_tick(state);
 		serial_tick(state);
@@ -100,5 +111,5 @@ int main(int argc, char *argv[])
 
 	finish_emulator(state);
 
-	return EXIT_SUCCESS;
+	return code;
 }

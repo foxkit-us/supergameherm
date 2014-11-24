@@ -32,7 +32,7 @@ typedef struct _frontend
 extern frontend null_frontend;
 
 
-#define CALL_FRONTEND(state, fn) (*((state)->front.fn)(state))
+#define CALL_FRONTEND(state, fn) ((*(state->front.fn))(state))
 
 
 #endif /*__FRONTEND_H__*/

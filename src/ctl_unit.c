@@ -18,6 +18,8 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 {
 	uint8_t mask = state->int_state.mask & data;
 
+	assert(location == 0xFF0F);
+
 	data &= 0x1F;
 
 	if(mask)
@@ -98,7 +100,11 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 		// All interrupts masked
 		state->int_state.next_jmp = INT_ID_NONE;
 
-		debug("Interrupts locked out");
+		debug("--- SNIP ---");
+		debug("Interrupts masked");
+		dump_all_state(state);
+		debug("Mask %04X Signal %04X", data, state->int_state.pending);
+		debug("--- SNIP ---");
 	}
 
 	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
