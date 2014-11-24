@@ -216,9 +216,8 @@ static inline void call_interrupt(emu_state *restrict state)
 	// Clear jump point
 	state->int_state.next_jmp = INT_ID_NONE;
 
-	debug("Interrupt jumping to %04X", REG_PC(state));
+	//debug("Interrupt jumping to %04X", REG_PC(state));
 }
-
 
 /*! the emulated CU for the 'z80-ish' CPU */
 bool execute(emu_state *restrict state)
@@ -226,8 +225,9 @@ bool execute(emu_state *restrict state)
 	uint8_t opcode;
 	opcode_t handler;
 
-	if(--state->wait)
+	if(state->wait)
 	{
+		state->wait--;
 		return true;
 	}
 
