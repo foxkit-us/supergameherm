@@ -116,7 +116,7 @@ static inline void jp_nz_imm16(emu_state *restrict state)
 		uint8_t lsb = mem_read8(state, ++REG_PC(state));
 		uint8_t msb = mem_read8(state, ++REG_PC(state));
 
-		REG_PC(state) = (msb<<8 | lsb);
+		REG_PC(state) = (msb<<8) | lsb;
 
 		state->wait += 4;
 	}
@@ -131,7 +131,7 @@ static inline void jp_imm16(emu_state *restrict state)
 	uint8_t lsb = mem_read8(state, ++REG_PC(state));
 	uint8_t msb = mem_read8(state, ++REG_PC(state));
 
-	REG_PC(state) = (msb<<8 | lsb);
+	REG_PC(state) = (msb<<8) | lsb;
 
 	state->wait = 16;
 }
@@ -148,7 +148,7 @@ static inline void call_imm16(emu_state *restrict state)
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), ++REG_PC(state));
 
-	REG_PC(state) = (msb<<8 | lsb);
+	REG_PC(state) = (msb<<8) | lsb;
 
 	state->wait = 24;
 }
@@ -248,7 +248,7 @@ static inline void jp_z_imm16(emu_state *restrict state)
 		uint8_t lsb = mem_read8(state, ++REG_PC(state));
 		uint8_t msb = mem_read8(state, ++REG_PC(state));
 
-		REG_PC(state) = (msb<<8 | lsb);
+		REG_PC(state) = (msb<<8) | lsb;
 
 		state->wait += 4;
 	}
@@ -313,7 +313,7 @@ static inline void jp_nc_imm16(emu_state *restrict state)
 		uint8_t lsb = mem_read8(state, ++REG_PC(state));
 		uint8_t msb = mem_read8(state, ++REG_PC(state));
 
-		REG_PC(state) = (msb<<8 | lsb);
+		REG_PC(state) = (msb<<8) | lsb;
 
 		state->wait += 4;
 	}
@@ -380,7 +380,7 @@ static inline void jp_c_imm16(emu_state *restrict state)
 		uint8_t lsb = mem_read8(state, ++REG_PC(state));
 		uint8_t msb = mem_read8(state, ++REG_PC(state));
 
-		REG_PC(state) = (msb<<8 | lsb);
+		REG_PC(state) = (msb<<8) | lsb;
 
 		state->wait += 4;
 	}
