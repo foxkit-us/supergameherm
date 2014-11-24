@@ -114,15 +114,6 @@ int main(int argc, char *argv[])
 		{
 			count_cur_second = 0;
 			debug("GBC seconds: %ld", ++gbc_seconds);
-
-			if(gbc_seconds == 30)
-			{
-				joypad_signal(state, INPUT_START, true);
-			}
-			else if(gbc_seconds == 31)
-			{
-				joypad_signal(state, INPUT_START, false);
-			}
 		}
 	}
 	while(likely(++state->cycles && !do_exit));

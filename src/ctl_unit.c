@@ -28,27 +28,22 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 		if(mask & INT_VBLANK)
 		{
 			state->int_state.next_jmp = INT_ID_VBLANK;
-			state->int_state.next_intr = INT_VBLANK;
 		}
 		else if(mask & INT_LCD_STAT)
 		{
 			state->int_state.next_jmp = INT_ID_LCD_STAT;
-			state->int_state.next_intr = INT_LCD_STAT;
 		}
 		else if(mask & INT_TIMER)
 		{
 			state->int_state.next_jmp = INT_ID_TIMER;
-			state->int_state.next_intr = INT_TIMER;
 		}
 		else if(mask & INT_SERIAL)
 		{
 			state->int_state.next_jmp = INT_ID_SERIAL;
-			state->int_state.next_intr = INT_SERIAL;
 		}
 		else if(mask & INT_JOYPAD)
 		{
 			state->int_state.next_jmp = INT_ID_JOYPAD;
-			state->int_state.next_intr = INT_JOYPAD;
 		}
 		else
 		{
@@ -60,7 +55,6 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 	{
 		// All interrupts masked
 		state->int_state.next_jmp = INT_ID_NONE;
-		state->int_state.next_intr = 0;
 	}
 
 	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
@@ -78,27 +72,22 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 		if(mask & INT_VBLANK)
 		{
 			state->int_state.next_jmp = INT_ID_VBLANK;
-			state->int_state.next_intr = INT_VBLANK;
 		}
 		else if(mask & INT_LCD_STAT)
 		{
 			state->int_state.next_jmp = INT_ID_LCD_STAT;
-			state->int_state.next_intr = INT_LCD_STAT;
 		}
 		else if(mask & INT_TIMER)
 		{
 			state->int_state.next_jmp = INT_ID_TIMER;
-			state->int_state.next_intr = INT_TIMER;
 		}
 		else if(mask & INT_SERIAL)
 		{
 			state->int_state.next_jmp = INT_ID_SERIAL;
-			state->int_state.next_intr = INT_SERIAL;
 		}
 		else if(mask & INT_JOYPAD)
 		{
 			state->int_state.next_jmp = INT_ID_JOYPAD;
-			state->int_state.next_intr = INT_JOYPAD;
 		}
 		else
 		{
@@ -110,7 +99,6 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 	{
 		// All interrupts masked
 		state->int_state.next_jmp = INT_ID_NONE;
-		state->int_state.next_intr = 0;
 	}
 
 	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
@@ -202,8 +190,6 @@ void init_ctl(emu_state *restrict state, system_types type)
 /*! Call the needed interrupt handler */
 static inline void call_interrupt(emu_state *restrict state)
 {
-	uint8_t mask = state->int_state.pending & ~(state->int_state.next_intr);
-
 	assert(state->int_state.mask != 0);
 	assert(state->int_state.pending != 0);
 	assert(state->int_state.next_jmp != INT_ID_NONE);
@@ -222,19 +208,15 @@ static inline void call_interrupt(emu_state *restrict state)
 	state->wait = 24;
 
 	// Clear interrupts
-	if(mask)
-	{
-		debug("Interrupts left: %04X", mask);
-		mem_write8(state, 0xFF0F, mask);
-	}
-	else
-	{
-		state->int_state.next_jmp = INT_ID_NONE;
-		state->int_state.next_intr = 0;
-	}
+	state->int_state.pending = 0;
 
 	// Interrupts are locked out before handling
 	state->int_state.enabled = false;
+
+	// Clear jump point
+	state->int_state.next_jmp = INT_ID_NONE;
+
+	//debug("Interrupt jumping to %04X", REG_PC(state));
 }
 
 /*! the emulated CU for the 'z80-ish' CPU */
