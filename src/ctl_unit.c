@@ -191,6 +191,8 @@ void init_ctl(emu_state *restrict state, system_types type)
 static inline void call_interrupt(emu_state *restrict state)
 {
 	assert(state->int_state.mask != 0);
+	assert(state->int_state.pending != 0);
+	assert(state->int_state.next_jmp != INT_ID_NONE);
 
 	// Push pc to the stack
 	REG_SP(state) -= 2;
@@ -232,6 +234,20 @@ bool execute(emu_state *restrict state)
 	if(unlikely(state->dma_membar_wait))
 	{
 		state->dma_membar_wait--;
+	}
+
+	if(state->int_state.next_cycle)
+	{
+		if(state->int_state.next_cycle == INT_NEXT_ENABLE)
+		{
+			state->int_state.enabled = true;
+		}
+		else if(state->int_state.next_cycle == INT_NEXT_DISABLE)
+		{
+			state->int_state.enabled = false;
+		}
+
+		state->int_state.next_cycle = INT_NEXT_NONE;
 	}
 
 	// Check for interrupts

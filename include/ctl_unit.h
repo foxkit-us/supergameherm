@@ -44,11 +44,20 @@ typedef enum
 } /* Ralf Brown's */ interrupt_list;
 
 
+typedef enum
+{
+	INT_NEXT_NONE = 0,
+	INT_NEXT_ENABLE,
+	INT_NEXT_DISABLE,
+} interrupt_next;
+
+
 typedef struct _interrupt_state
 {
-	bool enabled;		/*! Interrupts enabled */
-	uint8_t mask;		/*! Interrupt mask */
-	uint8_t pending;	/*! Pending interrupts */
+	interrupt_next next_cycle;	/*! Interrupts will be enabled next cycle */
+	bool enabled;			/*! Interrupts enabled */
+	uint8_t mask;			/*! Interrupt mask */
+	uint8_t pending;		/*! Pending interrupts */
 
 	// Optimisation - cache the next interrupt jump address
 	interrupt_list next_jmp;
