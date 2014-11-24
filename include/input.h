@@ -38,5 +38,6 @@ typedef struct _emu_state emu_state;
 
 uint8_t joypad_read(emu_state *restrict, uint16_t);
 void joypad_write(emu_state *restrict, uint16_t, uint8_t);
+void joypad_signal(emu_state *restrict, input_key, bool);
 
 #endif /*!__INPUT_H_*/
