@@ -42,4 +42,4 @@ CMakeFiles
 build
 Makefile
 cmake_install.cmake
-config.h
+include/config.h
