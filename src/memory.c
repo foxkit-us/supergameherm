@@ -116,11 +116,9 @@ static inline uint8_t rom_bank_read(emu_state *restrict state unused, uint16_t l
 }
 
 /*! read from the switchable RAM bank space */
-static inline uint8_t ram_bank_read(emu_state *restrict state unused, uint16_t location unused)
+static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location)
 {
-	fatal("RAM bank switching not yet implemented");
-	/* NOTREACHED */
-	return -1;
+	return state->cart_ram[state->ram_bank][location - 0xA000];
 }
 
 /*!
@@ -359,14 +357,20 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		switch(state->cart_data[OFF_CART_TYPE])
 		{
 		case CART_ROM_ONLY:
+		case CART_MBC3:
+		case CART_MBC3_TIMER_BATT:
+		case CART_MBC5:
 			fatal("invalid memory write at %04X (%02X)",
 				location, data);
-		case CART_MBC3:
 		case CART_MBC3_RAM:
 		case CART_MBC3_RAM_BATT:
-		case CART_MBC3_TIMER_BATT:
 		case CART_MBC3_TIMER_RAM_BATT:
 			state->ram_bank = data & 0x3;
+			debug("switching to RAM bank %04X", state->ram_bank);
+			return;
+		case CART_MBC5_RAM:
+		case CART_MBC5_RAM_BATT:
+			state->ram_bank = data & 0xF;
 			debug("switching to RAM bank %04X", state->ram_bank);
 			return;
 		default:
@@ -376,7 +380,7 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 	case 0xA:
 	case 0xB:
 		/* switched RAM bank */
-		fatal("invalid memory write at %04X (%02X)", location, data);
+		state->cart_ram[state->ram_bank][location - 0xA000] = data;
 		return;
 	case 0xE:
 	case 0xF:

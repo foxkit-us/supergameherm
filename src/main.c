@@ -20,6 +20,11 @@ emu_state * init_emulator(void)
 {
 	emu_state *state = (emu_state *)malloc(sizeof(emu_state));
 
+	for(int i = 0; i < 0xF; i++)
+	{
+		state->cart_ram[i] = malloc(0x2000);
+	}
+
 	state->int_state.enabled = true;
 	state->bank = 1;
 	state->wait = 1;
@@ -33,6 +38,10 @@ emu_state * init_emulator(void)
 static void finish_emulator(emu_state *restrict state)
 {
 	free(state->cart_data);
+	for(int i = 0xE; i >= 0; i--)
+	{
+		free(state->cart_ram[i]);
+	}
 	free(state);
 }
 
