@@ -188,7 +188,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
  */
 uint16_t mem_read16(emu_state *restrict state, uint16_t location)
 {
-	return (mem_read8(state, location+1) << 8) | mem_read8(state, location);
+	return (mem_read8(state, location + 1) << 8) | mem_read8(state, location);
 }
 
 

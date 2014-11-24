@@ -24,7 +24,7 @@ static inline void rlca(emu_state *restrict state)
  */
 static inline void rrca(emu_state *restrict state)
 {
-	REG_A(state) = rotl_8(REG_A(state));
+	REG_A(state) = rotr_8(REG_A(state));
 	if(REG_A(state) == 0)
 	{
 		REG_F(state) = FLAG_Z;
