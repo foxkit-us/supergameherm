@@ -22,15 +22,4 @@
 #cmakedefine HAVE_BSWAP_16
 #cmakedefine HAVE_BSWAP_32
 
-// Standard POSIX defines
-#ifdef HAVE_CLOCK_GETTIME
-#	define _POSIX_C_SOURCE 200809L
-#	define _XOPEN_VERSION 700
-#endif
-
-// Needed for endian stuff
-#if defined(HAVE_ENDIAN_H) || defined(HAVE_SYS_ENDIAN_H)
-#	define _BSD_SOURCE
-#endif
-
 #endif /*__CONFIG_H__*/

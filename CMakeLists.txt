@@ -19,6 +19,8 @@ macro(platform_checks)
 			# OS X check
 			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
 		endif()
+
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700")
 	endif()
 
 	test_big_endian(BIG_ENDIAN)
@@ -33,6 +35,8 @@ macro(platform_checks)
 		# Check for __bswap_XX
 		check_function_exists(__bswap_16 HAVE_BSWAP_16)
 		check_function_exists(__bswap_32 HAVE_BSWAP_32)
+	elseif(HAVE_POSIX)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_BSD_SOURCE")
 	endif()
 endmacro()
 
