@@ -1087,7 +1087,7 @@ static inline void ld_hl_sp_imm8(emu_state *restrict state)
 {
 	/* per docs, this is a SIGNED add */
 	int8_t n = mem_read8(state, ++REG_PC(state));
-	uint32_t temp = REG_PC(state) + n;
+	uint32_t temp = REG_SP(state) + n;
 
 	REG_HL(state) = temp;
 
