@@ -99,12 +99,6 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 	{
 		// All interrupts masked
 		state->int_state.next_jmp = INT_ID_NONE;
-
-		debug("--- SNIP ---");
-		debug("Interrupts masked");
-		dump_all_state(state);
-		debug("Mask %04X Signal %04X", data, state->int_state.pending);
-		debug("--- SNIP ---");
 	}
 
 	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
@@ -270,7 +264,6 @@ bool execute(emu_state *restrict state)
 
 	opcode = mem_read8(state, REG_PC(state));
 	handler = handlers[opcode];
-	//fprintf(stderr, "pc=%04X\n", REG_PC(state));
 	handler(state);
 
 	return true;
