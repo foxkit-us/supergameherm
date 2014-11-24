@@ -16,38 +16,46 @@ uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 
 void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
+	uint8_t mask = state->int_state.mask & data;
+
 	data &= 0x1F;
 
-	if(data > state->int_state.pending)
+	if(mask)
 	{
-		uint8_t mask = state->int_state.mask;
-
-		// Recompute jmp address
-		if((data & INT_VBLANK) && (mask & INT_VBLANK))
+		// Valid interrupt, recompute jmp address
+		if(mask & INT_VBLANK)
 		{
 			state->int_state.next_jmp = INT_ID_VBLANK;
 		}
-		else if((data & INT_LCD_STAT) && (mask & INT_LCD_STAT))
+		else if(mask & INT_LCD_STAT)
 		{
 			state->int_state.next_jmp = INT_ID_LCD_STAT;
 		}
-		else if((data & INT_TIMER) && (mask & INT_TIMER))
+		else if(mask & INT_TIMER)
 		{
 			state->int_state.next_jmp = INT_ID_TIMER;
 		}
-		else if((data & INT_SERIAL) && (mask & INT_SERIAL))
+		else if(mask & INT_SERIAL)
 		{
 			state->int_state.next_jmp = INT_ID_SERIAL;
 		}
-		else if((data & INT_JOYPAD) && (mask & INT_JOYPAD))
+		else if(mask & INT_JOYPAD)
 		{
 			state->int_state.next_jmp = INT_ID_JOYPAD;
 		}
 		else
 		{
-			state->int_state.next_jmp = INT_ID_NONE;
+			fatal("Had an interrupt we didn't know how to handle!");
+			return;
 		}
 	}
+	else
+	{
+		// All interrupts masked
+		state->int_state.next_jmp = INT_ID_NONE;
+	}
+
+	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
 
 	state->int_state.pending = data;
 }
@@ -56,44 +64,44 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 {
 	uint8_t mask = state->int_state.pending & data;
 
-	if(!mask)
+	if(mask)
+	{
+		// Unmasked, recompute jmp address
+		if(mask & INT_VBLANK)
+		{
+			state->int_state.next_jmp = INT_ID_VBLANK;
+		}
+		else if(mask & INT_LCD_STAT)
+		{
+			state->int_state.next_jmp = INT_ID_LCD_STAT;
+		}
+		else if(mask & INT_TIMER)
+		{
+			state->int_state.next_jmp = INT_ID_TIMER;
+		}
+		else if(mask & INT_SERIAL)
+		{
+			state->int_state.next_jmp = INT_ID_SERIAL;
+		}
+		else if(mask & INT_JOYPAD)
+		{
+			state->int_state.next_jmp = INT_ID_JOYPAD;
+		}
+		else
+		{
+			fatal("Had an interrupt we didn't know how to handle!");
+			return;
+		}
+	}
+	else
 	{
 		// All interrupts masked
 		state->int_state.next_jmp = INT_ID_NONE;
 
 		debug("Interrupts locked out");
 	}
-	else
-	{
-		// Unmasked, recompute jmp address
-		if(data & INT_VBLANK)
-		{
-			state->int_state.next_jmp = INT_ID_VBLANK;
-		}
-		else if(data & INT_LCD_STAT)
-		{
-			state->int_state.next_jmp = INT_ID_LCD_STAT;
-		}
-		else if(data & INT_TIMER)
-		{
-			state->int_state.next_jmp = INT_ID_TIMER;
-		}
-		else if(data & INT_SERIAL)
-		{
-			state->int_state.next_jmp = INT_ID_SERIAL;
-		}
-		else if(data & INT_JOYPAD)
-		{
-			state->int_state.next_jmp = INT_ID_JOYPAD;
-		}
-		else
-		{
-			state->int_state.next_jmp = INT_ID_NONE;
-		}
 
-		debug("[masked] Next jump point: %04X\n", state->int_state.next_jmp);
-		debug("Mask: %04X Wait: %04X", state->int_state.mask, state->int_state.pending);
-	}
+	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
 
 	state->int_state.mask = data;
 }
@@ -184,12 +192,6 @@ static inline void call_interrupt(emu_state *restrict state)
 {
 	assert(state->int_state.mask != 0);
 
-	// Clear interrupts
-	state->int_state.pending = 0;
-
-	// Interrupts are locked out before handling
-	state->int_state.enabled = false;
-
 	// Push pc to the stack
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_PC(state));
@@ -202,6 +204,15 @@ static inline void call_interrupt(emu_state *restrict state)
 
 	// XXX is this right?
 	state->wait = 24;
+
+	// Clear interrupts
+	state->int_state.pending = 0;
+
+	// Interrupts are locked out before handling
+	state->int_state.enabled = false;
+
+	// Clear jump point
+	state->int_state.next_jmp = INT_ID_NONE;
 
 	debug("Interrupt jumping to %04X", REG_PC(state));
 }
