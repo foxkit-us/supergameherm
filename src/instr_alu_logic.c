@@ -212,13 +212,13 @@ static inline void and_l(emu_state *restrict state)
 
 /*!
 * @brief AND (HL) (0xA6)
-* @result A &= contents of memory at AL; Z flag set if A is now zero
+* @result A &= contents of memory at HL; Z flag set if A is now zero
 */
 static inline void and_hl(emu_state *restrict state)
 {
 	and_common(state, mem_read8(state, REG_HL(state)));
 
-// and_common already adds 4
+	// and_common already adds 4
 	state->wait += 4;
 }
 
@@ -313,7 +313,7 @@ static inline void xor_hl(emu_state *restrict state)
 {
 	xor_common(state, mem_read8(state, REG_HL(state)));
 
-// xor_common already adds 4
+	// xor_common already adds 4
 	state->wait += 4;
 }
 
@@ -334,7 +334,10 @@ static inline void or_common(emu_state *restrict state, uint8_t to_or)
 {
 	REG_A(state) |= to_or;
 
-	REG_F(state) = (REG_A(state) == 0 ? FLAG_Z : 0);
+	if(!REG_A(state))
+	{
+		REG_F(state) |= FLAG_Z;
+	}
 
 	REG_PC(state)++;
 
@@ -403,7 +406,7 @@ static inline void or_hl(emu_state *restrict state)
 {
 	or_common(state, mem_read8(state, REG_HL(state)));
 
-// or_common already adds 4
+	// or_common already adds 4
 	state->wait += 4;
 }
 
@@ -502,7 +505,7 @@ static inline void cp_hl(emu_state *restrict state)
 {
 	cp_common(state, mem_read8(state, REG_HL(state)));
 
-// cp_common already adds 4
+	// cp_common already adds 4
 	state->wait += 4;
 }
 
