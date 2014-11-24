@@ -61,6 +61,7 @@ typedef struct _interrupt_state
 
 	// Optimisation - cache the next interrupt jump address
 	interrupt_list next_jmp;
+	uint8_t next_intr;
 } interrupts;
 
 
