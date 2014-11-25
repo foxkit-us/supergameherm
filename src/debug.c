@@ -103,10 +103,10 @@ void print_cycles(emu_state *restrict state)
 void print_flags(emu_state *restrict state)
 {
 	debug("flags = %s%s%s%s",
-		(IS_FLAG(state, FLAG_Z) ? "Z":"z",
-		(IS_FLAG(state, FLAG_N) ? "N":"n",
-		(IS_FLAG(state, FLAG_H) ? "H":"h",
-		(IS_FLAG(state, FLAG_C) ? "C":"c");
+		IS_FLAG(state, FLAG_Z) ? "Z":"z",
+		IS_FLAG(state, FLAG_N) ? "N":"n",
+		IS_FLAG(state, FLAG_H) ? "H":"h",
+		IS_FLAG(state, FLAG_C) ? "C":"c");
 }
 
 void dump_all_state(emu_state *restrict state)
