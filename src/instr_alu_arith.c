@@ -409,12 +409,13 @@ static inline void add_common(emu_state *restrict state, uint8_t to_add)
 			REG_F(state) |= FLAG_H;
 		}
 	}
-	else
+
+	REG_A(state) = (uint8_t)temp;
+	if(REG_A(state) == 0)
 	{
 		REG_F(state) |= FLAG_Z;
 	}
 
-	REG_A(state) = (uint8_t)temp;
 	REG_PC(state)++;
 
 	state->wait = 4;
@@ -582,7 +583,27 @@ static inline void adc_a(emu_state *restrict state)
 
 static inline void sub_common(emu_state *restrict state, uint8_t to_sub)
 {
-	add_common(state, ~to_sub + 1);
+	uint32_t temp = REG_A(state) - to_sub;
+
+	REG_F(state) = FLAG_N;
+
+	if(REG_A(state) < to_sub)
+	{
+		REG_F(state) |= FLAG_C;
+	}
+
+	if((REG_A(state) & 0x0f) < (to_sub & 0x0f))
+	{
+		REG_F(state) |= FLAG_H;
+	}
+
+	REG_A(state) = (uint8_t)temp;
+	if(REG_A(state) == 0)
+	{
+		REG_F(state) |= FLAG_Z;
+	}
+
+	REG_PC(state)++;
 }
 
 /*!
