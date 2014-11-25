@@ -21,7 +21,7 @@ static inline void jr_nz_imm8(emu_state *restrict state)
 
 	state->wait = 8;
 
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		REG_PC(state)++;
 	}
@@ -43,7 +43,7 @@ static inline void jr_z_imm8(emu_state *restrict state)
 
 	state->wait = 8;
 
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		REG_PC(state) += to_add;
 
@@ -65,7 +65,7 @@ static inline void jr_nc_imm8(emu_state *restrict state)
 
 	state->wait = 8;
 
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		REG_PC(state)++;
 	}
@@ -87,7 +87,7 @@ static inline void jr_c_imm8(emu_state *restrict state)
 
 	state->wait = 8;
 
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		REG_PC(state) += to_add;
 
@@ -107,7 +107,7 @@ static inline void jp_nz_imm16(emu_state *restrict state)
 {
 	state->wait = 12;
 
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		REG_PC(state) += 3;
 	}
@@ -156,7 +156,7 @@ static inline void call_imm16(emu_state *restrict state)
  */
 static inline void call_nz_imm16(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		state->wait = 12;
 		REG_PC(state) += 3;
@@ -196,7 +196,7 @@ static inline void ret(emu_state *restrict state)
  */
 static inline void retnz(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		REG_PC(state)++;
 
@@ -217,7 +217,7 @@ static inline void retnz(emu_state *restrict state)
  */
 static inline void retz(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		ret(state);
 
@@ -240,7 +240,7 @@ static inline void jp_z_imm16(emu_state *restrict state)
 {
 	state->wait = 12;
 
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		REG_PC(state) = mem_read16(state, ++REG_PC(state));
 
@@ -258,7 +258,7 @@ static inline void jp_z_imm16(emu_state *restrict state)
  */
 static inline void call_z_imm16(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_Z)
+	if(IS_FLAG(state, FLAG_Z))
 	{
 		call_imm16(state);
 	}
@@ -275,7 +275,7 @@ static inline void call_z_imm16(emu_state *restrict state)
  */
 static inline void retnc(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		REG_PC(state)++;
 
@@ -298,7 +298,7 @@ static inline void jp_nc_imm16(emu_state *restrict state)
 {
 	state->wait = 12;
 
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		REG_PC(state) += 3;
 	}
@@ -316,7 +316,7 @@ static inline void jp_nc_imm16(emu_state *restrict state)
  */
 static inline void call_nc_imm16(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		state->wait = 12;
 		REG_PC(state) += 3;
@@ -333,7 +333,7 @@ static inline void call_nc_imm16(emu_state *restrict state)
  */
 static inline void retc(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		ret(state);
 
@@ -366,7 +366,7 @@ static inline void jp_c_imm16(emu_state *restrict state)
 {
 	state->wait = 12;
 
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		REG_PC(state) = mem_read16(state, ++REG_PC(state));
 
@@ -384,7 +384,7 @@ static inline void jp_c_imm16(emu_state *restrict state)
  */
 static inline void call_c_imm16(emu_state *restrict state)
 {
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		call_imm16(state);
 	}
