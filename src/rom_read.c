@@ -35,8 +35,7 @@ const char *friendly_cart_names[0x20] =
 };
 
 bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
-		cart_header *restrict *restrict header, system_types
-		*restrict system)
+		cart_header *restrict *restrict header)
 {
 	long size_in_bytes, actual_size;
 	int8_t checksum = 0;
@@ -103,12 +102,9 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		strncpy(publisher, (*header)->cgb_title.publisher,
 			sizeof((*header)->cgb_title.publisher));
 
-		if(system)
-		{
-			*system = SYSTEM_CGB;
-		}
+		state->system = SYSTEM_CGB;
 
-		debug("cart type is GBC");
+		debug("cart type is CGB");
 	}
 	else if ((*header)->sgb_title.sgb & 0x03)
 	{
@@ -116,10 +112,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		strncpy(title, (*header)->sgb_title.title,
 			sizeof((*header)->sgb_title.title));
 
-		if(system)
-		{
-			*system = SYSTEM_SGB;
-		}
+		state->system = SYSTEM_SGB;
 
 		debug("cart type is SGB");
 	}
@@ -128,12 +121,9 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		/* Really old cart predating the SGB */
 		strncpy(title, (*header)->dmg_title, sizeof((*header)->dmg_title));
 
-		if(system)
-		{
-			*system = SYSTEM_DMG;
-		}
+		state->system = SYSTEM_DMG;
 
-		debug("cart type is GB");
+		debug("cart type is DMG");
 	}
 
 	debug("loading cart %s", title);
@@ -167,6 +157,9 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	{
 		debug("Valid header checksum found");
 	}
+
+	// FIXME For now we're targeting DMG, not CGB.
+	state->system = SYSTEM_DMG;
 
 	no_err = true;
 close_rom:

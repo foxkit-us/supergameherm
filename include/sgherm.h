@@ -64,10 +64,12 @@ typedef struct _emu_state
 
 	uint8_t bank;			/*! current ROM bank */
 	uint8_t ram_bank;		/*! current RAM bank */
-	uint8_t vram_bank;		/*! current VRAM bank (GBC only) */
+	uint8_t vram_bank;		/*! current VRAM bank (CGB only) */
 
 	uint64_t cycles;		/*! Present cycle count */
 	uint64_t start_time;		/*! Time started */
+
+	system_types system;		/*! Present emulation mode */
 	cpu_freq freq;			/*! CPU frequency */
 
 	interrupts int_state;

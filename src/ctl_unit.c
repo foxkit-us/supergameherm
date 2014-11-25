@@ -153,10 +153,10 @@ static const opcode_t handlers[0x100] =
 
 
 /*! boot up */
-void init_ctl(emu_state *restrict state, system_types type)
+void init_ctl(emu_state *restrict state)
 {
 	REG_PC(state) = 0x0100;
-	switch(type)
+	switch(state->system)
 	{
 	case SYSTEM_SGB:
 		debug("Super Game Boy emulation");
@@ -171,7 +171,6 @@ void init_ctl(emu_state *restrict state, system_types type)
 		REG_A(state) = 0x01;
 		break;
 	}
-	FLAGS_OVERWRITE(state, 0xB0);
 	REG_B(state) = 0x00;
 	REG_C(state) = 0x13;
 	REG_D(state) = 0x00;

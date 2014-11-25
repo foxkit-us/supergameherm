@@ -98,7 +98,7 @@ typedef enum
 typedef void (*opcode_t)(emu_state *restrict state);
 
 
-void init_ctl(emu_state *restrict state, system_types type);
+void init_ctl(emu_state *restrict state);
 bool execute(emu_state *restrict);
 
 uint8_t int_flag_read(emu_state *restrict, uint16_t);
