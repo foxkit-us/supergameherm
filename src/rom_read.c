@@ -95,17 +95,17 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		debug("valid nintendo graphic found");
 	}
 
-	if ((*header)->gbc_title.compat & 0x80)
+	if ((*header)->cgb_title.compat & 0x80)
 	{
 		/* Game boy color[sic] */
-		strncpy(title, (*header)->gbc_title.title,
-			sizeof((*header)->gbc_title.title));
-		strncpy(publisher, (*header)->gbc_title.publisher,
-			sizeof((*header)->gbc_title.publisher));
+		strncpy(title, (*header)->cgb_title.title,
+			sizeof((*header)->cgb_title.title));
+		strncpy(publisher, (*header)->cgb_title.publisher,
+			sizeof((*header)->cgb_title.publisher));
 
 		if(system)
 		{
-			*system = SYSTEM_GBC;
+			*system = SYSTEM_CGB;
 		}
 
 		debug("cart type is GBC");
@@ -126,11 +126,11 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	else
 	{
 		/* Really old cart predating the SGB */
-		strncpy(title, (*header)->gb_title, sizeof((*header)->gb_title));
+		strncpy(title, (*header)->dmg_title, sizeof((*header)->dmg_title));
 
 		if(system)
 		{
-			*system = SYSTEM_GB;
+			*system = SYSTEM_DMG;
 		}
 
 		debug("cart type is GB");

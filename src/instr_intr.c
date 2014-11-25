@@ -11,7 +11,7 @@ static inline void stop(emu_state *restrict state)
 	if(speed_reg & 0x1)
 	{
 		// XXX simulate flicker
-		state->freq = ((speed_reg & 0x40) ? CPU_FREQ_GB : CPU_FREQ_GBC);
+		state->freq = ((speed_reg & 0x40) ? CPU_FREQ_DMG : CPU_FREQ_CGB);
 	}
 	else
 	{

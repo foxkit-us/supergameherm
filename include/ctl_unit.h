@@ -26,10 +26,12 @@
 
 typedef enum
 {
-	SYSTEM_GB,
-	SYSTEM_GBP,
+	SYSTEM_DMG,
+	SYSTEM_MGB,
+	SYSTEM_MGL,
 	SYSTEM_SGB,
-	SYSTEM_GBC
+	SYSTEM_SGB2,
+	SYSTEM_CGB
 } system_types;
 
 

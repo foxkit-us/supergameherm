@@ -96,12 +96,12 @@ typedef enum
 	OFF_OAM_END = 0xFE9F,
 
 	/* Contains control registers and other doodads */
-	OFF_GBC_MMIO_BEGIN = 0xFF00,
+	OFF_CGB_MMIO_BEGIN = 0xFF00,
 	/* TODO more I/O constants */
 
-	OFF_GBC_SWITCH_VIDEO_BANK = 0xFF40,
+	OFF_CGB_SWITCH_VIDEO_BANK = 0xFF40,
 
-	OFF_GBC_MMIO_END = 0xFF7F,
+	OFF_CGB_MMIO_END = 0xFF7F,
 
 	OFF_HIGH_RAM_BEGIN = 0xFF80,
 	OFF_HIGH_RAM_END = 0xFFFE,
@@ -123,7 +123,7 @@ typedef struct _cart_header
 			uint8_t compat;		/* 0x143 CGB flag */
 			char licensee_code[2];	/* 0x144-0x145 */
 			uint8_t sgb;
-		} gbc_title;
+		} cgb_title;
 
 		struct
 		{
@@ -132,7 +132,7 @@ typedef struct _cart_header
 			uint8_t sgb;
 		} sgb_title;
 
-		char gb_title[19];
+		char dmg_title[19];
 	};
 
 	uint8_t cart_type;	/* 0x147 */

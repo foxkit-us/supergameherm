@@ -162,15 +162,10 @@ void init_ctl(emu_state *restrict state, system_types type)
 		debug("Super Game Boy emulation");
 		REG_A(state) = 0x01;
 		break;
-	case SYSTEM_GBC:
+	case SYSTEM_CGB:
 		debug("Game Boy Color emulation");
 		REG_A(state) = 0x11;
 		break;
-	case SYSTEM_GBP:
-		debug("Game Boy Portable emulation");
-		REG_A(state) = 0xFF;
-		break;
-	case SYSTEM_GB:
 	default:
 		debug("original Game Boy emulation");
 		REG_A(state) = 0x01;
@@ -236,7 +231,7 @@ bool execute(emu_state *restrict state)
 		state->dma_membar_wait--;
 
 		// Double speed
-		if(state->freq == CPU_FREQ_GBC)
+		if(state->freq == CPU_FREQ_CGB)
 		{
 			state->dma_membar_wait--;
 		}
@@ -269,6 +264,11 @@ bool execute(emu_state *restrict state)
 	}
 
 	opcode = mem_read8(state, REG_PC(state));
+
+	// Dump the present opcode
+	debug("OPCODE: %02X (%s)", opcode, lookup_mnemonic(opcode));
+	dump_all_state(state);
+
 	handler = handlers[opcode];
 	handler(state);
 

@@ -28,7 +28,7 @@ emu_state * init_emulator(void)
 	state->int_state.enabled = true;
 	state->bank = 1;
 	state->wait = 1;
-	state->freq = CPU_FREQ_GB;
+	state->freq = CPU_FREQ_DMG;
 
 	state->front = null_frontend;
 
@@ -48,10 +48,10 @@ static void finish_emulator(emu_state *restrict state)
 int main(int argc, char *argv[])
 {
 	FILE *rom;
-	system_types system = SYSTEM_GB;
+	system_types system = SYSTEM_DMG;
 	emu_state *state;
 	cart_header *header;
-	uint32_t count_cur_second = 0, gbc_seconds = 0;
+	uint32_t count_cur_second = 0, game_seconds = 0;
 	int code = EXIT_SUCCESS;
 
 	printf("Super Game Herm!\n");
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 		if(unlikely(++count_cur_second == state->freq))
 		{
 			count_cur_second = 0;
-			debug("GBC seconds: %ld", ++gbc_seconds);
+			debug("GBC seconds: %ld", ++game_seconds);
 		}
 	}
 	while(likely(++state->cycles && !do_exit));

@@ -92,12 +92,12 @@ void print_cycles(emu_state *restrict state)
 	uint64_t finish = get_time();
 	double taken = (finish - state->start_time) / 1e9;
 	double cps = state->cycles / taken;
-	const cpu_freq freq_gb = CPU_FREQ_GB, freq_gbc = CPU_FREQ_GBC;
+	const cpu_freq freq_dmg = CPU_FREQ_DMG, freq_cgb = CPU_FREQ_CGB;
 
 	info("Time taken: %.3f seconds", taken);
 	info("Cycle count: %ld", state->cycles);
 	info("Cycles per second: %.3f (%.3fx GB, %.3fx GBC)", cps,
-			cps / freq_gb, cps / freq_gbc);
+			cps / freq_dmg, cps / freq_cgb);
 }
 
 void print_flags(emu_state *restrict state)

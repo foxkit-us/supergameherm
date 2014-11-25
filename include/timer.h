@@ -21,9 +21,9 @@ typedef struct _tm_state
 
 typedef enum
 {
-	CPU_FREQ_GB = 4194304,
+	CPU_FREQ_DMG = 4194304,
 	CPU_FREQ_SGB = 4295454,
-	CPU_FREQ_GBC = 8388608,
+	CPU_FREQ_CGB = 8388608,
 } cpu_freq;
 
 typedef struct _emu_state emu_state;
