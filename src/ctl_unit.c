@@ -238,7 +238,7 @@ bool execute(emu_state *restrict state)
 		// Double speed
 		if(state->freq == CPU_FREQ_GBC)
 		{
-			state->dma_member_wait--;
+			state->dma_membar_wait--;
 		}
 	}
 

@@ -48,7 +48,7 @@ static void finish_emulator(emu_state *restrict state)
 int main(int argc, char *argv[])
 {
 	FILE *rom;
-	system_types system;
+	system_types system = SYSTEM_GB;
 	emu_state *state;
 	cart_header *header;
 	uint32_t count_cur_second = 0, gbc_seconds = 0;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(unlikely(!read_rom_data(state, rom, &header, &system)))
+	if(unlikely(!read_rom_data(state, rom, &header, NULL)))
 	{
 		fatal("can't read ROM data (ROM is corrupt)?");
 		return EXIT_FAILURE;

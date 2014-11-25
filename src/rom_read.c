@@ -103,7 +103,10 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		strncpy(publisher, (*header)->gbc_title.publisher,
 			sizeof((*header)->gbc_title.publisher));
 
-		*system = SYSTEM_GBC;
+		if(system)
+		{
+			*system = SYSTEM_GBC;
+		}
 
 		debug("cart type is GBC");
 	}
@@ -113,7 +116,10 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		strncpy(title, (*header)->sgb_title.title,
 			sizeof((*header)->sgb_title.title));
 
-		*system = SYSTEM_SGB;
+		if(system)
+		{
+			*system = SYSTEM_SGB;
+		}
 
 		debug("cart type is SGB");
 	}
@@ -122,7 +128,10 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		/* Really old cart predating the SGB */
 		strncpy(title, (*header)->gb_title, sizeof((*header)->gb_title));
 
-		*system = SYSTEM_GB;
+		if(system)
+		{
+			*system = SYSTEM_GB;
+		}
 
 		debug("cart type is GB");
 	}
