@@ -103,6 +103,14 @@ typedef struct _emu_state
 #define REG_H(state) REG_8(state, h)
 #define REG_L(state) REG_8(state, l)
 
+#define FLAG_SET(state, flag) (REG_F(state) |= (flag))
+#define FLAG_UNSET(state, flag) (REG_F(state) &= ~(flag))
+#define FLAG_FLIP(state, flag) (REG_F(state) ^= ~(flag))
+#define FLAGS_OVERWRITE(state, value) (REG_F(state) = value)
+#define FLAGS_CLEAR(state) FLAGS_OVERWRITE(state, 0)
+
+#define IS_FLAG(state, flag) (REG_F(state) & (flag))
+
 emu_state * init_emulator(void);
 
 #endif /*!__SGHERM_H_*/

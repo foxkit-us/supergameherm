@@ -4,14 +4,17 @@
  */
 static inline void rlca(emu_state *restrict state)
 {
+	FLAGS_CLEAR(state);
+
 	REG_A(state) = rotl_8(REG_A(state));
-	if(REG_A(state) == 0)
+
+	if(!REG_A(state))
 	{
-		REG_F(state) = FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 	else if(REG_A(state) & 0x80)
 	{
-		REG_F(state) = FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
 	REG_PC(state)++;
@@ -24,14 +27,17 @@ static inline void rlca(emu_state *restrict state)
  */
 static inline void rrca(emu_state *restrict state)
 {
+	FLAGS_CLEAR(state);
+
 	REG_A(state) = rotr_8(REG_A(state));
-	if(REG_A(state) == 0)
+
+	if(!REG_A(state))
 	{
-		REG_F(state) = FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 	else if(REG_A(state) & 0x80)
 	{
-		REG_F(state) = FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
 	REG_PC(state)++;
@@ -44,27 +50,19 @@ static inline void rrca(emu_state *restrict state)
  */
 static inline void rla(emu_state *restrict state)
 {
-	/* abusing FLAG_H as a temp var. */
-	if(REG_A(state) & 0x80)
-	{
-		REG_F(state) = FLAG_H;
-	}
-	else
-	{
-		REG_F(state) = 0x00;
-	}
+	uint8_t hi = REG_A(state) & 0x80;
+
+	FLAGS_CLEAR(state);
 
 	REG_A(state) <<= 1;
-	REG_A(state) |= ((REG_F(state) & FLAG_C) == FLAG_C);
-
-	if(REG_F(state) & FLAG_H)
+	if(hi)
 	{
-		REG_F(state) = FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
-	if(REG_A(state) == 0)
+	if(!REG_A(state))
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -77,27 +75,19 @@ static inline void rla(emu_state *restrict state)
  */
 static inline void rra(emu_state *restrict state)
 {
-	/* same as above */
-	if(REG_A(state) & 0x01)
-	{
-		REG_F(state) = FLAG_H;
-	}
-	else
-	{
-		REG_F(state) = 0x00;
-	}
+	uint8_t hi = REG_A(state) & 0x80;
+
+	FLAGS_CLEAR(state);
 
 	REG_A(state) >>= 1;
-	REG_A(state) |= ((REG_F(state) & FLAG_C) == FLAG_C);
-
-	if(REG_F(state) & FLAG_H)
+	if(hi)
 	{
-		REG_F(state) = FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
-	if(REG_A(state) == 0)
+	if(!REG_A(state))
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -122,7 +112,8 @@ static inline void cpl(emu_state *restrict state)
 */
 static inline void scf(emu_state *restrict state)
 {
-	REG_F(state) |= FLAG_C;
+	FLAG_SET(state, FLAG_C);
+
 	REG_PC(state)++;
 
 	state->wait = 4;
@@ -134,7 +125,8 @@ static inline void scf(emu_state *restrict state)
 */
 static inline void ccf(emu_state *restrict state)
 {
-	REG_F(state) ^= ~FLAG_C;
+	FLAG_FLIP(state, FLAG_C);
+
 	REG_PC(state)++;
 
 	state->wait = 4;
@@ -144,11 +136,11 @@ static inline void and_common(emu_state *restrict state, uint8_t to_and)
 {
 	REG_A(state) &= to_and;
 
-	REG_F(state) = FLAG_H;
+	FLAGS_OVERWRITE(state, FLAG_H);
 
 	if(!REG_A(state))
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -228,10 +220,11 @@ static inline void and_hl(emu_state *restrict state)
 */
 static inline void and_a(emu_state *restrict state)
 {
-	REG_F(state) = FLAG_H;
-	if(REG_A(state) == 0)
+	FLAGS_OVERWRITE(state, FLAG_H);
+
+	if(!REG_A(state))
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -243,8 +236,12 @@ static inline void xor_common(emu_state *restrict state, char to_xor)
 {
 	REG_A(state) ^= to_xor;
 
-	REG_F(state) = 0;
-	if(REG_A(state) == 0) REG_F(state) |= FLAG_Z;
+	FLAGS_CLEAR(state);
+
+	if(!REG_A(state))
+	{
+		FLAG_SET(state, FLAG_Z);
+	}
 
 	REG_PC(state)++;
 
@@ -324,7 +321,9 @@ static inline void xor_hl(emu_state *restrict state)
 static inline void xor_a(emu_state *restrict state)
 {
 	REG_A(state) = 0;
-	REG_F(state) = FLAG_Z;
+
+	FLAGS_OVERWRITE(state, FLAG_Z);
+
 	REG_PC(state)++;
 
 	state->wait = 4;
@@ -334,13 +333,11 @@ static inline void or_common(emu_state *restrict state, uint8_t to_or)
 {
 	REG_A(state) |= to_or;
 
+	FLAGS_CLEAR(state);
+
 	if(!REG_A(state))
 	{
-		REG_F(state) = FLAG_Z;
-	}
-	else
-	{
-		REG_F(state) = 0;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -425,21 +422,19 @@ static inline void or_a(emu_state *restrict state)
 
 static inline void cp_common(emu_state *restrict state, uint8_t cmp)
 {
-	REG_F(state) = FLAG_N;
+	FLAGS_OVERWRITE(state, FLAG_N);
+
 	if(REG_A(state) == cmp)
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
+	}
+	else if(REG_A(state) < cmp)
+	{
+		FLAG_SET(state, FLAG_C);
 	}
 	else
 	{
-		if(REG_A(state) < cmp)
-		{
-			REG_F(state) |= FLAG_C;
-		}
-		else
-		{
-			REG_F(state) |= FLAG_H;
-		}
+		FLAG_SET(state, FLAG_H);
 	}
 
 	REG_PC(state)++;
@@ -586,32 +581,31 @@ static inline void cb_dispatch(emu_state *restrict state)
 	switch(op)
 	{
 	case CB_OP_RLC:
+		FLAGS_CLEAR(state);
+
 		if(*write_to & 0x80)
 		{
-			REG_F(state) = FLAG_C;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		*write_to <<= 1;
-		*write_to |= ((REG_F(state) & FLAG_C) == FLAG_C);
+		if(IS_FLAG(state, FLAG_C))
+		{
+			*write_to |= 0x1;
+		}
 
 		if(*write_to == 0)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
 	case CB_OP_RRC:
+		FLAGS_CLEAR(state);
+
 		if(*write_to & 0x01)
 		{
-			REG_F(state) = FLAG_C;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		*write_to >>= 1;
@@ -627,106 +621,88 @@ static inline void cb_dispatch(emu_state *restrict state)
 
 		break;
 	case CB_OP_RL:
-		/* abusing FLAG_H as a temp var. */
-		if(*write_to & 0x80)
-		{
-			REG_F(state) = FLAG_H;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
-		}
+	{
+		uint8_t hi = (*write_to) & 0x80;
 
-		*write_to <<= 1;
-		*write_to |= ((REG_F(state) & FLAG_C) == FLAG_C);
+		FLAGS_CLEAR(state);
 
-		if(REG_F(state) & FLAG_H)
+		(*write_to) <<= 1;
+		if(hi)
 		{
-			REG_F(state) = FLAG_C;
+			FLAG_SET(state, FLAG_C);
 		}
 
-		if(*write_to == 0)
+		if(!(*write_to))
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
+	}
 	case CB_OP_RR:
-		/* same as above */
-		if(*write_to & 0x01)
-		{
-			REG_F(state) = FLAG_H;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
-		}
+	{
+		uint8_t hi = (*write_to) & 0x80;
 
-		*write_to >>= 1;
-		*write_to |= ((REG_F(state) & FLAG_C) == FLAG_C);
+		FLAGS_CLEAR(state);
 
-		if(REG_F(state) & FLAG_H)
+		(*write_to) >>= 1;
+		if(hi)
 		{
-			REG_F(state) = FLAG_C;
+			FLAG_SET(state, FLAG_C);
 		}
 
-		if(*write_to == 0)
+		if(!(*write_to))
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
+	}
 	case CB_OP_SLA:
+		FLAGS_CLEAR(state);
+
 		if(*write_to & 0x80)
 		{
-			REG_F(state) = FLAG_C;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		*write_to <<= 1;
 
 		if(*write_to == 0)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
 	case CB_OP_SRA:
+		FLAGS_CLEAR(state);
+
 		if(*write_to & 0x01)
 		{
-			REG_F(state) = FLAG_C;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		*write_to = (*write_to & 0x80) | (*write_to >> 1);
 
 		if(*write_to == 0)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
 	case CB_OP_SRL:
+		FLAGS_CLEAR(state);
+
 		if(*write_to & 0x01)
 		{
-			REG_F(state) = FLAG_C;
-		}
-		else
-		{
-			REG_F(state) = 0x00;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		*write_to >>= 1;
 
 		if(*write_to == 0)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
@@ -739,26 +715,24 @@ static inline void cb_dispatch(emu_state *restrict state)
 		*write_to |= val;
 		break;
 	case CB_OP_SWAP:
-	{
 		/* swap higher and lower nibble of register <reg> */
+		FLAGS_CLEAR(state);
+
 		*write_to = swap_8(*write_to);
 		if(*write_to)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
-	}
+		break;
 	case CB_OP_BIT:
 		/* test bit <bit_number> of register <reg> */
 		if(*write_to & val)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
-		else
-		{
-			REG_F(state) &= ~FLAG_Z;
-		}
-		REG_F(state) |= FLAG_H;
-		REG_F(state) &= ~FLAG_N;
+
+		FLAG_SET(state, FLAG_H);
+		FLAG_UNSET(state, FLAG_N);
 		break;
 	}
 
