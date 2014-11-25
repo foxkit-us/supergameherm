@@ -1107,6 +1107,8 @@ static inline void ld_hl_sp_imm8(emu_state *restrict state)
 		}
 	}
 
+	REG_PC(state)++;
+
 	state->wait = 12;
 }
 
