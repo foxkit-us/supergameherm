@@ -172,6 +172,8 @@ typedef enum
 	CART_CAMERA = 0x1F
 } cart_types;
 
+const char *friendly_cart_names[0x20];
+
 bool read_rom_data(emu_state *restrict, FILE *restrict,
 	cart_header *restrict *restrict);
 

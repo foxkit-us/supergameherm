@@ -19,7 +19,6 @@ static const unsigned char graphic_expected[] =
 	0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
 };
 
-// Silence GCC by making this non-static (XXX)
 const char *friendly_cart_names[0x20] =
 {
 	"ROM only", "MBC1", "MBC1 with RAM", "MBC1 with RAM (Battery)",
