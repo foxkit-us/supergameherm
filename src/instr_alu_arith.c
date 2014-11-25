@@ -12,25 +12,17 @@ static inline void inc_bc(emu_state *restrict state)
 
 static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 {
-	if(*reg ^ 0x0F)
+	FLAGS_CLEAR(state);
+
+	if(!(*reg ^ 0x0F))
 	{
-		REG_F(state) &= ~FLAG_H;
-	}
-	else
-	{
-		REG_F(state) |= FLAG_H;
+		FLAG_SET(state, FLAG_H);
 	}
 
-	if(++(*reg))
+	if(!(++(*reg)))
 	{
-		REG_F(state) &= ~FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
-	else
-	{
-		REG_F(state) |= FLAG_Z;
-	}
-
-	REG_F(state) &= ~FLAG_N;
 
 	REG_PC(state)++;
 
@@ -49,26 +41,16 @@ static inline void inc_b(emu_state *restrict state)
 
 static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 {
-	//uint8_t old = *reg;
+	FLAGS_OVERWRITE(state, FLAG_N);
 
-	REG_F(state) = FLAG_N;
-
-	if(*reg & 0x0F)
+	if(!(*reg & 0x0F))
 	{
-		REG_F(state) &= ~FLAG_H;
-	}
-	else
-	{
-		REG_F(state) |= FLAG_H;
+		FLAG_SET(state, FLAG_H);
 	}
 
-	if(--(*reg))
+	if(!(--(*reg)))
 	{
-		REG_F(state) &= ~FLAG_Z;
-	}
-	else
-	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -87,25 +69,22 @@ static inline void dec_b(emu_state *restrict state)
 
 static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
 {
+	FLAGS_CLEAR(state);
+
 	if((uint32_t)(REG_HL(state) + to_add) > 0xFFFF)
 	{
-		REG_F(state) |= FLAG_C;
-	}
-	else
-	{
-		REG_F(state) &= ~FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
 	if((REG_HL(state) & 0xF) + (to_add & 0xF) > 0xF)
 	{
-		REG_F(state) |= FLAG_H;
-	}
-	else
-	{
-		REG_F(state) &= ~FLAG_H;
+		FLAG_SET(state, FLAG_H);
 	}
 
-	REG_F(state) &= ~FLAG_N;
+	if(!REG_HL(state))
+	{
+		FLAG_SET(state, FLAG_Z);
+	}
 
 	REG_HL(state) += to_add;
 
@@ -260,41 +239,41 @@ static inline void daa(emu_state *restrict state)
 {
 	uint16_t val = REG_A(state);
 
-	if(REG_F(state) & FLAG_N)
+	if(IS_FLAG(state, FLAG_N))
 	{
-		if(REG_F(state) & FLAG_H)
+		if(IS_FLAG(state, FLAG_H))
 		{
 			val = (val - 6) & 0xFF;
 		}
 
-		if(REG_F(state) & FLAG_C)
+		if(IS_FLAG(state, FLAG_C))
 		{
 			val -= 0x60;
 		}
 	}
 	else
 	{
-		if((REG_F(state) & FLAG_H) || (val & 0x0F) > 0x09)
+		if(IS_FLAG(state, FLAG_H) || (val & 0x0F) > 0x09)
 		{
 			val += 0x06;
 		}
 
-		if((REG_F(state) & FLAG_C) || (val > 0x9F))
+		if(IS_FLAG(state, FLAG_C) || (val > 0x9F))
 		{
 			val += 0x60;
 		}
 	}
 
-	REG_F(state) &= ~(FLAG_H | FLAG_Z);
+	FLAG_UNSET(state, FLAG_H | FLAG_Z);
 
 	if(val & 0x100)
 	{
-		REG_F(state) |= FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
 	if(!(REG_A(state) = val))
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -397,26 +376,26 @@ static inline void add_common(emu_state *restrict state, uint8_t to_add)
 {
 	uint32_t temp = REG_A(state) + to_add;
 
-	REG_F(state) = 0;
+	FLAGS_CLEAR(state);
 
 	if(temp)
 	{
 		if(temp & 0x100)
 		{
-			REG_F(state) |= FLAG_C;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		// Half carry
 		if(((REG_A(state) & 0xF) + (to_add & 0xF)) & 0x10)
 		{
-			REG_F(state) |= FLAG_H;
+			FLAG_SET(state, FLAG_H);
 		}
 	}
 
 	REG_A(state) = (uint8_t)temp;
 	if(REG_A(state) == 0)
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
@@ -501,7 +480,7 @@ static inline void add_a(emu_state *restrict state)
 
 static inline void adc_common(emu_state *restrict state, uint8_t to_add)
 {
-	if(REG_F(state) & FLAG_C)
+	if(IS_FLAG(state, FLAG_C))
 	{
 		to_add++;
 	}
@@ -588,22 +567,22 @@ static inline void sub_common(emu_state *restrict state, uint8_t to_sub)
 {
 	uint32_t temp = REG_A(state) - to_sub;
 
-	REG_F(state) = FLAG_N;
+	FLAGS_OVERWRITE(state, FLAG_N);
 
 	if(REG_A(state) < to_sub)
 	{
-		REG_F(state) |= FLAG_C;
+		FLAG_SET(state, FLAG_C);
 	}
 
 	if((REG_A(state) & 0x0f) < (to_sub & 0x0f))
 	{
-		REG_F(state) |= FLAG_H;
+		FLAG_SET(state, FLAG_H);
 	}
 
 	REG_A(state) = (uint8_t)temp;
 	if(REG_A(state) == 0)
 	{
-		REG_F(state) |= FLAG_Z;
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
