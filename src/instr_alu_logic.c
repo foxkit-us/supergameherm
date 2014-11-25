@@ -609,14 +609,14 @@ static inline void cb_dispatch(emu_state *restrict state)
 		}
 
 		*write_to >>= 1;
-		if(REG_F(state) & FLAG_C)
+		if(IS_FLAG(state, FLAG_C))
 		{
 			*write_to |= 0x80;
 		}
 
 		if(*write_to == 0)
 		{
-			REG_F(state) |= FLAG_Z;
+			FLAG_SET(state, FLAG_Z);
 		}
 
 		break;
