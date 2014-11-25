@@ -171,6 +171,7 @@ void init_ctl(emu_state *restrict state)
 		REG_A(state) = 0x01;
 		break;
 	}
+	FLAGS_OVERWRITE(state, 0xB0);
 	REG_B(state) = 0x00;
 	REG_C(state) = 0x13;
 	REG_D(state) = 0x00;
