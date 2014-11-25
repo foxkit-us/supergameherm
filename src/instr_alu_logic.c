@@ -336,7 +336,11 @@ static inline void or_common(emu_state *restrict state, uint8_t to_or)
 
 	if(!REG_A(state))
 	{
-		REG_F(state) |= FLAG_Z;
+		REG_F(state) = FLAG_Z;
+	}
+	else
+	{
+		REG_F(state) = 0;
 	}
 
 	REG_PC(state)++;
