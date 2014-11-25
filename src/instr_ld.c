@@ -1091,19 +1091,19 @@ static inline void ld_hl_sp_imm8(emu_state *restrict state)
 
 	REG_HL(state) = temp;
 
-	REG_F(state) = 0x00;
+	FLAGS_CLEAR(state);
 
 	if(temp)
 	{
 		if(temp & 0x10000)
 		{
-			REG_F(state) |= FLAG_C;
+			FLAG_SET(state, FLAG_C);
 		}
 
 		// Half carry
 		if(((REG_PC(state) & 0x7FF) + (n & 0x7FF)) & 0x800)
 		{
-			REG_F(state) |= FLAG_H;
+			FLAG_SET(state, FLAG_H);
 		}
 	}
 
