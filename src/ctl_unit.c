@@ -264,11 +264,6 @@ bool execute(emu_state *restrict state)
 	}
 
 	opcode = mem_read8(state, REG_PC(state));
-
-	// Dump the present opcode
-	debug("OPCODE: %02X (%s)", opcode, lookup_mnemonic(opcode));
-	dump_all_state(state);
-
 	handler = handlers[opcode];
 	handler(state);
 
