@@ -41,6 +41,7 @@ void serial_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	switch(reg)
 	{
 	case 0xFF01:	/* SB - data to write */
+		fprintf(stdout, "%c", data);
 		state->ser_state.cur_bit = 7;
 		state->ser_state.out = data;
 		break;

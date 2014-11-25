@@ -40,6 +40,24 @@ static inline void ld_b_imm8(emu_state *restrict state)
 }
 
 /*!
+ * @brief LD (nn),SP (0x08)
+ * @result contents of memory at nn = SP
+ */
+static inline void ld_imm16_sp(emu_state *restrict state)
+{
+	uint8_t lsb = mem_read8(state, ++REG_PC(state));
+	uint8_t msb = mem_read8(state, ++REG_PC(state));
+
+	uint16_t addr = (msb<<8)|lsb;
+
+	mem_write8(state, addr, REG_SP(state));
+
+	REG_PC(state)++;
+
+	state->wait = 20;
+}
+
+/*!
  * @brief LD A,(BC) (0x0A)
  * @result A = contents of memory at BC
  */
