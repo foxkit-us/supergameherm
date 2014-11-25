@@ -12,8 +12,6 @@ static inline void inc_bc(emu_state *restrict state)
 
 static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 {
-	//uint8_t old = *reg;
-
 	if(*reg ^ 0x0F)
 	{
 		REG_F(state) &= ~FLAG_H;
@@ -23,9 +21,11 @@ static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 		REG_F(state) |= FLAG_H;
 	}
 
-	*reg += 1;
-
-	if(!(*reg))
+	if(++(*reg))
+	{
+		REG_F(state) &= ~FLAG_Z;
+	}
+	else
 	{
 		REG_F(state) |= FLAG_Z;
 	}
@@ -62,12 +62,15 @@ static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 		REG_F(state) |= FLAG_H;
 	}
 
-	*reg -= 1;
-
-	if(!(*reg))
+	if(--(*reg))
+	{
+		REG_F(state) &= ~FLAG_Z;
+	}
+	else
 	{
 		REG_F(state) |= FLAG_Z;
 	}
+
 	REG_PC(state)++;
 
 	state->wait = 4;
