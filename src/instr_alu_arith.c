@@ -480,12 +480,34 @@ static inline void add_a(emu_state *restrict state)
 
 static inline void adc_common(emu_state *restrict state, uint8_t to_add)
 {
-	if(IS_FLAG(state, FLAG_C))
+	uint32_t carry = (IS_FLAG(state, FLAG_C)) ? 1 : 0;
+	uint32_t temp = REG_A(state) + to_add + carry;
+
+	FLAGS_CLEAR(state);
+
+	if(temp)
 	{
-		to_add++;
+		if(temp & 0x100)
+		{
+			FLAG_SET(state, FLAG_C);
+		}
+
+		// Half carry
+		if(((REG_A(state) & 0xF) + (to_add & 0xF) + carry) & 0x10)
+		{
+			FLAG_SET(state, FLAG_H);
+		}
 	}
 
-	add_common(state, to_add);
+	REG_A(state) = (uint8_t)temp;
+	if(REG_A(state) == 0)
+	{
+		FLAG_SET(state, FLAG_Z);
+	}
+
+	REG_PC(state)++;
+
+	state->wait = 4;
 }
 
 /*!
