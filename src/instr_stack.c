@@ -82,7 +82,8 @@ static inline void push_hl(emu_state *restrict state)
  */
 static inline void pop_af(emu_state *restrict state)
 {
-	REG_AF(state) = mem_read16(state, REG_SP(state));
+	// discard last 4 bytes because they are not wired on a real gb z80
+	REG_AF(state) = mem_read16(state, REG_SP(state)) & 0xFFF0;
 	REG_SP(state) += 2;
 	REG_PC(state)++;
 
