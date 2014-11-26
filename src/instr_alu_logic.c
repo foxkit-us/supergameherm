@@ -623,12 +623,12 @@ static inline void cb_dispatch(emu_state *restrict state)
 	}
 	case CB_OP_RR:
 	{
-		uint8_t hi = (*write_to) & 0x80;
+		uint8_t lo = (*write_to) & 0x01;
 
 		FLAGS_CLEAR(state);
 
 		(*write_to) >>= 1;
-		if(hi)
+		if(lo)
 		{
 			FLAG_SET(state, FLAG_C);
 		}
