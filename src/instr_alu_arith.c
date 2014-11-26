@@ -795,3 +795,35 @@ static inline void sbc_imm8(emu_state *restrict state)
 	// sbc_common already adds 4
 	state->wait += 4;
 }
+
+/*!
+ * @brief ADD SP,n (0xE8)
+ * @result SP += n
+ */
+static inline void add_sp_imm8(emu_state *restrict state)
+{
+	uint8_t to_add = mem_read8(state, ++REG_PC(state));
+	uint16_t temp = REG_SP(state) + to_add;
+
+	FLAGS_CLEAR(state);
+
+	if(temp)
+	{
+		if(temp & 0x100)
+		{
+			FLAG_SET(state, FLAG_C);
+		}
+
+		// Half carry
+		if(((REG_SP(state) & 0xF) + (to_add & 0xF)) & 0x10)
+		{
+			FLAG_SET(state, FLAG_H);
+		}
+	}
+
+	REG_SP(state) = (uint8_t)temp;
+
+	REG_PC(state)++;
+
+	state->wait = 16;
+}

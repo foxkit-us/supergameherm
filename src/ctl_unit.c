@@ -146,7 +146,7 @@ static const opcode_t handlers[0x100] =
 	/* 0xD0 */ retnc, pop_de, jp_nc_imm16, invalid, call_nc_imm16, push_de, sub_imm8, reset_common,
 	/* 0xD8 */ retc, reti, jp_c_imm16, invalid, call_c_imm16, invalid, sbc_imm8, reset_common,
 	/* 0xE0 */ ldh_imm8_a, pop_hl, ld_ff00_c_a, invalid, invalid, push_hl, and_imm8, reset_common,
-	/* 0xE8 */ not_impl, jp_hl, ld_d16_a, invalid, invalid, invalid, xor_imm8, reset_common,
+	/* 0xE8 */ add_sp_imm8, jp_hl, ld_d16_a, invalid, invalid, invalid, xor_imm8, reset_common,
 	/* 0xF0 */ ldh_a_imm8, pop_af, ld_a_ff00_c, di, invalid, push_af, or_imm8, reset_common,
 	/* 0xF8 */ ld_hl_sp_imm8, ld_sp_hl, ld_a_d16, ei, invalid, invalid, cp_imm8, reset_common
 };
