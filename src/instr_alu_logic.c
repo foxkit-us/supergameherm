@@ -8,7 +8,7 @@ static inline void rlca(emu_state *restrict state)
 
 	REG_A(state) = rotl_8(REG_A(state));
 
-	if(REG_A(state) & 0x80)
+	if(REG_A(state) & 0x01)
 	{
 		FLAG_SET(state, FLAG_C);
 	}
@@ -42,15 +42,17 @@ static inline void rrca(emu_state *restrict state)
  */
 static inline void rla(emu_state *restrict state)
 {
-	uint8_t hi = REG_A(state) & 0x80;
+	uint8_t carry = (IS_FLAG(state, FLAG_C) != 0);
 
 	FLAGS_CLEAR(state);
 
-	REG_A(state) <<= 1;
-	if(hi)
+	if(REG_A(state) & 0x80)
 	{
 		FLAG_SET(state, FLAG_C);
 	}
+
+	REG_A(state) <<= 1;
+	REG_A(state) |= carry;
 
 	REG_PC(state)++;
 	state->wait = 4;
@@ -62,15 +64,17 @@ static inline void rla(emu_state *restrict state)
  */
 static inline void rra(emu_state *restrict state)
 {
-	uint8_t hi = REG_A(state) & 0x80;
+	uint8_t carry = ((IS_FLAG(state, FLAG_C) != 0) << 7);
 
 	FLAGS_CLEAR(state);
 
-	REG_A(state) >>= 1;
-	if(hi)
+	if(REG_A(state & 0x01))
 	{
 		FLAG_SET(state, FLAG_C);
 	}
+
+	REG_A(state) >>= 1;
+	REG_A(state) |= carry;
 
 	REG_PC(state)++;
 	state->wait = 4;
