@@ -50,7 +50,7 @@ static inline void ld_imm16_sp(emu_state *restrict state)
 
 	uint16_t addr = (msb<<8)|lsb;
 
-	mem_write8(state, addr, REG_SP(state));
+	mem_write16(state, addr, REG_SP(state));
 
 	REG_PC(state)++;
 
