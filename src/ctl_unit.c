@@ -214,6 +214,16 @@ static inline void call_interrupt(emu_state *restrict state)
 	//debug("Interrupt jumping to %04X", REG_PC(state));
 }
 
+#ifndef NDEBUG
+static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
+		uint8_t cb_prev, uint8_t pc_prev, uint8_t flags_prev)
+{
+	dump_all_state(state);
+	debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
+		opcode, cb_prev, pc_prev, flags_prev);
+}
+#endif
+
 /*! the emulated CU for the 'z80-ish' CPU */
 bool execute(emu_state *restrict state)
 {
@@ -274,8 +284,8 @@ bool execute(emu_state *restrict state)
 #ifndef NDEBUG
 	if(opcode == 0xCB)
 	{
-		flag_req = flags_cb_expect[opcode];
 		cb_prev = mem_read8(state, REG_PC(state) + 1);
+		flag_req = flags_cb_expect[cb_prev];
 	}
 	else
 	{
@@ -294,9 +304,7 @@ bool execute(emu_state *restrict state)
 		// Check to see if it has changed
 		if((REG_F(state) ^ flags_prev) & FLAG_Z)
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag Z changed when it wasn't supposed to");
 		}
 
@@ -305,9 +313,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been cleared
 		if(IS_FLAG(state, FLAG_Z))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag Z is set when it is NOT supposed to be");
 		}
 
@@ -316,9 +322,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been set
 		if(!IS_FLAG(state, FLAG_Z))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag Z is NOT set when it is supposed to be");
 		}
 
@@ -331,9 +335,7 @@ bool execute(emu_state *restrict state)
 		// Check to see if it has changed
 		if((REG_F(state) ^ flags_prev) & FLAG_N)
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag N changed when it wasn't supposed to");
 		}
 
@@ -342,9 +344,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been cleared
 		if(IS_FLAG(state, FLAG_N))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag N is set when it is NOT supposed to be");
 		}
 
@@ -353,9 +353,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been set
 		if(!IS_FLAG(state, FLAG_N))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag N is NOT set when it is supposed to be");
 		}
 
@@ -368,9 +366,7 @@ bool execute(emu_state *restrict state)
 		// Check to see if it has changed
 		if((REG_F(state) ^ flags_prev) & FLAG_H)
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag H changed when it wasn't supposed to");
 		}
 
@@ -379,9 +375,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been cleared
 		if(IS_FLAG(state, FLAG_H))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag H is set when it is NOT supposed to be");
 		}
 
@@ -390,9 +384,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been set
 		if(!IS_FLAG(state, FLAG_H))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag H is NOT set when it is supposed to be");
 		}
 
@@ -405,9 +397,7 @@ bool execute(emu_state *restrict state)
 		// Check to see if it has changed
 		if((REG_F(state) ^ flags_prev) & FLAG_C)
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag C changed when it wasn't supposed to");
 		}
 
@@ -416,9 +406,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been cleared
 		if(IS_FLAG(state, FLAG_C))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag C is set when it is NOT supposed to be");
 		}
 
@@ -427,9 +415,7 @@ bool execute(emu_state *restrict state)
 		// Check to ensure the flag has been set
 		if(!IS_FLAG(state, FLAG_C))
 		{
-			dump_all_state(state);
-			debug("opcode %02X cb_prev %02X pc_prev: %04X flags_prev: %04X",
-					opcode, cb_prev, pc_prev, flags_prev);
+			dump_all_state_invalid_flag(state, opcode, cb_prev, pc_prev, flags_prev);
 			fatal("Flag C is NOT set when it is supposed to be");
 		}
 
