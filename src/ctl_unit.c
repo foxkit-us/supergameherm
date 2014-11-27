@@ -1,7 +1,7 @@
 #include "sgherm.h"	// emu_state, etc.
 #include "ctl_unit.h"	// prototypes, constants, etc.
 #include "print.h"	// fatal
-#include "debug.h"	// lookup_mnemonic
+#include "debug.h"	// state dumps etc
 
 #include <assert.h>	// assert
 #include <stdbool.h>	// bool

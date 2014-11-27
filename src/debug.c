@@ -7,7 +7,7 @@
 #include "debug.h"	// Prototypes etc
 #include "memory.h"	// mem_read8
 
-static const char * const mnemonics[0x100] =
+const char * const mnemonics[0x100] =
 {
 	"NOP", "LD BC,d16", "LD (BC),A", "INC BC",		// 0x00
 	"INC B", "DEC B", "LD B,d8", "RLCA",			// 0x04
@@ -76,7 +76,7 @@ static const char * const mnemonics[0x100] =
 };
 
 /*! Bit length of given instructions */
-static const int instr_len[0x100]
+const int instr_len[0x100] =
 {
 	1, 3, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 2, 1,		// 0x00
 	2, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1,		// 0x10
@@ -95,16 +95,6 @@ static const int instr_len[0x100]
 	2, 1, 2,-1,-1, 1, 2, 1, 2, 1, 3,-1,-1,-1, 2, 1,		// 0xE0
 	2, 1, 2, 1,-1, 1, 2, 1, 2, 1, 3, 1,-1,-1, 2, 1,		// 0xF0
 };
-
-const char * lookup_mnemonic(uint8_t opcode)
-{
-	return mnemonics[opcode];
-}
-
-int lookup_len(uint8_t opcode)
-{
-	return instr_len[opcode];
-}
 
 void print_cpu_state(emu_state *restrict state)
 {
