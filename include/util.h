@@ -181,4 +181,8 @@ static inline uint64_t get_time(void)
 
 #endif /*defined HAVE_CLOCK_GETTIME*/
 
+// Functions
+uint32_t interleave(uint32_t);
+void interleaved_to_buf(uint32_t, uint8_t *);
+
 #endif /*__UTIL_H__*/
