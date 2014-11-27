@@ -314,9 +314,9 @@ void print_cycles(emu_state *restrict state)
 	double cps = state->cycles / taken;
 	const cpu_freq freq_dmg = CPU_FREQ_DMG, freq_cgb = CPU_FREQ_CGB;
 
-	info("Time taken: %.3f seconds", taken);
-	info("Cycle count: %ld", state->cycles);
-	info("Cycles per second: %.3f (%.3fx GB, %.3fx GBC)", cps,
+	debug("Time taken: %.3f seconds", taken);
+	debug("Cycle count: %ld", state->cycles);
+	debug("Cycles per second: %.3f (%.3fx GB, %.3fx GBC)", cps,
 			cps / freq_dmg, cps / freq_cgb);
 }
 
@@ -331,19 +331,19 @@ void print_flags(emu_state *restrict state)
 
 void dump_all_state(emu_state *restrict state)
 {
-	debug("");
-	debug("------------------------------");
+	debug("\n==== %04X ====", REG_PC(state));
 	debug("Dumping state");
 	debug("pc=%04X\tsp=%04X\tbk=%04X",
-		   REG_PC(state),
-	REG_SP(state),
-	state->bank);
+		REG_PC(state),
+		REG_SP(state),
+		state->bank);
 	debug("af=%04X\tbc=%04X\tde=%04X\thl=%04X",
-		   REG_AF(state),
-	REG_BC(state),
-	REG_DE(state),
-	REG_HL(state));
-	debug("interrupts are %s", (state->int_state.enabled ? "ENABLED" : "DISABLED"));
+		REG_AF(state),
+		REG_BC(state),
+		REG_DE(state),
+		REG_HL(state));
+	debug("interrupts are %s",
+	      (state->int_state.enabled ? "ENABLED" : "DISABLED"));
 	print_flags(state);
 	debug("bytes at pc: %02X %02X %02X %02X",
 		mem_read8(state, REG_PC(state)),
