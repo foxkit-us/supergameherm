@@ -59,6 +59,7 @@ static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 	else
 	{
 		FLAG_UNSET(state, FLAG_Z);
+	}
 
 	REG_PC(state)++;
 
