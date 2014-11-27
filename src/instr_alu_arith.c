@@ -372,6 +372,41 @@ static inline void inc_hl_mem(emu_state *restrict state)
 }
 
 /*!
+ * @brief DEC (HL) (0x35)
+ * @result 1 is added to the contents of memory pointed at by HL
+ */
+static inline void dec_hl_mem(emu_state *restrict state)
+{
+	uint8_t val = mem_read8(state, REG_HL(state));
+
+	FLAG_SET(state, FLAG_N);
+
+	if(!(val & 0x0F))
+	{
+		FLAG_SET(state, FLAG_H);
+	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_H);
+	}
+
+	if(!(--val))
+	{
+		FLAG_SET(state, FLAG_Z);
+	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_Z);
+	}
+
+	mem_write8(state, REG_HL(state), val);
+
+	REG_PC(state)++;
+
+	state->wait = 12;
+}
+
+/*!
  * @brief ADD HL,SP (0x39)
  * @result HL += SP; N flag reset, H if carry from bit 11, C if overflow
  */
