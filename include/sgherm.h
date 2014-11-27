@@ -107,7 +107,7 @@ typedef struct _emu_state
 
 #define FLAG_SET(state, flag) (REG_F(state) |= (flag))
 #define FLAG_UNSET(state, flag) (REG_F(state) &= ~(flag))
-#define FLAG_FLIP(state, flag) (REG_F(state) ^= ~(flag))
+#define FLAG_FLIP(state, flag) (REG_F(state) ^= (flag))
 #define FLAGS_OVERWRITE(state, value) (REG_F(state) = value)
 #define FLAGS_CLEAR(state) FLAGS_OVERWRITE(state, 0)
 

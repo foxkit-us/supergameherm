@@ -12,7 +12,7 @@ static inline void inc_bc(emu_state *restrict state)
 
 static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 {
-	FLAGS_CLEAR(state);
+	FLAG_UNSET(state, FLAG_N);
 
 	if(!(*reg ^ 0x0F))
 	{

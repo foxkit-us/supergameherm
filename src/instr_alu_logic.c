@@ -86,6 +86,8 @@ static inline void rra(emu_state *restrict state)
 */
 static inline void cpl(emu_state *restrict state)
 {
+	FLAG_SET(state, FLAG_H | FLAG_N);
+
 	REG_A(state) ^= ~(REG_A(state));
 	REG_PC(state)++;
 
@@ -98,6 +100,7 @@ static inline void cpl(emu_state *restrict state)
 */
 static inline void scf(emu_state *restrict state)
 {
+	FLAG_UNSET(state, FLAG_H | FLAG_N);
 	FLAG_SET(state, FLAG_C);
 
 	REG_PC(state)++;
@@ -111,6 +114,7 @@ static inline void scf(emu_state *restrict state)
 */
 static inline void ccf(emu_state *restrict state)
 {
+	FLAG_UNSET(state, FLAG_H | FLAG_N);
 	FLAG_FLIP(state, FLAG_C);
 
 	REG_PC(state)++;
