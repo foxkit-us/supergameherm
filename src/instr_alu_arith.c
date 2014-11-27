@@ -41,17 +41,24 @@ static inline void inc_b(emu_state *restrict state)
 
 static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 {
-	FLAGS_OVERWRITE(state, FLAG_N);
+	FLAG_SET(state, FLAG_N);
 
 	if(!(*reg & 0x0F))
 	{
 		FLAG_SET(state, FLAG_H);
+	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_H);
 	}
 
 	if(!(--(*reg)))
 	{
 		FLAG_SET(state, FLAG_Z);
 	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_Z);
 
 	REG_PC(state)++;
 
@@ -78,7 +85,7 @@ static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
 		FLAG_SET(state, FLAG_C);
 	}
 
-	if(((REG_HL(state) & 0xFF00) + (to_add & 0xFF00)) & 0x1000)
+	if(((REG_HL(state) & 0xFFF) + (to_add & 0xFFF)) & 0x1000)
 	{
 		FLAG_SET(state, FLAG_H);
 	}
