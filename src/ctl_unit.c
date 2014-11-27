@@ -219,6 +219,11 @@ bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
 	opcode_t handler;
+#ifndef NDEBUG
+	uint16_t pc_prev = REG_PC(state);
+	uint8_t flags_prev = REG_F(state);
+	const char *flag_req;
+#endif
 
 	if(state->wait)
 	{
@@ -266,6 +271,155 @@ bool execute(emu_state *restrict state)
 	opcode = mem_read8(state, REG_PC(state));
 	handler = handlers[opcode];
 	handler(state);
+
+#ifndef NDEBUG
+	// Check to ensure flags consistency
+	if(opcode != 0xCB)
+	{
+		flag_req = flags_expect[opcode];
+	}
+	else
+	{
+		flag_req = flags_cb_expect[opcode];
+	}
+
+	// Flag assertions
+	switch(flag_req[0])
+	{
+	case '-':
+		// Check to see if it has changed
+		if((REG_F(state) ^ flags_prev) & FLAG_Z)
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag Z changed when it wasn't supposed to");
+		}
+
+		break;
+	case '0':
+		// Check to ensure the flag has been cleared
+		if(IS_FLAG(state, FLAG_Z))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag Z is set when it is NOT supposed to be");
+		}
+
+		break;
+	case '1':
+		// Check to ensure the flag has been set
+		if(!IS_FLAG(state, FLAG_Z))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag Z is NOT set when it is supposed to be");
+		}
+
+		break;
+	}
+
+	switch(flag_req[1])
+	{
+	case '-':
+		// Check to see if it has changed
+		if((REG_F(state) ^ flags_prev) & FLAG_N)
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag N changed when it wasn't supposed to");
+		}
+
+		break;
+	case '0':
+		// Check to ensure the flag has been cleared
+		if(IS_FLAG(state, FLAG_N))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag N is set when it is NOT supposed to be");
+		}
+
+		break;
+	case '1':
+		// Check to ensure the flag has been set
+		if(!IS_FLAG(state, FLAG_N))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag N is NOT set when it is supposed to be");
+		}
+
+		break;
+	}
+
+	switch(flag_req[2])
+	{
+	case '-':
+		// Check to see if it has changed
+		if((REG_F(state) ^ flags_prev) & FLAG_H)
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag H changed when it wasn't supposed to");
+		}
+
+		break;
+	case '0':
+		// Check to ensure the flag has been cleared
+		if(IS_FLAG(state, FLAG_H))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag H is set when it is NOT supposed to be");
+		}
+
+		break;
+	case '1':
+		// Check to ensure the flag has been set
+		if(!IS_FLAG(state, FLAG_H))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag H is NOT set when it is supposed to be");
+		}
+
+		break;
+	}
+
+	switch(flag_req[3])
+	{
+	case '-':
+		// Check to see if it has changed
+		if((REG_F(state) ^ flags_prev) & FLAG_C)
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag C changed when it wasn't supposed to");
+		}
+
+		break;
+	case '0':
+		// Check to ensure the flag has been cleared
+		if(IS_FLAG(state, FLAG_C))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag C is set when it is NOT supposed to be");
+		}
+
+		break;
+	case '1':
+		// Check to ensure the flag has been set
+		if(!IS_FLAG(state, FLAG_C))
+		{
+			dump_all_state(state);
+			debug("opcode %02X pc_prev: %04X flags_prev: %04X", opcode, pc_prev, flags_prev);
+			fatal("Flag C is NOT set when it is supposed to be");
+		}
+
+		break;
+	}
+#endif /*NDEBUG*/
 
 	return true;
 }
