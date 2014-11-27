@@ -18,10 +18,18 @@ static inline void inc_r8(emu_state *restrict state, uint8_t *reg)
 	{
 		FLAG_SET(state, FLAG_H);
 	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_H);
+	}
 
 	if(!(++(*reg)))
 	{
 		FLAG_SET(state, FLAG_Z);
+	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_Z);
 	}
 
 	REG_PC(state)++;
