@@ -1107,19 +1107,19 @@ static inline void ld_hl_sp_imm8(emu_state *restrict state)
 	int8_t n = mem_read8(state, ++REG_PC(state));
 	uint32_t temp = REG_SP(state) + n;
 
-	REG_HL(state) = temp;
+	REG_HL(state) = (uint16_t)temp;
 
 	FLAGS_CLEAR(state);
 
 	if(temp)
 	{
-		if(temp & 0x10000)
+		if(((REG_SP(state) & 0xFF) + (n & 0xFF)) & 0x100)
 		{
 			FLAG_SET(state, FLAG_C);
 		}
 
 		// Half carry
-		if(((REG_PC(state) & 0x7FF) + (n & 0x7FF)) & 0x800)
+		if(((REG_SP(state) & 0x0F) + (n & 0x0F)) & 0x10)
 		{
 			FLAG_SET(state, FLAG_H);
 		}

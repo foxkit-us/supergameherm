@@ -426,7 +426,7 @@ static inline void cp_common(emu_state *restrict state, uint8_t cmp)
 	{
 		FLAG_SET(state, FLAG_C);
 	}
-	else
+	else if((REG_A(state) & 0xF) < (cmp & 0xF))
 	{
 		FLAG_SET(state, FLAG_H);
 	}

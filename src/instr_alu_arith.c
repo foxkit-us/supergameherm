@@ -69,24 +69,21 @@ static inline void dec_b(emu_state *restrict state)
 
 static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
 {
-	FLAGS_CLEAR(state);
+	uint32_t temp = REG_HL(state) + to_add;
 
-	if((uint32_t)(REG_HL(state) + to_add) > 0xFFFF)
+	FLAG_UNSET(state, FLAG_N);
+
+	if(temp & 0x10000)
 	{
 		FLAG_SET(state, FLAG_C);
 	}
 
-	if((REG_HL(state) & 0xF) + (to_add & 0xF) > 0xF)
+	if(((REG_HL(state) & 0xFF00) + (to_add & 0xFF00)) & 0x1000)
 	{
 		FLAG_SET(state, FLAG_H);
 	}
 
-	if(!REG_HL(state))
-	{
-		FLAG_SET(state, FLAG_Z);
-	}
-
-	REG_HL(state) += to_add;
+	REG_HL(state) = (uint16_t)temp;
 
 	REG_PC(state)++;
 
@@ -825,25 +822,25 @@ static inline void sbc_imm8(emu_state *restrict state)
 static inline void add_sp_imm8(emu_state *restrict state)
 {
 	uint8_t to_add = mem_read8(state, ++REG_PC(state));
-	uint16_t temp = REG_SP(state) + to_add;
+	uint32_t temp = REG_SP(state) + to_add;
 
 	FLAGS_CLEAR(state);
 
 	if(temp)
 	{
-		if(temp & 0x100)
+		if(((REG_SP(state) & 0xFF) + (to_add & 0xFF)) & 0x100)
 		{
 			FLAG_SET(state, FLAG_C);
 		}
 
 		// Half carry
-		if(((REG_SP(state) & 0xF) + (to_add & 0xF)) & 0x10)
+		if(((REG_SP(state) & 0x0F) + (to_add & 0x0F)) & 0x10)
 		{
 			FLAG_SET(state, FLAG_H);
 		}
 	}
 
-	REG_SP(state) = (uint8_t)temp;
+	REG_SP(state) = (uint16_t)temp;
 
 	REG_PC(state)++;
 
