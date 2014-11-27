@@ -50,10 +50,6 @@ static inline void rla(emu_state *restrict state)
 	{
 		FLAG_SET(state, FLAG_C);
 	}
-	else if(!REG_A(state))
-	{
-		FLAG_SET(state, FLAG_Z);
-	}
 
 	REG_A(state) <<= 1;
 	REG_A(state) |= carry;
@@ -75,10 +71,6 @@ static inline void rra(emu_state *restrict state)
 	if(REG_A(state) & 0x01)
 	{
 		FLAG_SET(state, FLAG_C);
-	}
-	else if(!REG_A(state))
-	{
-		FLAG_SET(state, FLAG_Z);
 	}
 
 	REG_A(state) >>= 1;
