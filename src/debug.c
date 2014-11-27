@@ -263,23 +263,26 @@ void print_flags(emu_state *restrict state)
 
 void dump_all_state(emu_state *restrict state)
 {
-	debug("pc=%04X\tsp=%04X\tbk=%04X\n",
+	debug("");
+	debug("------------------------------");
+	debug("Dumping state");
+	debug("pc=%04X\tsp=%04X\tbk=%04X",
 		   REG_PC(state),
 	REG_SP(state),
 	state->bank);
-	debug("af=%04X\tbc=%04X\tde=%04X\thl=%04X\n",
+	debug("af=%04X\tbc=%04X\tde=%04X\thl=%04X",
 		   REG_AF(state),
 	REG_BC(state),
 	REG_DE(state),
 	REG_HL(state));
-	debug("interrupts are %s\n", (state->int_state.enabled ? "ENABLED" : "DISABLED"));
+	debug("interrupts are %s", (state->int_state.enabled ? "ENABLED" : "DISABLED"));
 	print_flags(state);
-	debug("bytes at pc: %02X %02X %02X %02X\n",
+	debug("bytes at pc: %02X %02X %02X %02X",
 		mem_read8(state, REG_PC(state)),
 		mem_read8(state, REG_PC(state)+1),
 		mem_read8(state, REG_PC(state)+2),
 		mem_read8(state, REG_PC(state)+3));
-	debug("bytes at sp: %02X %02X %02X %02X\n",
+	debug("bytes at sp: %02X %02X %02X %02X",
 		mem_read8(state, REG_SP(state)),
 		mem_read8(state, REG_SP(state)+1),
 		mem_read8(state, REG_SP(state)+2),
