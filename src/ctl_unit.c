@@ -1,12 +1,14 @@
-#include "config.h"	// bool, integer types
+#include "config.h"		// bool, integer types
 
-#include "ctl_unit.h"	// prototypes, constants, etc.
-#include "debug.h"	// state dumps etc
-#include "print.h"	// fatal
-#include "sgherm.h"	// emu_state, etc.
+#include "sgherm.h"		// emu_state, etc.
+#include "util_bitops.h"	// bit twiddling
+#include "ctl_unit.h"		// prototypes, constants, etc.
+#include "debug.h"		// state dumps etc
+#include "print.h"		// fatal
 
-#include <assert.h>	// assert
-#include <stdlib.h>	// NULL
+
+#include <assert.h>		// assert
+#include <stdlib.h>		// NULL
 
 
 uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)

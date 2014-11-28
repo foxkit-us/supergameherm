@@ -1,11 +1,11 @@
 #include "config.h"	// macros
 
-#include "timer.h"	// get_time
 #include "sgherm.h"	// emu_state, cpu_freq
 #include "print.h"	// debug
 #include "ctl_unit.h"	// flags
 #include "debug.h"	// Prototypes etc
 #include "memory.h"	// mem_read8
+#include "util_time.h"	// get_time
 
 const char * const mnemonics[0x100] =
 {

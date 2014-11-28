@@ -13,6 +13,12 @@
 // System has a Mach-style clock (OS X)
 #cmakedefine HAVE_MACH_CLOCK_H
 
+// Compiler-specific checks
+#cmakedefine HAVE_COMPILER_CLANG
+#cmakedefine HAVE_COMPILER_GCC
+#cmakedefine HAVE_COMPILER_MSVC
+#cmakedefine HAVE_COMPILER_INTEL
+
 // Endianness stuff
 #cmakedefine BIG_ENDIAN
 #cmakedefine LITTLE_ENDIAN
@@ -28,31 +34,21 @@
 // System has stdbool.h
 #cmakedefine HAVE_STDBOOL_H
 
-#if defined(HAVE_STDBOOL_H)
-#	include <stdbool.h>
-#elif defined(_MSC_VER)
-	// this is fine, msvc has intrinsic bool without header
-#else
-#	error "Your compiler doesn't appear to support the 'bool' type."
-#endif
-
 // System has stdint.h
 #cmakedefine HAVE_STDINT_H
 
-#if defined(HAVE_STDINT_H)
-#	include <stdint.h>
-#elif defined(_MSC_VER)
-#	include "stdint_msvc.h"
-#else
-#	error "Your compiler doesn't appear to have C99 support."
+// Include compiler-specific doodads
+#if defined(HAVE_COMPILER_CLANG)
+#	include "platform/compiler/clang.h"
+#elif defined(HAVE_COMPILER_GCC)
+#	include "platform/compiler/gcc.h"
+#elif defined(HAVE_COMPILER_MSVC)
+#	include "platform/compiler/msvc.h"
+#elif defined(HAVE_COMPILER_INTEL)
+#	include "platform/compiler/intel.h"
 #endif
 
-#if defined(_MSC_VER)
-#	if (_MSC_VER >= 1400)
-#		define restrict __restrict
-#	else
-#		define restrict
-#	endif
-#endif /* _MSC_VER */
+// For lesser platforms
+#include "platform/stubs.h"
 
 #endif /*__CONFIG_H__*/

@@ -11,6 +11,7 @@
 #include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
 #include "timer.h"	// get_clock
+#include "util_time.h"	// get_time
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
