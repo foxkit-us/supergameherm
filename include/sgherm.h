@@ -50,7 +50,8 @@ typedef struct _emu_state
 {
 	unsigned char memory[MEM_SIZE];	/*! RAM */
 	unsigned char *cart_data;	/*! Cartridge data */
-	unsigned char *cart_ram[0xF];	/*! Cartridge RAM */
+	/*! Cartridge RAM */
+	unsigned char cart_ram[0xF][0x2000];
 
 	register_map registers;		/*! Registers */
 
