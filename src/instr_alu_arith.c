@@ -284,7 +284,7 @@ static inline void daa(emu_state *restrict state)
 		FLAG_SET(state, FLAG_C);
 	}
 
-	if(!(REG_A(state) = val))
+	if(!(REG_A(state) = (uint8_t)val))
 	{
 		FLAG_SET(state, FLAG_Z);
 	}

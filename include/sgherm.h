@@ -110,7 +110,7 @@ typedef struct _emu_state
 #define FLAGS_OVERWRITE(state, value) (REG_F(state) = value)
 #define FLAGS_CLEAR(state) FLAGS_OVERWRITE(state, 0)
 
-#define IS_FLAG(state, flag) (REG_F(state) & (flag))
+#define IS_FLAG(state, flag) ((REG_F(state) & (flag)) == flag)
 
 emu_state * init_emulator(void);
 

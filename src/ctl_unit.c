@@ -216,7 +216,7 @@ static inline void call_interrupt(emu_state *restrict state)
 
 #ifndef NDEBUG
 static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
-		uint8_t cb, uint8_t pc_prev, uint8_t flags_prev)
+		uint8_t cb, uint16_t pc_prev, uint8_t flags_prev)
 {
 	dump_all_state(state);
 
