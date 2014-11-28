@@ -22,4 +22,26 @@
 #cmakedefine HAVE_BSWAP_16
 #cmakedefine HAVE_BSWAP_32
 
+// System has stdbool.h
+#cmakedefine HAVE_STDBOOL_H
+
+#if defined(HAVE_STDBOOL_H)
+#	include <stdbool.h>
+#elif defined(_MSC_VER)
+	// this is fine, msvc has intrinsic bool without header
+#else
+#	error "Your compiler doesn't appear to support the 'bool' type."
+#endif
+
+// System has stdint.h
+#cmakedefine HAVE_STDINT_H
+
+#if defined(HAVE_STDINT_H)
+#	include <stdint.h>
+#elif defined(_MSC_VER)
+#	include "stdint_msvc.h"
+#else
+#	error "Your compiler doesn't appear to have C99 support."
+#endif
+
 #endif /*__CONFIG_H__*/
