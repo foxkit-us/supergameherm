@@ -29,7 +29,7 @@ uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 	printf("%X\n", REG_PC(state));
 	warning("no device present at %04X (emulator bug?  incompatible GB?) (a real GB wouldn't care)",
 		location);
-	return 0x0;
+	return 0xFF;
 }
 
 static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)
