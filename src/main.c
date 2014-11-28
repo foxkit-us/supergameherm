@@ -20,7 +20,7 @@
 
 emu_state * init_emulator(void)
 {
-	emu_state *state = (emu_state *)malloc(sizeof(emu_state));
+	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 
 	for(int i = 0; i < 0xF; i++)
 	{
