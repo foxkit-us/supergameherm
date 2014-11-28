@@ -54,14 +54,14 @@ macro(compiler_checks)
 		# /G5 - Enable Pentium optimisations
 		# /Gr - __fastcall as deafult
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4
-		/WX /Ot /Oa /Gf /Gy")
+		/WX /Ot /Oa /Gy")
 		# /MTd - statically link to runtime library
 		# /W4 - enable all warnings
 		# /WX - warnings are errors (-Werror in clang)
-		# /Ot, /Oa, /Gf - still enable some performance improvements
+		# /Ot, /Oa - still enable some performance improvements
 		# /Gy - function-level linking (slightly faster)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zp4
-		/MT /Za /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /Gf")
+		/MT /Za /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /GF")
 		# /Zp4 - 4-byte struct alignment (~150k cycle/sec speed up on
 		# P5 microarchitecture)
 		# /MT - statically link to runtime library (larger file size,
@@ -74,7 +74,7 @@ macro(compiler_checks)
 		# /Oa - assume no aliasing (restrict keyword)
 		# /Og - perform global optimisations
 		# /Ob2 - force inlining of functions
-		# /Gf - combine duplicate const strings into one (smaller file
+		# /GF - combine duplicate const strings into one (smaller file
 		# size, and less data cache misses)
 	else()
 		message("I'm at a loss as to what to do, hope it all works out.")
