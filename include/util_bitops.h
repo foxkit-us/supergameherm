@@ -8,7 +8,7 @@
 #elif HAVE_SYS_ENDIAN_H
 #	include <sys/endian.h>		// see endian.h (but for BSD)
 #else
-#	include "platform/util_swap.h"	// Rolling our own :(
+#	include "platform/swap.h"	// Rolling our own :(
 #endif
 
 
