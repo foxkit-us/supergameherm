@@ -26,12 +26,11 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
  */
 static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 {
-	return -1;
 	printf("%X\n", REG_PC(state));
 	fatal("no device present at %04X (emulator bug?  incompatible GB?)",
 	      location);
 	/* NOTREACHED */
-	return -1;
+	return 0xFF;
 }
 
 static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)

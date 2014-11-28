@@ -52,7 +52,7 @@ uint8_t timer_read(emu_state *restrict state, uint16_t reg)
 	}
 	default:
 		error("timer: unrecognised register %04X (R)", reg);
-		return -1;
+		return 0xFF;
 	}
 }
 

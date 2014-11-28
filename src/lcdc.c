@@ -123,7 +123,7 @@ uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 		if(curr_mode > 1)
 		{
 			fatal("read from VRAM while not in h/v-blank");
-			return -1;
+			return 0xFF;
 		}
 	}
 	/* XXX TODO FIXME */

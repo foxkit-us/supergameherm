@@ -24,7 +24,7 @@ uint8_t serial_read(emu_state *restrict state, uint16_t reg)
 	}
 	default:
 		error("serial: unknown register %04X (R)", reg);
-		return -1;
+		return 0xFF;
 	}
 }
 

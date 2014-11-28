@@ -30,8 +30,8 @@ void joypad_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
 {
-	uint8_t col_sel = key >> 4;
-	uint8_t row_sel = key & 0xc0;
+	uint8_t col_sel = (uint8_t)(key >> 4);
+	uint8_t row_sel = (uint8_t)(key & 0xC0);
 
 	// TODO fake propagation delay and maybe switch bounce
 

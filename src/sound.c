@@ -32,7 +32,7 @@ uint8_t sound_read(emu_state *restrict state, uint16_t reg)
 	case 0xFF13:
 	{
 		error("sound: read to write-only register FF13");
-		return -1;
+		return 0xFF;
 	}
 	/*! NR 14 - ch 1 - misc */
 	case 0xFF14:
@@ -42,7 +42,7 @@ uint8_t sound_read(emu_state *restrict state, uint16_t reg)
 	default:
 	{
 		error("sound: unrecognised register %04X (R)", reg);
-		return -1;
+		return 0xFF;
 	}
 	}
 }

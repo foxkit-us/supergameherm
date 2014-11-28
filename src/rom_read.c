@@ -58,7 +58,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 		goto close_rom;
 	}
 
-	if(unlikely((state->cart_data = malloc(actual_size)) == NULL))
+	if(unlikely((state->cart_data = (uint8_t *)malloc(actual_size)) == NULL))
 	{
 		error("Could not allocate RAM for ROM");
 		goto close_rom;
