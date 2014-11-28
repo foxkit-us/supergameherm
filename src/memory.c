@@ -1,13 +1,12 @@
-#include "config.h"	// macros
-#include <stdint.h>	// uint[XX]_t
+#include "config.h"	// macros, uint[XX]_t
 #include <assert.h>	// assert
 #include <string.h>	// memmove
 
-#include "print.h"	// fatal
-#include "memory.h"	// Constants and what have you */
-#include "lcdc.h"	// lcdc_read
 #include "ctl_unit.h"	// int_flag_*
 #include "input.h"	// joypad_*
+#include "lcdc.h"	// lcdc_read
+#include "memory.h"	// Constants and what have you */
+#include "print.h"	// fatal
 #include "rom_read.h"	// OFF_CART_TYPE
 #include "serio.h"	// serial_*
 #include "sound.h"	// sound_*

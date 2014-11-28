@@ -1,10 +1,7 @@
 #ifndef __MEMORY_H_
 #define __MEMORY_H_
 
-#include "config.h"	// macros
-
-#include <stdint.h>	// (u)int*_t
-#include <stdbool.h>	// bool
+#include "config.h"	// macros, (u)int*_t, bool
 #include <stdio.h>	// FILE
 
 

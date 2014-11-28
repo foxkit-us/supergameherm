@@ -1,10 +1,9 @@
 #ifndef __CTL_UNIT_H__
 #define __CTL_UNIT_H__
 
-#include "memory.h"	// mem_write8
+#include "config.h"	// bool, uint[XX]_t
 
-#include <stdbool.h>	// bool
-#include <stdint.h>	// uint[XX]_t
+#include "memory.h"	// mem_write8
 
 
 /*! Zero Flag */

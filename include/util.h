@@ -1,11 +1,10 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
-#include "config.h"	// macros
+#include "config.h"	// macros, bool, uint[XX]_t
 
 #include <stdio.h>	// perror
-#include <stdbool.h>	// bool
-#include <stdint.h>	// uint[XX]_t
+
 
 // Clobber previous definitions with extreme prejudice
 #ifdef unused

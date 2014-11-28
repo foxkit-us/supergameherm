@@ -1,6 +1,8 @@
 #ifndef __SGHERM_H_
 #define __SGHERM_H_
 
+#include "config.h"	// bool, uint[XX]_t
+
 #include "util.h"	// Necessary utilities
 
 #include "lcdc.h"	// lcdc
@@ -10,9 +12,6 @@
 #include "input.h"	// input
 #include "ctl_unit.h"	// interrupts
 #include "frontend.h"	// frontend
-
-#include <stdbool.h>	// bool
-#include <stdint.h>	// uint[XX]_t
 
 
 // 8-bit address space

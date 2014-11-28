@@ -1,9 +1,8 @@
 #ifndef __SOUND_H_
 #define __SOUND_H_
 
-#include "config.h"	// Various macros
+#include "config.h"	// Various macros, uint[XX]_t
 
-#include <stdint.h>	// uint[XX]_t
 
 typedef struct _snd_state
 {

@@ -1,5 +1,4 @@
-#include "stdbool.h"	// bool
-#include "stdint.h"	// uint*_t
+#include "config.h"	// bool, uint[XX]_t
 
 
 // Taken from the bit twiddling hacks

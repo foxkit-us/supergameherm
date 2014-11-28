@@ -1,7 +1,7 @@
 #ifndef __FRONTEND_H__
 #define __FRONTEND_H__
 
-#include <stdbool.h>	// bool
+#include "config.h"	// bool
 
 typedef struct _emu_state emu_state;
 

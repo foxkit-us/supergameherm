@@ -1,9 +1,7 @@
 #ifndef __LCDC_H_
 #define __LCDC_H_
 
-#include "config.h"	// macros
-
-#include <stdint.h>	// uint*_t
+#include "config.h"	// macros, uint*_t
 
 
 typedef struct _emu_state emu_state;

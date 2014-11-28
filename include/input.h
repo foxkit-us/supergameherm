@@ -1,9 +1,7 @@
 #ifndef __INPUT_H_
 #define __INPUT_H_
 
-#include "config.h"	// macros
-
-#include <stdint.h>	// uint[XX]_t
+#include "config.h"	// macros, uint[XX]_t
 
 
 #define RAW_INPUT_P10	0x1

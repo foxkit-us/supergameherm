@@ -1,5 +1,4 @@
-#include "config.h"	// macros
-#include <stdbool.h>	// bool
+#include "config.h"	// macros, bool
 
 #include "print.h"	// error
 #include "sgherm.h"	// emu_state

@@ -1,11 +1,11 @@
-#include "sgherm.h"	// emu_state, etc.
+#include "config.h"	// bool, integer types
+
 #include "ctl_unit.h"	// prototypes, constants, etc.
-#include "print.h"	// fatal
 #include "debug.h"	// state dumps etc
+#include "print.h"	// fatal
+#include "sgherm.h"	// emu_state, etc.
 
 #include <assert.h>	// assert
-#include <stdbool.h>	// bool
-#include <stdint.h>	// integer types
 #include <stdlib.h>	// NULL
 
 

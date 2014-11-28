@@ -1,10 +1,9 @@
 #ifndef __TIMER_H_
 #define __TIMER_H_
 
-#include "config.h"	// Various macros
+#include "config.h"	// Various macros, uint[XX]_t
 
 #include <stdio.h>	// perror
-#include <stdint.h>	// uint[XX]_t
 
 #include "util.h"	// likely/unlikely
 

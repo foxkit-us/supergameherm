@@ -1,16 +1,17 @@
-#include "sgherm.h"	// emu_state, constants
-#include "debug.h"	// print_cycles
+#include "config.h"	// bool
+
 #include "ctl_unit.h"	// init_ctl, execute
+#include "debug.h"	// print_cycles
+#include "frontend.h"	// null_frontend
 #include "lcdc.h"	// lcdc_tick
-#include "serio.h"	// serial_tick
-#include "timer.h"	// get_clock
 #include "print.h"	// fatal, error, debug
 #include "rom_read.h"	// offsets
+#include "serio.h"	// serial_tick
+#include "sgherm.h"	// emu_state, constants
 #include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
-#include "frontend.h"	// null_frontend
+#include "timer.h"	// get_clock
 
-#include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
 #include <string.h>	// memset

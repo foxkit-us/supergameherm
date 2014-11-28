@@ -1,11 +1,10 @@
 #ifndef __ROM_READ_H__
 #define __ROM_READ_H__
 
-#include "config.h"	// macros
-
-#include <stdbool.h>	// bool
+#include "config.h"	// macros, bool
 
 #include "sgherm.h"	// emu_state
+
 
 typedef enum
 {

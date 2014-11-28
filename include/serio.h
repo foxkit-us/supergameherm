@@ -1,9 +1,8 @@
 #ifndef __SERIO_H_
 #define __SERIO_H_
 
-#include "config.h"	// macros
+#include "config.h"	// macros,  uint[XX]_t
 
-#include <stdint.h>	// uint[XX]_t
 
 typedef struct _ser_state
 {

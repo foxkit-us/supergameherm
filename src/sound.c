@@ -1,6 +1,4 @@
-#include "config.h"	// Various macros
-
-#include <stdint.h>	// uint[XX]_t
+#include "config.h"	// Various macros, uint[XX]_t
 
 #include "print.h"
 #include "sgherm.h"	// emu_state

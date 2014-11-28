@@ -1,12 +1,12 @@
-#include "config.h"	// macros
+#include "config.h"	// macros, uint[XX]_t
+
 #include <assert.h>	// assert
-#include <stdint.h>	// uint[XX]_t
 
 #include "ctl_unit.h"	// signal_interrupt
-#include "print.h"	// error
 #include "input.h"	// input_key, defines
-#include "util.h"	// unused
+#include "print.h"	// error
 #include "sgherm.h"	// emu_state
+#include "util.h"	// unused
 
 
 uint8_t joypad_read(emu_state *restrict state, uint16_t reg unused)

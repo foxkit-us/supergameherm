@@ -1,6 +1,5 @@
-#include "config.h"	// macros
+#include "config.h"	// macros, bool
 
-#include <stdbool.h>	// bool
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// malloc
 #include <string.h>	// memcmp
