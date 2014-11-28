@@ -44,4 +44,12 @@
 #	error "Your compiler doesn't appear to have C99 support."
 #endif
 
+#if defined(_MSC_VER)
+#	if (_MSC_VER >= 1400)
+#		define restrict __restrict
+#	else
+#		define restrict
+#	endif
+#endif /* _MSC_VER */
+
 #endif /*__CONFIG_H__*/
