@@ -88,7 +88,7 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	{
 		static const uint16_t ticks[4] = { 1024, 16, 64, 128 };
 
-		state->timer_state.enabled = (data & 0x04);
+		state->timer_state.enabled = ((data & 0x04) == 0x04);
 		state->timer_state.ticks_per_tima = ticks[(data & 3)];
 
 		return;
