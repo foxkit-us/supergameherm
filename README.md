@@ -37,9 +37,9 @@ Not yet. There's no graphics or sound. We're working on it.
 It's mostly written in ANSI C99. There are some portability shims for lesser
 systems, but results cannot be guaranteed, and it may run slower.
 
-Tested compilers include [https://software.intel.com/en-us/c-compilers ICC],
-[https://gcc.gnu.org/ GCC], [http://clang.llvm.org/ clang], and
-[http://www.visualstudio.com/downloads/download-visual-studio-vs MSVC]. Others
+Tested compilers include [https://software.intel.com/en-us/c-compilers](ICC), 
+[https://gcc.gnu.org/](GCC), [http://clang.llvm.org/](clang), and
+[http://www.visualstudio.com/downloads/download-visual-studio-vs](MSVC). Others
 may or may not work, but we presently make an effort.
 
 Tested platforms include Linux/x86, Linux/amd64, Linux/ppc32, FreeBSD/amd64, 
