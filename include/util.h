@@ -18,9 +18,13 @@
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#	define unused __attribute__((unused))
+#	define unused __attribute__((__unused__))
 #	define unlikely(x) (!!__builtin_expect((x), 0))
 #	define likely(x) (!!__builtin_expect((x), 1))
+#elif defined(_MSC_VER)
+#	define unused __pragma(warning(disable:4100))
+#	define unlikely(x) (x)
+#	define likely(x) (x)
 #else
 #	define unused
 #	define unlikely(x) (x)
