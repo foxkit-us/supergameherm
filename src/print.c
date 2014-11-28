@@ -44,6 +44,18 @@ void info(const char *str, ...)
 	va_end(argp);
 }
 
+void warning(const char *str, ...)
+{
+	va_list argp;
+	va_start(argp, str);
+
+	fprintf(stderr, "WARNING: ");
+	vfprintf(stderr, str, argp);
+	fprintf(stderr, "\n");
+
+	va_end(argp);
+}
+
 #ifdef NDEBUG
 void debug(const char *str unused, ...)
 {

@@ -24,6 +24,12 @@ void error(const char *str, ...);
 void info(const char *str, ...);
 
 /*!
+ * @brief	Report a warning condition to the user
+ * @param	str	The format of the warning to print
+ */
+void warning(const char *str, ...);
+
+/*!
  * @brief	Display debug information to the user.
  * @param	str	The format of the information to print.
  * @note	This method is a no-op if NDEBUG is defined during

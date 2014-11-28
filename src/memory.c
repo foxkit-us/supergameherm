@@ -27,8 +27,8 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
 static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 {
 	printf("%X\n", REG_PC(state));
-	fatal("no device present at %04X (emulator bug?  incompatible GB?)",
-	      location);
+	warning("no device present at %04X (emulator bug?  incompatible GB?) (a real GB wouldn't care)",
+		location);
 	/* NOTREACHED */
 	return 0xFF;
 }
