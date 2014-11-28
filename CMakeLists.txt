@@ -39,6 +39,12 @@ macro(platform_checks)
 		# Check for __bswap_XX
 		check_function_exists(__bswap_16 HAVE_BSWAP_16)
 		check_function_exists(__bswap_32 HAVE_BSWAP_32)
+		if(NOT(HAVE_BSWAP_16 OR HAVE_BSWAP_32))
+			check_function_exists(_byteswap_ushort
+				HAVE_BYTESWAP_USHORT)
+			check_function_exists(_byteswap_ulong
+				HAVE_BYTESWAP_ULONG)
+		endif()
 	elseif(HAVE_POSIX)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_BSD_SOURCE")
 	endif()

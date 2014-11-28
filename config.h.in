@@ -22,6 +22,9 @@
 #cmakedefine HAVE_BSWAP_16
 #cmakedefine HAVE_BSWAP_32
 
+#cmakedefine HAVE_BYTESWAP_USHORT
+#cmakedefine HAVE_BYTESWAP_ULONG
+
 // System has stdbool.h
 #cmakedefine HAVE_STDBOOL_H
 
