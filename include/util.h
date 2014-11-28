@@ -42,11 +42,11 @@
 
 static inline uint16_t be16toh(uint16_t big_endian_16bits)
 {
-#ifdef BIG_ENDIAN
+#if defined(BIG_ENDIAN)
 	return big_endian_16bits;
-#elif HAVE_BSWAP_16
+#elif defined(HAVE_BSWAP_16)
 	return __bswap_16(big_endian_16bits);
-#elif HAVE_BYTESWAP_USHORT
+#elif defined(HAVE_BYTESWAP_USHORT)
 	return _byteswap_ushort(big_endian_16bits);
 #else
 #error "Your platform has no sensible builtins for endianness-swapping"
@@ -55,11 +55,11 @@ static inline uint16_t be16toh(uint16_t big_endian_16bits)
 
 static inline uint16_t le16toh(uint16_t little_endian_16bits)
 {
-#ifdef LITTLE_ENDIAN
+#if defined(LITTLE_ENDIAN)
 	return little_endian_16bits;
-#elif HAVE_BSWAP_16
+#elif defined(HAVE_BSWAP_16)
 	return __bswap_16(little_endian_16bits);
-#elif HAVE_BYTESWAP_USHORT
+#elif defined(HAVE_BYTESWAP_USHORT)
 	return _byteswap_ushort(little_endian_16bits);
 #else
 #error "Your platform has no sensible builtins for endianness-swapping"
