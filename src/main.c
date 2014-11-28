@@ -114,7 +114,10 @@ int main(int argc, char *argv[])
 		if(unlikely(++count_cur_second == state->freq))
 		{
 			count_cur_second = 0;
-			debug("GBC seconds: %ld", ++game_seconds);
+			if((++game_seconds % 10) == 0)
+			{
+				debug("GBC seconds: %ld", ++game_seconds);
+			}
 		}
 	}
 	while(likely(++state->cycles && !do_exit));
