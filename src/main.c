@@ -23,7 +23,7 @@ emu_state * init_emulator(void)
 
 	for(int i = 0; i < 0xF; i++)
 	{
-		state->cart_ram[i] = malloc(0x2000);
+		state->cart_ram[i] = (unsigned char *)malloc(0x2000);
 	}
 
 	state->int_state.enabled = true;
