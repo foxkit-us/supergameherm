@@ -34,6 +34,8 @@ emu_state * init_emulator(void)
 
 static void finish_emulator(emu_state *restrict state)
 {
+	print_cycles(state);
+
 	free(state->cart_data);
 	free(state);
 }
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(unlikely((state_current = state = init_emulator()) == NULL))
+	if(unlikely((state = init_emulator()) == NULL))
 	{
 		fatal("Out of memory :(");
 		return EXIT_FAILURE;

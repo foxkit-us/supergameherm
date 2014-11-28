@@ -1,7 +1,5 @@
 #include "config.h"	// macros
 
-#include <stdlib.h>	// atexit
-
 #include "print.h"	// error
 #include "debug.h"	// print_cycles
 #include "util.h"	// unused
@@ -9,15 +7,6 @@
 
 
 volatile bool do_exit = false;
-
-emu_state *state_current; // XXX should be a linked list or such
-
-
-void exit_print_stats(void)
-{
-	print_cycles(state_current);
-}
-
 
 #ifdef HAVE_POSIX
 
@@ -49,8 +38,7 @@ void register_handlers(void)
 		sigaction(SIGIO, &sa, NULL) ||
 #endif
 		sigaction(SIGPIPE, &sa, NULL) ||
-		sigaction(SIGALRM, &sa, NULL) ||
-		atexit(exit_print_stats))
+		sigaction(SIGALRM, &sa, NULL))
 	{
 		error("Could not initalise signal handlers, possibly no stats printing :(");
 	}
@@ -60,10 +48,7 @@ void register_handlers(void)
 
 void register_handlers(void)
 {
-	if(atexit(exit_print_stats))
-	{
-		error("Could not initalise signal handlers, possibly no stats printing :(");
-	}
+	// TODO maybe some windows signal handling?
 }
 
 #endif /*HAVE_POSIX */
