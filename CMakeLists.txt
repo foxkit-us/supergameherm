@@ -28,6 +28,10 @@ macro(platform_checks)
 		set(LITTLE_ENDIAN TRUE)
 	endif()
 
+	# MSVC stuff
+	check_include_files(stdbool.h HAVE_STDBOOL_H)
+	check_include_files(stdint.h HAVE_STDINT_H)
+
 	# Check for endianness related doodads
 	check_include_files(endian.h HAVE_ENDIAN_H)
 	check_include_files(sys/endian.h HAVE_SYS_ENDIAN_H)
@@ -46,7 +50,32 @@ macro(compiler_checks)
 		set(CMAKE_CXX_FLAGS_DEBUG, "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 		set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -ggdb")
 	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		message("idk what flags to use...")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /G5 /Gr")
+		# /G5 - Enable Pentium optimisations
+		# /Gr - __fastcall as deafult
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4
+		/WX /Ot /Oa /Gf /Gy")
+		# /MTd - statically link to runtime library
+		# /W4 - enable all warnings
+		# /WX - warnings are errors (-Werror in clang)
+		# /Ot, /Oa, /Gf - still enable some performance improvements
+		# /Gy - function-level linking (slightly faster)
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zp4
+		/MT /Za /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /Gf")
+		# /Zp4 - 4-byte struct alignment (~150k cycle/sec speed up on
+		# P5 microarchitecture)
+		# /MT - statically link to runtime library (larger file size,
+		# but higher compatibility)
+		# /Za - disable MS language extensions
+		# /W3 - enable most warnings
+		# /Zi - still build debug symbol files (easier testing)
+		# /Ox - "fuller" optimisation
+		# /Ot - favour fast code over small code (~125k cycle/sec P5)
+		# /Oa - assume no aliasing (restrict keyword)
+		# /Og - perform global optimisations
+		# /Ob2 - force inlining of functions
+		# /Gf - combine duplicate const strings into one (smaller file
+		# size, and less data cache misses)
 	else()
 		message("I'm at a loss as to what to do, hope it all works out.")
 	endif()
@@ -62,3 +91,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE
 add_executable("sgherm" src/main.c src/ctl_unit.c src/input.c src/lcdc.c
 	src/memory.c src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c 
 	src/debug.c src/signals.c src/util.c src/null_frontend.c)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	# necessary to work around 'stdbool' and related stuff
+	set_source_files_properties(src/*.c PROPERTIES LANGUAGE CXX)
+	set_target_properties("sgherm" PROPERTIES LINKER_LANGUAGE CXX)
+endif()
