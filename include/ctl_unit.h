@@ -102,7 +102,12 @@ bool execute(emu_state *restrict);
 
 uint8_t int_flag_read(emu_state *restrict, uint16_t);
 void int_flag_write(emu_state *restrict, uint16_t, uint8_t);
-void int_mask_flag_write(emu_state *restrict state, uint8_t data);
+void int_mask_flag_write(emu_state *restrict, uint8_t);
+
+uint8_t no_hardware(emu_state *restrict, uint16_t);
+void readonly_reg_write(emu_state *restrict, uint16_t, uint8_t);
+void doofus_write(emu_state *restrict, uint16_t, uint8_t);
+
 
 #define signal_interrupt(state, interrupt) \
 	mem_write8((state), 0xFF0F, (interrupt) | ((state)->int_state.pending))

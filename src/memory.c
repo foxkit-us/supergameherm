@@ -24,7 +24,7 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
  * @result emulation stopped because some doofus read from a non-existant
  * 	   device.
  */
-static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
+uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 {
 	printf("%X\n", REG_PC(state));
 	warning("no device present at %04X (emulator bug?  incompatible GB?) (a real GB wouldn't care)",
@@ -213,7 +213,7 @@ typedef void (*mem_write8_fn)(emu_state *restrict , uint16_t, uint8_t);
  * @brief silly name, decent intent
  * @result emulation terminates because some doofus wrote to a r/o reg
  */
-static inline void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t data)
+void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	warning("[%4X] attempted write of %02X to read-only register %04X (a real GB ignores this)",
 	      REG_PC(state), data, location);
@@ -223,11 +223,10 @@ static inline void readonly_reg_write(emu_state *restrict state, uint16_t locati
  * @brief what happens when you poke around randomly
  * @result emulation terminates because some doofus wrote to a device not there
  */
-static inline void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
+void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	warning("[%4X] attempted doofus write of %02X to non-existant device at %04X (a real GB ignores this)",
 	      REG_PC(state), data, location);
-	return 0x0;
 }
 
 static inline void dma_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
