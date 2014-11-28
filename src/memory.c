@@ -29,8 +29,7 @@ static inline uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 	printf("%X\n", REG_PC(state));
 	warning("no device present at %04X (emulator bug?  incompatible GB?) (a real GB wouldn't care)",
 		location);
-	/* NOTREACHED */
-	return 0xFF;
+	return 0x0;
 }
 
 static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)
@@ -216,7 +215,7 @@ typedef void (*mem_write8_fn)(emu_state *restrict , uint16_t, uint8_t);
  */
 static inline void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	fatal("[%4X] attempted write of %02X to read-only register %04X",
+	warning("[%4X] attempted write of %02X to read-only register %04X (a real GB ignores this)",
 	      REG_PC(state), data, location);
 }
 
@@ -226,8 +225,9 @@ static inline void readonly_reg_write(emu_state *restrict state, uint16_t locati
  */
 static inline void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	fatal("[%4X] attempted doofus write of %02X to non-existant device at %04X",
+	warning("[%4X] attempted doofus write of %02X to non-existant device at %04X (a real GB ignores this)",
 	      REG_PC(state), data, location);
+	return 0x0;
 }
 
 static inline void dma_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
@@ -360,13 +360,13 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		switch(state->cart_data[OFF_CART_TYPE])
 		{
 		case CART_ROM_ONLY:
-			fatal("invalid memory write at %04X (%02X)",
+			warning("invalid memory write at %04X (%02X) (a real GB ignores this)",
 			      location, data);
 		case CART_MBC1:
 		case CART_MBC1_RAM:
 		case CART_MBC1_RAM_BATT:
 			state->bank = data & 0x1F;
-			debug("switching to bank %04X", state->bank);
+			//debug("switching to bank %04X", state->bank);
 			return;
 		case CART_MBC3:
 		case CART_MBC3_RAM:
@@ -374,7 +374,7 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		case CART_MBC3_TIMER_BATT:
 		case CART_MBC3_TIMER_RAM_BATT:
 			state->bank = data & 0x7F;
-			debug("switching to bank %04X", state->bank);
+			//debug("switching to bank %04X", state->bank);
 			return;
 		default:
 			fatal("banks for this cart (type %04X [%s]) aren't done yet sorry :(",
