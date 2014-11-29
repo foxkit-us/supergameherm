@@ -9,39 +9,39 @@
 typedef enum
 {
 	/*! A list of constants, mostly used for documentation purposes. */
-	/* TODO GBC constants */
+	// TODO GBC constants
 
-	/* restart and interrupt vectors */
+	// restart and interrupt vectors
 	OFF_VEC_BEGIN = 0x0000,
 	OFF_VEC_END = 0x00FF,
 
-	/* cart data */
+	// cart data
 	OFF_CART_BEGIN = 0x0100,
 
-	/* 4 bytes */
+	// 4 bytes
 	OFF_START_INSTR_BEGIN = 0x0100,
 	OFF_START_INSTR_END = 0x0103,
 
-	/* 48 bytes */
+	// 48 bytes
 	OFF_GRAPHIC_BEGIN = 0x0104,
 	OFF_GRAPHIC_END = 0x0133,
 
-	/* 10 bytes */
+	// 10 bytes
 	OFF_TITLE_BEGIN = 0x0134,
 	OFF_TITLE_END = 0x013E,
 
-	/* 4 bytes */
+	// 4 bytes
 	OFF_MANUFACTURER_BEGIN = 0x013F,
 	OFF_MANUFACTURER_END = 0x0142,
 
-	/* 1 byte */
+	// 1 byte
 	OFF_COLOR_COMPAT = 0x0143,
 
-	/* 2 bytes */
+	// 2 bytes
 	OFF_LICENSEE_BEGIN = 0x0144,
 	OFF_LICENSEE_END = 0x0145,
 
-	/* 1 byte */
+	// 1 byte
 	OFF_SGB_COMPAT = 0x0146,
 
 	OFF_CART_TYPE = 0x0147,
@@ -50,25 +50,25 @@ typedef enum
 
 	OFF_RAM_SIZE = 0x0149,
 
-	OFF_DEST_CODE = 0x014A, /* Japanese or not */
+	OFF_DEST_CODE = 0x014A, // Japanese or not
 
-	OFF_OLD_LICENSEE = 0x014B, /* Mostly unused */
+	OFF_OLD_LICENSEE = 0x014B, // Mostly unused
 
 	OFF_MASK_ROM_VERSION = 0x014C,
 
 	OFF_HEADER_CHECKSUM = 0x014D,
 
-	/* 2 bytes */
+	// 2 bytes
 	OFF_CART_CHECKSUM_BEGIN = 0x014E,
 	OFF_CART_CHECKSUM_END = 0x014F,
 
 	OFF_CART_END = 0x014F,
 
-	/* Fixed bank */
+	// Fixed bank
 	OFF_ROM0_BEGIN = 0x0150,
 	OFF_ROM0_END = 0x3FFF,
 
-	/* Switchable bank */
+	// Switchable bank
 	OFF_ROM_BANK_BEGIN = 0x4000,
 	OFF_ROM_BANK_END = 0x7FFF,
 
@@ -81,7 +81,7 @@ typedef enum
 	OFF_BG1_BEGIN = 0x9C00,
 	OFF_BG1_END = 0x9FFF,
 
-	/* Not present on all carts! */
+	// Not present on all carts!
 	OFF_CART_RAM_BEGIN = 0xA000,
 	OFF_CART_RAM_END = 0xBFFF,
 
@@ -94,9 +94,9 @@ typedef enum
 	OFF_OAM_BEGIN = 0xFE00,
 	OFF_OAM_END = 0xFE9F,
 
-	/* Contains control registers and other doodads */
+	// Contains control registers and other doodads
 	OFF_CGB_MMIO_BEGIN = 0xFF00,
-	/* TODO more I/O constants */
+	// TODO more I/O constants
 
 	OFF_CGB_SWITCH_VIDEO_BANK = 0xFF40,
 
@@ -110,38 +110,38 @@ typedef enum
 
 struct cart_header_t
 {
-	// NOTE: initial instructions excluded
-	uint8_t graphic[48];	/* 0x104-0x133 */
+	// NB: initial instructions excluded
+	uint8_t graphic[48];	// 0x104-0x133
 	union
 	{
-		/* new-style GBC header */
+		// new-style GBC header
 		struct
 		{
-			uint8_t title[11];		/* 0x134-0x143 */
-			uint8_t publisher[4];		/* 0x13F-0x142 */
-			uint8_t compat;			/* 0x143 CGB flag */
-			uint8_t licensee_code[2];	/* 0x144-0x145 */
+			char title[11];		// 0x134-0x143
+			char publisher[4];	// 0x13F-0x142
+			uint8_t compat;		// 0x143 CGB flag
+			char licensee_code[2];	// 0x144-0x145
 			uint8_t sgb;
 		} cgb_title;
 
 		struct
 		{
-			uint8_t title[16];
-			uint8_t licensee_code[2];
+			char title[16];
+			char licensee_code[2];
 			uint8_t sgb;
 		} sgb_title;
 
-		uint8_t dmg_title[19];
+		char dmg_title[19];
 	};
 
-	uint8_t cart_type;		// 0x147
-	uint8_t rom_size;		// 0x148
-	uint8_t ram_size;		// 0x149 Cartridge RAM
-	uint8_t dest_code;		// 0x14A Non-Japan if true
-	uint8_t old_licensee;		// 0x14B set to 0x33 if new code used
+	uint8_t cart_type;	// 0x147
+	uint8_t rom_size;	// 0x148
+	uint8_t ram_size;	// 0x149 Cartridge RAM
+	uint8_t dest_code;	// 0x14A Non-Japan if true
+	char old_licensee;	// 0x14B set to 0x33 if new code used
 	uint8_t mask_rom_version;	// 0x14C almost always 0
-	uint8_t header_checksum;	// 0x14D Enforced!
-	uint16_t cart_checksum;		// 0x14E-0x14F Unenforced
+	uint8_t header_checksum; 	// 0x14D Enforced!
+	uint16_t cart_checksum;	// 0x14E-0x14F Unenforced
 };
 
 typedef enum
@@ -176,4 +176,4 @@ extern const char *friendly_cart_names[0x20];
 bool read_rom_data(emu_state *restrict, FILE *restrict,
 	cart_header *restrict *restrict);
 
-#endif /* __ROM_READ_H__ */
+#endif /*__ROM_READ_H__*/
