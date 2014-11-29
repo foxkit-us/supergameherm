@@ -111,13 +111,13 @@ int null_event_loop(emu_state *state unused)
 
 
 frontend null_frontend = {
-	.init_video = &null_init_video,
-	.init_audio = &null_init_audio,
-	.init_input = &null_init_input,
-	.finish_video = &null_finish_video,
-	.finish_audio = &null_finish_audio,
-	.finish_input = &null_finish_input,
-	.blit_canvas = &null_blit_canvas,
-	.output_sample = &null_output_sample,
-	.event_loop = &null_event_loop,
+	&null_init_video,
+	&null_init_audio,
+	&null_init_input,
+	&null_finish_video,
+	&null_finish_audio,
+	&null_finish_input,
+	&null_blit_canvas,
+	&null_output_sample,
+	&null_event_loop,
 };
