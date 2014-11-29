@@ -17,66 +17,54 @@
 
 void init_lcdc(emu_state *restrict state)
 {
-	state->memory[0xFF40] = LCDC_ENABLE | LCDC_BGWINDOW_TILE_LO | LCDC_BGWINDOW_SHOW;
-	state->memory[0xFF41] = 0x02;
-	state->memory[0xFF42] = 0x00;
-	state->memory[0xFF43] = 0x00;
-	state->memory[0xFF44] = 0x00;
-	state->memory[0xFF45] = 0x00;
+	state->lcdc.lcd_control.params.enable = true;
+	state->lcdc.lcd_control.params.bg_char_sel = true;
+	state->lcdc.lcd_control.params.dmg_bg = true;
+
+	state->lcdc.stat.params.mode_flag = 2;
+
+	state->lcdc.ly = 0;
+	state->lcdc.lyc = 0;
 }
 
 static inline void _lcdc_inc_mode(emu_state *restrict state)
 {
-	uint8_t *byte = state->memory + 0xFF41;
-
-	if((*byte & 0x3) == 0x3)
-	{
-		*byte &= ~0x3;
-	}
-	else
-	{
-		*byte += 1;
-	}
+	state->lcdc.stat.params.mode_flag++;
 }
 
 void lcdc_tick(emu_state *restrict state)
 {
-	uint32_t *clk = &(state->lcdc.curr_clk);
-	uint8_t *ly = state->memory + 0xFF44;
-	uint8_t curr_mode = state->memory[0xFF41] & 0x3;
-
-	*clk += 1;
+	state->lcdc.curr_clk++;
 
 	if(unlikely(state->stop))
 	{
 		return;
 	}
 
-	switch(curr_mode)
+	switch(state->lcdc.stat.params.mode_flag)
 	{
 	case 2:
 		/* first mode - reading OAM for h scan line */
-		if(*clk >= 80)
+		if(state->lcdc.curr_clk >= 80)
 		{
-			*clk = 0;
+			state->lcdc.curr_clk = 0;
 			_lcdc_inc_mode(state);
 		}
 		break;
 	case 3:
 		/* second mode - reading VRAM for h scan line */
-		if(*clk >= 172)
+		if(state->lcdc.curr_clk >= 172)
 		{
-			*clk = 0;
+			state->lcdc.curr_clk = 0;
 			_lcdc_inc_mode(state);
 		}
 		break;
 	case 0:
 		/* third mode - h-blank */
-		if(*clk >= 204)
+		if(state->lcdc.curr_clk >= 204)
 		{
-			*clk = 0;
-			*ly += 1;
-			if(*ly == 144)
+			state->lcdc.curr_clk = 0;
+			if((++state->lcdc.ly) == 144)
 			{
 				/* going to v-blank */
 				_lcdc_inc_mode(state);
@@ -84,33 +72,43 @@ void lcdc_tick(emu_state *restrict state)
 			else
 			{
 				/* start another scan line */
-				state->memory[0xFF41] |= 0x02;
+				state->lcdc.stat.params.mode_flag = 2;
 			}
 		}
 		break;
 	case 1:
 		/* v-blank */
-		if(*ly == 144 && *clk == 1)
+		if(state->lcdc.ly == 144 &&
+		   state->lcdc.curr_clk == 1)
 		{
 			// Fire the vblank interrupt
 			signal_interrupt(state, INT_VBLANK);
 		}
 
-		if(*clk % 456 == 0)
+		if(state->lcdc.curr_clk % 456 == 0)
 		{
-			*ly += 1;
+			state->lcdc.ly++;
 		};
 
-		if(*ly == 153)
+		if(state->lcdc.ly == 153)
 		{
-			*clk = 0;
-			*ly = 0;
+			state->lcdc.curr_clk = 0;
+			state->lcdc.ly = 0;
 			_lcdc_inc_mode(state);
 		}
 
 		break;
 	default:
 		fatal("somehow wound up in an unknown impossible video mode");
+	}
+	
+	if(state->lcdc.ly == state->lcdc.lyc)
+	{
+		state->lcdc.stat.params.lyc_state = true;
+		if(state->lcdc.stat.params.lyc)
+		{
+			signal_interrupt(state, INT_LCD_STAT);
+		}
 	}
 }
 
@@ -119,31 +117,53 @@ uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 	if(!(reg & 0xFF00))
 	{
 		/* this is raw video RAM read */
-		uint8_t curr_mode = state->memory[0xFF41] & 0x3;
+		uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
 		if(curr_mode > 1)
 		{
 			fatal("read from VRAM while not in h/v-blank");
 			return 0xFF;
 		}
+		return state->memory[reg];
 	}
-	/* XXX TODO FIXME */
-	return state->memory[reg];
+	switch(reg)
+	{
+	case 0xFF40:
+		return state->lcdc.lcd_control.reg;
+	case 0xFF41:
+		return state->lcdc.stat.reg;
+	case 0xFF44:
+		return state->lcdc.ly;
+	case 0xFF45:
+		return state->lcdc.lyc;
+	default:
+		error("lcdc: unknown register %04X (R)", reg);
+		return 0xFF;
+	}
 }
 
 void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
-	if(reg == 0xFF44)
+	switch(reg)
 	{
+	case 0xFF40:
+		state->lcdc.lcd_control.reg = data;
+		break;
+	case 0xFF41:
+		state->lcdc.stat.reg = data;
+		break;
+	case 0xFF44:
 #ifndef NDEBUG
 		fatal("write to LY (FF44); you can't just vsync yourself!");
 #else
 		error("write to LY (FF44) is being ignored");
 #endif
-		return;
+		break;
+	case 0xFF45:
+		state->lcdc.lyc = data;
+		break;
+	default:
+		error("lcdc: unknown register %04X (W)", reg);
 	}
-
-	/* XXX TODO FIXME */
-	state->memory[reg] = data;
 }
 
 uint8_t bg_pal_ind_read(emu_state *restrict state, uint16_t reg)

@@ -38,34 +38,42 @@ struct lcdc_state_t
 	oam oam_store[40];		/*! OAM */
 
 	/*! LCD control register */
-	struct
+	union
 	{
-		bool enable:1;		/*! LCD enabled */
-		bool win_code_sel:1;	/*! Active window at 9800-9BFF or 9C00-9FFF */
-		bool win:1;		/*! Windowing on */
-		bool bg_char_sel:1;	/*! BG character data at 8800-97FF or 8000-8FFF */
-		bool bg_code_sel:1;	/*! BG code data at 9800-9BFF or 9C00-9FFF */
-		bool obj_block_size:1;	/*! Size of OBJ's are 8x8 or 8x16 */
-		bool obj:1;		/*! OBJ's are off or on */
-		bool dmg_bg:1;		/*! BG is on or off (DMG only) */
+		uint8_t reg;
+		struct
+		{
+			bool enable:1;		/*! LCD enabled */
+			bool win_code_sel:1;	/*! Active window at 9800-9BFF or 9C00-9FFF */
+			bool win:1;		/*! Windowing on */
+			bool bg_char_sel:1;	/*! BG character data at 8800-97FF or 8000-8FFF */
+			bool bg_code_sel:1;	/*! BG code data at 9800-9BFF or 9C00-9FFF */
+			bool obj_block_size:1;	/*! Size of OBJ's are 8x8 or 8x16 */
+			bool obj:1;		/*! OBJ's are off or on */
+			bool dmg_bg:1;		/*! BG is on or off (DMG only) */
+		} params;
 	} lcd_control;
 
-	struct
+	union
 	{
-		uint8_t notused:1;	/*! Upper bit padding */
-		bool lyc:1;		/*! int on LY matching selection */
-		bool mode_10:1;		/*! int on mode 10 selection */
-		bool mode_01:1;		/*! int on mode 01 selection */
-		bool mode_00:1;		/*! int on mode 00 selection */
-		bool lyc_state:1;	/*! LYC matches LY */
+		uint8_t reg;
+		struct
+		{
+			uint8_t notused:1;	/*! Upper bit padding */
+			bool lyc:1;		/*! int on LY matching selection */
+			bool mode_10:1;		/*! int on mode 10 selection */
+			bool mode_01:1;		/*! int on mode 01 selection */
+			bool mode_00:1;		/*! int on mode 00 selection */
+			bool lyc_state:1;	/*! LYC matches LY */
 
-		/*! Mode flag
-		 * Mode 00: enable CPU access to VRAM
-		 * Mode 01: V-Blank interval
-		 * Mode 10: OAM search
-		 * Mode 11: LCD transfer
-		 */
-		uint8_t mode_flag:2;
+			/*! Mode flag
+			* Mode 00: enable CPU access to VRAM
+			* Mode 01: V-Blank interval
+			* Mode 10: OAM search
+			* Mode 11: LCD transfer
+			*/
+			uint8_t mode_flag:2;
+		} params;
 	} stat;
 
 	uint8_t scroll_y;	/*! Y position in scrolling map */
