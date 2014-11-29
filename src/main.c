@@ -22,7 +22,7 @@ emu_state * init_emulator(void)
 {
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 
-	state->int_state.enabled = true;
+	state->interrupts.enabled = true;
 	state->bank = 1;
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;

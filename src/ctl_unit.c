@@ -13,12 +13,12 @@
 
 uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 {
-	return state->int_state.pending;
+	return state->interrupts.pending;
 }
 
 void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	uint8_t mask = state->int_state.mask & data;
+	uint8_t mask = state->interrupts.mask & data;
 
 	assert(location == 0xFF0F);
 
@@ -29,23 +29,23 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 		// Valid interrupt, recompute jmp address
 		if(mask & INT_VBLANK)
 		{
-			state->int_state.next_jmp = INT_ID_VBLANK;
+			state->interrupts.next_jmp = INT_ID_VBLANK;
 		}
 		else if(mask & INT_LCD_STAT)
 		{
-			state->int_state.next_jmp = INT_ID_LCD_STAT;
+			state->interrupts.next_jmp = INT_ID_LCD_STAT;
 		}
 		else if(mask & INT_TIMER)
 		{
-			state->int_state.next_jmp = INT_ID_TIMER;
+			state->interrupts.next_jmp = INT_ID_TIMER;
 		}
 		else if(mask & INT_SERIAL)
 		{
-			state->int_state.next_jmp = INT_ID_SERIAL;
+			state->interrupts.next_jmp = INT_ID_SERIAL;
 		}
 		else if(mask & INT_JOYPAD)
 		{
-			state->int_state.next_jmp = INT_ID_JOYPAD;
+			state->interrupts.next_jmp = INT_ID_JOYPAD;
 		}
 		else
 		{
@@ -56,40 +56,40 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 	else
 	{
 		// All interrupts masked
-		state->int_state.next_jmp = INT_ID_NONE;
+		state->interrupts.next_jmp = INT_ID_NONE;
 	}
 
-	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
+	assert(state->interrupts.next_jmp == INT_ID_NONE ? !mask : mask);
 
-	state->int_state.pending = data;
+	state->interrupts.pending = data;
 }
 
 void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 {
-	uint8_t mask = state->int_state.pending & data;
+	uint8_t mask = state->interrupts.pending & data;
 
 	if(mask)
 	{
 		// Unmasked, recompute jmp address
 		if(mask & INT_VBLANK)
 		{
-			state->int_state.next_jmp = INT_ID_VBLANK;
+			state->interrupts.next_jmp = INT_ID_VBLANK;
 		}
 		else if(mask & INT_LCD_STAT)
 		{
-			state->int_state.next_jmp = INT_ID_LCD_STAT;
+			state->interrupts.next_jmp = INT_ID_LCD_STAT;
 		}
 		else if(mask & INT_TIMER)
 		{
-			state->int_state.next_jmp = INT_ID_TIMER;
+			state->interrupts.next_jmp = INT_ID_TIMER;
 		}
 		else if(mask & INT_SERIAL)
 		{
-			state->int_state.next_jmp = INT_ID_SERIAL;
+			state->interrupts.next_jmp = INT_ID_SERIAL;
 		}
 		else if(mask & INT_JOYPAD)
 		{
-			state->int_state.next_jmp = INT_ID_JOYPAD;
+			state->interrupts.next_jmp = INT_ID_JOYPAD;
 		}
 		else
 		{
@@ -100,12 +100,12 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 	else
 	{
 		// All interrupts masked
-		state->int_state.next_jmp = INT_ID_NONE;
+		state->interrupts.next_jmp = INT_ID_NONE;
 	}
 
-	assert(state->int_state.next_jmp == INT_ID_NONE ? !mask : mask);
+	assert(state->interrupts.next_jmp == INT_ID_NONE ? !mask : mask);
 
-	state->int_state.mask = data;
+	state->interrupts.mask = data;
 }
 
 #include "instr_alu_arith.c"
@@ -187,16 +187,16 @@ void init_ctl(emu_state *restrict state)
 /*! Call the needed interrupt handler */
 static inline void call_interrupt(emu_state *restrict state)
 {
-	assert(state->int_state.mask != 0);
-	assert(state->int_state.pending != 0);
-	assert(state->int_state.next_jmp != INT_ID_NONE);
+	assert(state->interrupts.mask != 0);
+	assert(state->interrupts.pending != 0);
+	assert(state->interrupts.next_jmp != INT_ID_NONE);
 
 	// Push pc to the stack
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_PC(state));
 
 	// Jump!
-	REG_PC(state) = state->int_state.next_jmp;
+	REG_PC(state) = state->interrupts.next_jmp;
 
 	// Reset these states
 	state->halt = state->stop = false;
@@ -205,13 +205,13 @@ static inline void call_interrupt(emu_state *restrict state)
 	state->wait = 24;
 
 	// Clear interrupts
-	state->int_state.pending = 0;
+	state->interrupts.pending = 0;
 
 	// Interrupts are locked out before handling
-	state->int_state.enabled = false;
+	state->interrupts.enabled = false;
 
 	// Clear jump point
-	state->int_state.next_jmp = INT_ID_NONE;
+	state->interrupts.next_jmp = INT_ID_NONE;
 
 	//debug("Interrupt jumping to %04X", REG_PC(state));
 }
@@ -264,22 +264,22 @@ bool execute(emu_state *restrict state)
 		}
 	}
 
-	if(state->int_state.next_cycle)
+	if(state->interrupts.next_cycle)
 	{
-		if(state->int_state.next_cycle == INT_NEXT_ENABLE)
+		if(state->interrupts.next_cycle == INT_NEXT_ENABLE)
 		{
-			state->int_state.enabled = true;
+			state->interrupts.enabled = true;
 		}
-		else if(state->int_state.next_cycle == INT_NEXT_DISABLE)
+		else if(state->interrupts.next_cycle == INT_NEXT_DISABLE)
 		{
-			state->int_state.enabled = false;
+			state->interrupts.enabled = false;
 		}
 
-		state->int_state.next_cycle = INT_NEXT_NONE;
+		state->interrupts.next_cycle = INT_NEXT_NONE;
 	}
 
 	// Check for interrupts
-	if(state->int_state.enabled && state->int_state.next_jmp != INT_ID_NONE)
+	if(state->interrupts.enabled && state->interrupts.next_jmp != INT_ID_NONE)
 	{
 		call_interrupt(state);
 	}

@@ -2,7 +2,7 @@
 #define __CTL_UNIT_H__
 
 #include "config.h"	// bool, uint[XX]_t
-
+#include "typedefs.h"	// typedefs
 #include "memory.h"	// mem_write8
 
 
@@ -53,7 +53,7 @@ typedef enum
 } interrupt_next;
 
 
-typedef struct _interrupt_state
+struct interrupt_state_t
 {
 	interrupt_next next_cycle;	/*! Interrupts will be enabled next cycle */
 	bool enabled;			/*! Interrupts enabled */
@@ -62,7 +62,7 @@ typedef struct _interrupt_state
 
 	// Optimisation - cache the next interrupt jump address
 	interrupt_list next_jmp;
-} interrupts;
+};
 
 
 typedef enum
@@ -110,6 +110,6 @@ void doofus_write(emu_state *restrict, uint16_t, uint8_t);
 
 
 #define signal_interrupt(state, interrupt) \
-	mem_write8((state), 0xFF0F, (interrupt) | ((state)->int_state.pending))
+	mem_write8((state), 0xFF0F, (interrupt) | ((state)->interrupts.pending))
 
 #endif /*!__CTL_UNIT_H__*/

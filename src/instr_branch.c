@@ -354,7 +354,7 @@ static inline void retc(emu_state *restrict state)
  */
 static inline void reti(emu_state *restrict state)
 {
-	state->int_state.enabled = true;
+	state->interrupts.enabled = true;
 	ret(state);
 }
 

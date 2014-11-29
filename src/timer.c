@@ -15,17 +15,17 @@ uint8_t timer_read(emu_state *restrict state, uint16_t reg)
 	 * this way.  So it's here.
 	 */
 	case 0xFF04:
-		return state->timer_state.div;
+		return state->timer.div;
 	/*
 	 * TIMA - stepper (inc'd once every timer tick)
 	 */
 	case 0xFF05:
-		return state->timer_state.tima;
+		return state->timer.tima;
 	/*
 	 * TMA - how many times has TIMA overflowed?
 	 */
 	case 0xFF06:
-		return state->timer_state.rounds;
+		return state->timer.rounds;
 	/*
 	 * TAC - timer control
 	 */
@@ -33,9 +33,9 @@ uint8_t timer_read(emu_state *restrict state, uint16_t reg)
 	{
 		uint8_t res = 0;
 
-		if(state->timer_state.enabled) res |= 0x04;
+		if(state->timer.enabled) res |= 0x04;
 
-		switch(state->timer_state.ticks_per_tima)
+		switch(state->timer.ticks_per_tima)
 		{
 		case 1024:
 			break;
@@ -65,21 +65,21 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	 */
 	case 0xFF04:
 		/* nope, data is ignored.  reset to 0. */
-		state->timer_state.div = 0;
+		state->timer.div = 0;
 		return;
 	/*
 	 * TIMA - XXX FIXME does any game do this?
 	 * should it reset to 0 ala DIV or does it keep data?
 	 */
 	case 0xFF05:
-		state->timer_state.tima = data;
+		state->timer.tima = data;
 		return;
 	/*
 	 * TMA - I guess writing to this maybe makes sense
 	 * maybe...
 	 */
 	case 0xFF06:
-		state->timer_state.rounds = data;
+		state->timer.rounds = data;
 		return;
 	/*
 	 * TAC - timer control
@@ -88,8 +88,8 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	{
 		static const uint16_t ticks[4] = { 1024, 16, 64, 128 };
 
-		state->timer_state.enabled = ((data & 0x04) == 0x04);
-		state->timer_state.ticks_per_tima = ticks[(data & 3)];
+		state->timer.enabled = ((data & 0x04) == 0x04);
+		state->timer.ticks_per_tima = ticks[(data & 3)];
 
 		return;
 	}
@@ -101,22 +101,22 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 void timer_tick(emu_state *restrict state)
 {
 	/* DIV increases even if the timer is disabled */
-	if(++state->timer_state.curr_clk % 128 == 0)
+	if(++state->timer.curr_clk % 128 == 0)
 	{
-		state->timer_state.div++;
+		state->timer.div++;
 	}
 
 	/* but nothing else does. */
-	if(!state->timer_state.enabled)
+	if(!state->timer.enabled)
 	{
 		return;
 	}
 
-	if(state->timer_state.curr_clk % state->timer_state.ticks_per_tima == 0)
+	if(state->timer.curr_clk % state->timer.ticks_per_tima == 0)
 	{
-		if(++state->timer_state.tima == 0)	/* overflow! */
+		if(++state->timer.tima == 0)	/* overflow! */
 		{
-			state->timer_state.rounds++;
+			state->timer.rounds++;
 			signal_interrupt(state, INT_TIMER);
 		}
 	}

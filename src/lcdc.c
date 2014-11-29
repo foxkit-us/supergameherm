@@ -41,7 +41,7 @@ static inline void _lcdc_inc_mode(emu_state *restrict state)
 
 void lcdc_tick(emu_state *restrict state)
 {
-	uint32_t *clk = &(state->lcdc_state.curr_clk);
+	uint32_t *clk = &(state->lcdc.curr_clk);
 	uint8_t *ly = state->memory + 0xFF44;
 	uint8_t curr_mode = state->memory[0xFF41] & 0x3;
 

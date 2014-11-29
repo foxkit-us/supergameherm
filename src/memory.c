@@ -2,10 +2,11 @@
 #include <assert.h>	// assert
 #include <string.h>	// memmove
 
+#include "sgherm.h"	// emu_state
 #include "ctl_unit.h"	// int_flag_*
 #include "input.h"	// joypad_*
 #include "lcdc.h"	// lcdc_read
-#include "memory.h"	// Constants and what have you */
+#include "memory.h"	// Constants and what have you
 #include "print.h"	// fatal
 #include "rom_read.h"	// OFF_CART_TYPE
 #include "serio.h"	// serial_*
@@ -34,7 +35,7 @@ uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 
 static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)
 {
-	return state->lcdc_state.vram_bank;
+	return state->lcdc.vram_bank;
 }
 
 /*! a table of hardware register read methods */
@@ -178,7 +179,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 			}
 			else if(location == 0xFFFF)
 			{
-				return state->int_state.mask;
+				return state->interrupts.mask;
 			}
 
 			break;
@@ -249,7 +250,7 @@ static inline void dma_write(emu_state *restrict state, uint16_t location unused
 
 static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	state->lcdc_state.vram_bank = data;
+	state->lcdc.vram_bank = data;
 }
 
 static mem_write8_fn hw_reg_write[0x80] =

@@ -2,13 +2,12 @@
 #define __TIMER_H_
 
 #include "config.h"	// Various macros, uint[XX]_t
+#include "typedefs.h"	// typedefs
 
 #include <stdio.h>	// perror
 
-#include "util.h"	// likely/unlikely
 
-
-typedef struct _tm_state
+struct timer_state_t
 {
 	uint8_t div;			/*! DIV register */
 	uint8_t tima;			/*! TIMA register */
@@ -16,7 +15,7 @@ typedef struct _tm_state
 	uint16_t ticks_per_tima;	/*! ticks per TIMA++ */
 	uint8_t curr_clk;		/*! ticks passed */
 	bool enabled;			/*! timer armed */
-} timer;
+};
 
 typedef enum
 {
@@ -25,7 +24,6 @@ typedef enum
 	CPU_FREQ_CGB = 8388608,
 } cpu_freq;
 
-typedef struct _emu_state emu_state;
 
 uint8_t timer_read(emu_state *restrict, uint16_t);
 void timer_write(emu_state *restrict, uint16_t, uint8_t);

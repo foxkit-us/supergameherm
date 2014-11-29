@@ -11,7 +11,7 @@
 
 uint8_t joypad_read(emu_state *restrict state, uint16_t reg unused)
 {
-	uint8_t val = (state->input_state.col_state << 4) | (state->input_state.row_state);
+	uint8_t val = (state->input.col << 4) | (state->input.row);
 
 	assert(reg == 0xFF00);
 
@@ -22,8 +22,8 @@ void joypad_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
 {
 	assert(reg == 0xFF00);
 
-	state->input_state.col_state = data >> 4;
-	state->input_state.row_state = data & 0xc0;
+	state->input.col = data >> 4;
+	state->input.row = data & 0xc0;
 
 	return;
 }
@@ -35,7 +35,7 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 
 	// TODO fake propagation delay and maybe switch bounce
 
-	if(!(state->input_state.col_state & col_sel))
+	if(!(state->input.col & col_sel))
 	{
 		// Unsolicited key event
 		debug("Unsolicited key event");
@@ -44,7 +44,7 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 
 	if(down)
 	{
-		state->input_state.row_state &= ~row_sel;
+		state->input.row &= ~row_sel;
 		debug("Pressing key %02X", key);
 	}
 	else
@@ -54,7 +54,7 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 
 		signal_interrupt(state, INT_JOYPAD);
 
-		state->input_state.row_state |= row_sel;
+		state->input.row |= row_sel;
 
 		debug("Depressing key %02X", key);
 	}

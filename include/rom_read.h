@@ -2,9 +2,9 @@
 #define __ROM_READ_H__
 
 #include "config.h"	// macros, bool
+#include "typedefs.h"	// typedefs
 
-#include "sgherm.h"	// emu_state
-
+#include <stdio.h>	// FILE *
 
 typedef enum
 {
@@ -108,7 +108,7 @@ typedef enum
 	OFF_INT_FLAG = 0xFFFF,
 } offsets;
 
-typedef struct _cart_header
+struct cart_header_t
 {
 	/* NB: initial instructions excluded */
 	uint8_t graphic[48];	/* 0x104-0x133 */
@@ -142,7 +142,7 @@ typedef struct _cart_header
 	uint8_t mask_rom_version;	/* 0x14C almost always 0 */
 	uint8_t header_checksum; 	/* 0x14D Enforced! */
 	uint16_t cart_checksum;	/* 0x14E-0x14F Unenforced */
-} cart_header;
+};
 
 typedef enum
 {

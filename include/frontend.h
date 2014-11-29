@@ -2,10 +2,9 @@
 #define __FRONTEND_H__
 
 #include "config.h"	// bool
+#include "typedefs.h"	// typedefs
 
-typedef struct _emu_state emu_state;
-
-typedef struct _frontend
+struct frontend_t
 {
 	// Initialisation
 	bool (*init_video)(emu_state *);	/*! Initalise the video output */
@@ -25,7 +24,7 @@ typedef struct _frontend
 
 	// Event loop (ingest external events here)
 	int (*event_loop)(emu_state *);
-} frontend;
+};
 
 
 /*! Frontend that does nothing */

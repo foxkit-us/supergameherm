@@ -2,6 +2,7 @@
 #define __INPUT_H_
 
 #include "config.h"	// macros, uint[XX]_t
+#include "typedefs.h"	// typedefs
 
 
 #define RAW_INPUT_P10	0x1
@@ -12,6 +13,7 @@
 // Columns set
 #define RAW_INPUT_P14	0x10
 #define RAW_INPUT_P15	0x20
+
 
 typedef enum
 {
@@ -25,14 +27,12 @@ typedef enum
 	INPUT_START = (RAW_INPUT_P13 | RAW_INPUT_P15),
 } input_key;
 
-typedef struct _input_state
+struct input_state_t
 {
-	uint8_t col_state;		/*! P14 and P15 */
-	uint8_t row_state;		/*! P10 through P13 */
-} input;
+	uint8_t col;		/*! P14 and P15 */
+	uint8_t row;		/*! P10 through P13 */
+};
 
-
-typedef struct _emu_state emu_state;
 
 uint8_t joypad_read(emu_state *restrict, uint16_t);
 void joypad_write(emu_state *restrict, uint16_t, uint8_t);

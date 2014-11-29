@@ -2,7 +2,7 @@
 #define __SGHERM_H_
 
 #include "config.h"	// bool, uint[XX]_t
-
+#include "typedefs.h"	// typedefs
 #include "util.h"	// Necessary utilities
 
 #include "lcdc.h"	// lcdc
@@ -18,7 +18,7 @@
 #define MEM_SIZE	0x10000
 
 
-typedef struct _registers
+struct registers_t
 {
 	/*! The 8/16 bit registers */
 	union
@@ -50,10 +50,10 @@ typedef struct _registers
 
 	uint16_t pc;		/*! Program counter */
 	uint16_t sp;		/*! Stack pointer */
-} register_map;
+};
 
 /*! The main emulation state structure */
-typedef struct _emu_state
+struct emu_state_t
 {
 	unsigned char memory[MEM_SIZE];	/*! RAM */
 	unsigned char *cart_data;	/*! Cartridge data */
@@ -61,7 +61,7 @@ typedef struct _emu_state
 	/*! Cartridge RAM */
 	unsigned char cart_ram[0xF][0x2000];
 
-	register_map registers;		/*! Registers */
+	register_state registers;	/*! Registers */
 
 	bool halt;			/*! waiting for interrupt */
 	bool stop;			/*! deep sleep state (disable LCDC) */
@@ -79,17 +79,17 @@ typedef struct _emu_state
 	system_types system;		/*! Present emulation mode */
 	cpu_freq freq;			/*! CPU frequency */
 
-	interrupts int_state;
+	interrupt_state interrupts;
 
 	// hardware
-	lcdc lcdc_state;
-	snd snd_state;
-	timer timer_state;
-	input input_state;
-	ser ser_state;
+	lcdc_state lcdc;
+	snd_state snd;
+	timer_state timer;
+	input_state input;
+	ser_state ser;
 
 	frontend front;
-} emu_state;
+};
 
 
 // Register accesses

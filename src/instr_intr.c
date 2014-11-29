@@ -29,7 +29,7 @@ static inline void stop(emu_state *restrict state)
  */
 static inline void di(emu_state *restrict state)
 {
-	state->int_state.next_cycle = INT_NEXT_DISABLE;
+	state->interrupts.next_cycle = INT_NEXT_DISABLE;
 	REG_PC(state)++;
 
 	state->wait = 4;
@@ -41,7 +41,7 @@ static inline void di(emu_state *restrict state)
  */
 static inline void ei(emu_state *restrict state)
 {
-	state->int_state.next_cycle = INT_NEXT_ENABLE;
+	state->interrupts.next_cycle = INT_NEXT_ENABLE;
 	REG_PC(state)++;
 
 	state->wait = 4;
@@ -54,7 +54,7 @@ static inline void ei(emu_state *restrict state)
  */
 static inline void halt(emu_state *restrict state)
 {
-	if(state->int_state.enabled)
+	if(state->interrupts.enabled)
 	{
 		state->halt = true;
 	}

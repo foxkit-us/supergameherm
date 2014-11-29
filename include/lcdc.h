@@ -2,11 +2,10 @@
 #define __LCDC_H_
 
 #include "config.h"	// macros, uint*_t
+#include "typedefs.h"	// typedefs
 
 
-typedef struct _emu_state emu_state;
-
-typedef struct _oam
+struct oam_t
 {
 	uint8_t y;
 	uint8_t x;
@@ -20,18 +19,18 @@ typedef struct _oam
 		uint8_t char_bak:1;	/*! Character bank (CGB only) */
 		uint8_t pal_cgb:3;	/*! Palette selection CGB only) */
 	} flags;
-} oam;
+};
 
-typedef struct _cps
+struct cps_t
 {
 	bool pal_sel:1;		/*! Palette changes on next write */
 	uint8_t notused:1;	/*! Not used */
 	uint8_t pal_num:3;	/*! Select palette number */
 	uint8_t pal_data_num:2;	/*! Select palette data number */
 	bool hl:1;		/*! Specify H/L */
-} cps;
+};
 
-typedef struct _lcdc_state
+struct lcdc_state_t
 {
 	uint32_t curr_clk;		/*! current clock */
 	uint8_t vram_bank;		/*! Present VRAM bank */
@@ -112,7 +111,7 @@ typedef struct _lcdc_state
 	uint8_t window_x;	/*! Window X coordinate (7 <= windowx <= 166) */
 
 	uint8_t out[160][144];	/*! Simulated LCD screen buffer */
-} lcdc;
+};
 
 
 uint8_t lcdc_read(emu_state *, uint16_t);

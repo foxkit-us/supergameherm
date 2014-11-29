@@ -2,9 +2,10 @@
 #define __SOUND_H_
 
 #include "config.h"	// Various macros, uint[XX]_t
+#include "typedefs.h"	// typedefs
 
 
-typedef struct _snd_state
+struct snd_state_t
 {
 	struct _ch1
 	{
@@ -47,10 +48,8 @@ typedef struct _snd_state
 		bool enabled;		/*! channel enabled? */
 	} ch4;
 	bool enabled;			/*! sound active? */
-} snd;
+};
 
-
-typedef struct _emu_state emu_state;
 
 uint8_t sound_read(emu_state *restrict, uint16_t);
 void sound_write(emu_state *restrict, uint16_t, uint8_t);
