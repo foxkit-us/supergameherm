@@ -32,9 +32,11 @@ struct cps_t
 
 struct lcdc_state_t
 {
-	uint32_t curr_clk;		/*! current clock */
-	uint8_t vram_bank;		/*! Present VRAM bank */
+	uint_fast16_t curr_clk;		/*! current clock */
+
+	uint_fast8_t vram_bank;		/*! Present VRAM bank */
 	uint8_t vram[0x2][0x2000];	/*! VRAM banks (DMG only uses 1) */
+
 	oam oam_store[40];		/*! OAM */
 
 	/*! LCD control register */
@@ -76,12 +78,6 @@ struct lcdc_state_t
 		} params;
 	} stat;
 
-	uint8_t scroll_y;	/*! Y position in scrolling map */
-	uint8_t scroll_x;	/*! X position in scrolling map */
-
-	uint8_t ly;		/*! Present line being transferred (144-153 = V-Blank) */
-	uint8_t lyc;		/*! LY comparison (set stat.lyc_state when == ly) */
-
 	union
 	{
 		/*! CGB only */
@@ -115,10 +111,16 @@ struct lcdc_state_t
 		};
 	};
 
-	uint8_t window_y;	/*! Window Y coordinate (0 <= windowy <= 143) */
-	uint8_t window_x;	/*! Window X coordinate (7 <= windowx <= 166) */
+	uint_fast8_t scroll_y;	/*! Y position in scrolling map */
+	uint_fast8_t scroll_x;	/*! X position in scrolling map */
 
-	uint16_t out[160][144];	/*! Simulated LCD screen buffer */
+	uint_fast8_t window_y;	/*! Window Y coordinate (0 <= windowy <= 143) */
+	uint_fast8_t window_x;	/*! Window X coordinate (7 <= windowx <= 166) */
+
+	uint_fast8_t ly;	/*! Present line being transferred (144-153 = V-Blank) */
+	uint_fast8_t lyc;	/*! LY comparison (set stat.lyc_state when == ly) */
+
+	uint_fast16_t out[160][144];	/*! Simulated LCD screen buffer */
 };
 
 

@@ -110,38 +110,38 @@ typedef enum
 
 struct cart_header_t
 {
-	/* NB: initial instructions excluded */
+	// NOTE: initial instructions excluded
 	uint8_t graphic[48];	/* 0x104-0x133 */
 	union
 	{
 		/* new-style GBC header */
 		struct
 		{
-			char title[11];		/* 0x134-0x143 */
-			char publisher[4];	/* 0x13F-0x142 */
-			uint8_t compat;		/* 0x143 CGB flag */
-			char licensee_code[2];	/* 0x144-0x145 */
+			uint8_t title[11];		/* 0x134-0x143 */
+			uint8_t publisher[4];		/* 0x13F-0x142 */
+			uint8_t compat;			/* 0x143 CGB flag */
+			uint8_t licensee_code[2];	/* 0x144-0x145 */
 			uint8_t sgb;
 		} cgb_title;
 
 		struct
 		{
-			char title[16];
-			char licensee_code[2];
+			uint8_t title[16];
+			uint8_t licensee_code[2];
 			uint8_t sgb;
 		} sgb_title;
 
-		char dmg_title[19];
+		uint8_t dmg_title[19];
 	};
 
-	uint8_t cart_type;	/* 0x147 */
-	uint8_t rom_size;	/* 0x148 */
-	uint8_t ram_size;	/* 0x149 Cartridge RAM */
-	uint8_t dest_code;	/* 0x14A Non-Japan if true */
-	char old_licensee;	/* 0x14B set to 0x33 if new code used */
-	uint8_t mask_rom_version;	/* 0x14C almost always 0 */
-	uint8_t header_checksum; 	/* 0x14D Enforced! */
-	uint16_t cart_checksum;	/* 0x14E-0x14F Unenforced */
+	uint8_t cart_type;		// 0x147
+	uint8_t rom_size;		// 0x148
+	uint8_t ram_size;		// 0x149 Cartridge RAM
+	uint8_t dest_code;		// 0x14A Non-Japan if true
+	uint8_t old_licensee;		// 0x14B set to 0x33 if new code used
+	uint8_t mask_rom_version;	// 0x14C almost always 0
+	uint8_t header_checksum;	// 0x14D Enforced!
+	uint16_t cart_checksum;		// 0x14E-0x14F Unenforced
 };
 
 typedef enum
