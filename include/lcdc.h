@@ -97,6 +97,8 @@ typedef struct _lcdc_state
 
 	uint8_t window_y;	/*! Window Y coordinate (0 <= windowy <= 143) */
 	uint8_t window_x;	/*! Window X coordinate (7 <= windowx <= 166) */
+
+	uint8_t out[160][144];	/*! Simulated LCD screen buffer */
 } lcdc;
 
 #define LCDC_ON			0x80	/*! LCD active */
