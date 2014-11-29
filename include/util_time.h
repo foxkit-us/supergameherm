@@ -6,7 +6,7 @@
 // Include the appropriate time functions
 #ifdef HAVE_CLOCK_GETTIME
 #	include "platform/time_posix.h"
-#elif HAVE_MACH_CLOCK_H
+#elif defined(HAVE_MACH_CLOCK_H)
 #	include "platform/time_mach.h"
 #else
 #	include "platform/time_null.h"
