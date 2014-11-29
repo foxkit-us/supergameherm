@@ -44,11 +44,47 @@ void register_handlers(void)
 	}
 }
 
-#else /*HAVE_POSIX */
+#elif defined(_WIN32)
+
+#undef unused	// windows.h *chokes* on this
+#include <windows.h>
+
+/*!
+ * @brief Handle Windows control events.
+ * @param	type	The type of control event that has occurred.
+ * @result TRUE if we handled it ourselves (and will go down within 20 secs),
+ *         FALSE if we want Windows to kill us immediately.
+ */
+BOOL WINAPI ctrl_event_handler(DWORD type)
+{
+	switch(type)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_BREAK_EVENT:
+	default:
+		do_exit = true;
+		return TRUE;
+	case CTRL_CLOSE_EVENT:
+		// console window is closed
+		// note that from here ALL events mean the console is destroyed
+		// so we CANNOT output to it (could crash/hang.)
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		// just go down fast.
+		return FALSE;
+	}
+}
+
+void register_handlers(void)
+{
+	SetConsoleCtrlHandler(ctrl_event_handler, TRUE);
+}
+
+#else /* !HAVE_POSIX, !_WIN32 */
 
 void register_handlers(void)
 {
 	// TODO maybe some windows signal handling?
 }
 
-#endif /*HAVE_POSIX */
+#endif /* HAVE_POSIX */
