@@ -37,7 +37,20 @@ typedef struct _lcdc_state
 	uint8_t vram_bank;		/*! Present VRAM bank */
 	uint8_t vram[0x2][0x2000];	/*! VRAM banks (DMG only uses 1) */
 	oam oam_store[40];		/*! OAM */
-	uint8_t lcd_control;		/*! LCD control register */
+
+	/*! LCD control register */
+	struct
+	{
+		bool enable:1;		/*! LCD enabled */
+		bool win_code_sel:1;	/*! Active window at 9800-9BFF or 9C00-9FFF */
+		bool win:1;		/*! Windowing on */
+		bool bg_char_sel:1;	/*! BG character data at 8800-97FF or 8000-8FFF */
+		bool bg_code_sel:1;	/*! BG code data at 9800-9BFF or 9C00-9FFF */
+		bool obj_block_size:1;	/*! Size of OBJ's are 8x8 or 8x16 */
+		bool obj:1;		/*! OBJ's are off or on */
+		bool dmg_bg:1;		/*! BG is on or off (DMG only) */
+	} lcd_control;
+
 	struct
 	{
 		uint8_t notused:1;	/*! Upper bit padding */
@@ -100,15 +113,6 @@ typedef struct _lcdc_state
 
 	uint8_t out[160][144];	/*! Simulated LCD screen buffer */
 } lcdc;
-
-#define LCDC_ON			0x80	/*! LCD active */
-#define LCDC_WIN_CODE_SEL	0x40	/*! Active window at 9800-9BFF or 9C00-9FFF */
-#define LCDC_WIN_ON		0x20	/*! Windowing on */
-#define LCDC_BG_CHAR_SEL	0x10	/*! BG character data at 8800-97FF or 8000-8FFF */
-#define LCDC_BG_CODE_SEL	0x08	/*! BG code data at 9800-9BFF or 9C00-9FFF */
-#define LCDC_OBJ_BLOCK_SIZE	0x04	/*! Size of OBJ's are 8x8 or 8x16 */
-#define LCDC_OBJ_ON		0x02	/*! OBJ's are off or on */
-#define LCDC_DMG_BG_DISPLAY	0x01	/*! BG is on or off (DMG only) */
 
 
 uint8_t lcdc_read(emu_state *, uint16_t);
