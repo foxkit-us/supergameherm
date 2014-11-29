@@ -57,6 +57,7 @@ typedef struct _emu_state
 {
 	unsigned char memory[MEM_SIZE];	/*! RAM */
 	unsigned char *cart_data;	/*! Cartridge data */
+
 	/*! Cartridge RAM */
 	unsigned char cart_ram[0xF][0x2000];
 
@@ -71,7 +72,6 @@ typedef struct _emu_state
 
 	uint8_t bank;			/*! current ROM bank */
 	uint8_t ram_bank;		/*! current RAM bank */
-	uint8_t vram_bank;		/*! current VRAM bank (CGB only) */
 
 	uint64_t cycles;		/*! Present cycle count */
 	uint64_t start_time;		/*! Time started */

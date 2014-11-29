@@ -34,7 +34,7 @@ uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 
 static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)
 {
-	return state->vram_bank;
+	return state->lcdc_state.vram_bank;
 }
 
 /*! a table of hardware register read methods */
@@ -249,8 +249,7 @@ static inline void dma_write(emu_state *restrict state, uint16_t location unused
 
 static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	// TODO FIXME actual switching of the banks
-	state->vram_bank = data;
+	state->lcdc_state.vram_bank = data;
 }
 
 static mem_write8_fn hw_reg_write[0x80] =
