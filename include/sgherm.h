@@ -34,10 +34,17 @@ typedef struct _registers
 		/*! 8-bit registers shadowing the 16-bit */
 		struct __8
 		{
+#ifdef BIG_ENDIAN
+			uint8_t a, f;
+			uint8_t b, c;
+			uint8_t d, e;
+			uint8_t h, l;
+#else
 			uint8_t f, a;
 			uint8_t c, b;
 			uint8_t e, d;
 			uint8_t l, h;
+#endif
 		} _8;
 	} gp;
 
