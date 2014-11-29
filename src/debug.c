@@ -314,10 +314,10 @@ void print_cycles(emu_state *restrict state)
 	double cps = state->cycles / taken;
 	const cpu_freq freq_dmg = CPU_FREQ_DMG, freq_cgb = CPU_FREQ_CGB;
 
-	debug("Time taken: %.3f seconds", taken);
-	debug("Cycle count: %ld", state->cycles);
-	debug("Cycles per second: %.3f (%.3fx GB, %.3fx GBC)", cps,
-			cps / freq_dmg, cps / freq_cgb);
+	info("Time taken: %.3f seconds", taken);
+	info("Cycle count: %ld", state->cycles);
+	info("Cycles per second: %.3f (%.3fx GB, %.3fx GBC)", cps,
+	     cps / freq_dmg, cps / freq_cgb);
 }
 
 void print_flags(emu_state *restrict state)
