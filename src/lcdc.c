@@ -160,7 +160,7 @@ void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		state->lcdc.lcd_control.reg = data;
 		break;
 	case 0xFF41:
-		state->lcdc.stat.reg = data;
+		state->lcdc.stat.params.lyc = ((data & 0x60) == 0x60);
 		break;
 	case 0xFF42:
 		state->lcdc.scroll_y = data;
