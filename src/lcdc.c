@@ -83,6 +83,9 @@ void lcdc_tick(emu_state *restrict state)
 		{
 			// Fire the vblank interrupt
 			signal_interrupt(state, INT_VBLANK);
+
+			// Blit
+			CALL_FRONTEND(state, blit_canvas);
 		}
 
 		if(state->lcdc.curr_clk % 456 == 0)
@@ -101,7 +104,7 @@ void lcdc_tick(emu_state *restrict state)
 	default:
 		fatal("somehow wound up in an unknown impossible video mode");
 	}
-	
+
 	if(state->lcdc.ly == state->lcdc.lyc)
 	{
 		state->lcdc.stat.params.lyc_state = true;
