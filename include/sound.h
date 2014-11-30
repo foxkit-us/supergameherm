@@ -33,21 +33,53 @@ struct snd_state_t
 		bool counter;
 		/*! 11-bit frequency (higher 5 = nothing) */
 		uint16_t frequency;
+		/*! output to S01 */
+		bool s01;
+		/*! output to S02 */
+		bool s02;
 	} ch1;
 	struct _ch2
 	{
-		bool enabled;		/*! channel enabled? */
+		/*! channel enabled? */
+		bool enabled;
+		/*! wave pattern duty: 1=12.5%,2=25%,3=50%,4=75% */
+		uint8_t wave_duty;
+		/*! sound length */
+		uint8_t length;
+		/*! initial envelope volume */
+		uint8_t envelope_volume;
+		/*! if true, envelope amplifies.
+		 *  otherwise, envelope attenuates. */
+		bool envelope_amp;
+		/*! number of sweeps (0 = stop) */
+		uint8_t sweep;
+		/*! if true, one-shot.  otherwise, loop */
+		bool counter;
+		/*! 11-bit frequency (higher 5 = nothing) */
+		uint16_t frequency;
+		/*! output to S01 */
+		bool s01;
+		/*! output to S02 */
+		bool s02;
 	} ch2;
 	struct _ch3
 	{
 		bool enabled;		/*! channel enabled? */
 		uint8_t wave[16];	/*! waveform data */
+		bool s01;		/*! output to S01 */
+		bool s02;		/*! output to S02 */
 	} ch3;
 	struct _ch4
 	{
 		bool enabled;		/*! channel enabled? */
+		bool s01;		/*! output to S01 */
+		bool s02;		/*! output to S02 */
 	} ch4;
 	bool enabled;			/*! sound active? */
+	bool s01;			/*! S01 enabled? */
+	uint8_t s01_volume;		/*! S01 volume */
+	bool s02;			/*! S02 enabled? */
+	uint8_t s02_volume;		/*! S02 volume */
 };
 
 
