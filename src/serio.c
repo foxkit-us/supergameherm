@@ -74,7 +74,7 @@ void serial_tick(emu_state *restrict state)
 	}
 	else
 	{
-		error("trying to use an external clock; not supported");
+		ticks = 8;
 	}
 
 	if(state->ser.curr_clk % ticks == 0)
