@@ -12,22 +12,22 @@ struct oam_t
 	uint8_t chr;	/*! CHR code */
 	struct
 	{
-		bool priority:1;	/*! Priority to obj/bg */
-		bool vflip:1;		/*! Vertical flip flag */
-		bool hflip:1;		/*! Horizontal flip */
-		uint8_t pal_dmg:1;	/*! Palette selectin (DMG only) */
-		uint8_t char_bak:1;	/*! Character bank (CGB only) */
-		uint8_t pal_cgb:3;	/*! Palette selection CGB only) */
+		bool priority:1;		/*! Priority to obj/bg */
+		bool vflip:1;			/*! Vertical flip flag */
+		bool hflip:1;			/*! Horizontal flip */
+		unsigned int pal_dmg:1;		/*! Palette selectin (DMG only) */
+		unsigned int char_bank:1;	/*! Character bank (CGB only) */
+		unsigned int pal_cgb:3;		/*! Palette selection CGB only) */
 	} flags;
 };
 
 struct cps_t
 {
-	bool pal_sel:1;		/*! Palette changes on next write */
-	uint8_t notused:1;	/*! Not used */
-	uint8_t pal_num:3;	/*! Select palette number */
-	uint8_t pal_data_num:2;	/*! Select palette data number */
-	bool hl:1;		/*! Specify H/L */
+	bool pal_sel:1;			/*! Palette changes on next write */
+	unsigned int notused:1;		/*! Not used */
+	unsigned int pal_num:3;		/*! Select palette number */
+	unsigned int pal_data_num:2;	/*! Select palette data number */
+	bool hl:1;			/*! Specify H/L */
 };
 
 struct lcdc_state_t
@@ -61,7 +61,7 @@ struct lcdc_state_t
 		uint8_t reg;
 		struct
 		{
-			uint8_t notused:1;	/*! Upper bit padding */
+			unsigned int notused:1;	/*! Upper bit padding */
 			bool lyc:1;		/*! int on LY matching selection */
 			bool mode_10:1;		/*! int on mode 10 selection */
 			bool mode_01:1;		/*! int on mode 01 selection */
@@ -74,7 +74,7 @@ struct lcdc_state_t
 			* Mode 10: OAM search
 			* Mode 11: LCD transfer
 			*/
-			uint8_t mode_flag:2;
+			unsigned int mode_flag:2;
 		} params;
 	} stat;
 
@@ -95,18 +95,18 @@ struct lcdc_state_t
 		{
 			struct
 			{
-				uint8_t shade_1:2;
-				uint8_t shade_2:2;
-				uint8_t shade_3:2;
-				uint8_t shade_4:2;
+				unsigned int shade_1:2;
+				unsigned int shade_2:2;
+				unsigned int shade_3:2;
+				unsigned int shade_4:2;
 			} dmg_pal;
 
 			struct
 			{
-				uint8_t shade_1:2;
-				uint8_t shade_2:2;
-				uint8_t shade_3:2;
-				uint8_t notused:2;
+				unsigned int shade_1:2;
+				unsigned int shade_2:2;
+				unsigned int shade_3:2;
+				unsigned int notused:2;
 			} obp[2];
 		};
 	};
