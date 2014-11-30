@@ -115,57 +115,76 @@ void lcdc_tick(emu_state *restrict state)
 	}
 }
 
-uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
+uint8_t lcdc_read(emu_state *restrict state unused, uint16_t reg)
 {
-	if(!(reg & 0xFF00))
+	error("lcdc: unknown register %04X (R)", reg);
+	return 0xFF;
+}
+
+uint8_t vram_read(emu_state *restrict state, uint16_t reg)
+{
+	uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
+	uint8_t bank = state->lcdc.vram_bank;
+	if(curr_mode > 1)
 	{
-		/* this is raw video RAM read */
-		uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
-		if(curr_mode > 1)
-		{
-			fatal("read from VRAM while not in h/v-blank");
-			return 0xFF;
-		}
-		return state->memory[reg];
+		fatal("read from VRAM while not in h/v-blank");
+		return 0xFF;
 	}
-	switch(reg)
+
+	return state->lcdc.vram[bank][reg - 0x8000];
+}
+
+uint8_t lcdc_control_read(emu_state *restrict state, uint16_t reg unused)
+{
+	return state->lcdc.lcd_control.reg;
+}
+
+uint8_t lcdc_stat_read(emu_state *restrict state, uint16_t reg unused)
+{
+	return state->lcdc.stat.reg;
+}
+
+uint8_t lcdc_scroll_read(emu_state *restrict state, uint16_t reg)
+{
+	if(reg == 0xFF42)
 	{
-	case 0xFF40:
-		return state->lcdc.lcd_control.reg;
-	case 0xFF41:
-		return state->lcdc.stat.reg;
-	case 0xFF44:
-		return state->lcdc.ly;
-	case 0xFF45:
-		return state->lcdc.lyc;
-	default:
-		error("lcdc: unknown register %04X (R)", reg);
+		return state->lcdc.scroll_y;
+	}
+	else if(reg == 0xFF43)
+	{
+		return state->lcdc.scroll_x;
+	}
+	else
+	{
+		fatal("BUG: attempt to read scroll stuff from non-scroll reg");
 		return 0xFF;
 	}
 }
 
-void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+uint8_t lcdc_ly_read(emu_state *restrict state, uint16_t reg unused)
 {
-	switch(reg)
+	return state->lcdc.ly;
+}
+
+uint8_t lcdc_lyc_read(emu_state *restrict state, uint16_t reg unused)
+{
+	return state->lcdc.lyc;
+}
+
+uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)
+{
+	if(reg == 0xFF4A)
 	{
-	case 0xFF40:
-		state->lcdc.lcd_control.reg = data;
-		break;
-	case 0xFF41:
-		state->lcdc.stat.reg = data;
-		break;
-	case 0xFF44:
-#ifndef NDEBUG
-		fatal("write to LY (FF44); you can't just vsync yourself!");
-#else
-		error("write to LY (FF44) is being ignored");
-#endif
-		break;
-	case 0xFF45:
-		state->lcdc.lyc = data;
-		break;
-	default:
-		error("lcdc: unknown register %04X (W)", reg);
+		return state->lcdc.window_y;
+	}
+	else if(reg == 0xFF4B)
+	{
+		return state->lcdc.window_x;
+	}
+	else
+	{
+		fatal("BUG: Attempt to read window stuff from non-window reg");
+		return 0xFF;
 	}
 }
 
@@ -211,6 +230,79 @@ uint8_t sprite_pal_data_read(emu_state *restrict state, uint16_t reg)
 
 	// TODO
 	return state->memory[reg];
+}
+
+void lcdc_write(emu_state *restrict state unused, uint16_t reg, uint8_t data unused)
+{
+	error("lcdc: unknown register %04X (W)", reg);
+}
+
+void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
+	uint8_t bank = state->lcdc.vram_bank;
+	if(curr_mode > 1)
+	{
+		fatal("write to VRAM while not in h/v-blank");
+	}
+
+	state->lcdc.vram[bank][reg - 0x8000] = data;
+}
+
+void lcdc_control_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+{
+	state->lcdc.lcd_control.reg = data;
+}
+
+void lcdc_stat_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+{
+	state->lcdc.stat.params.lyc = ((data & 0x60) == 0x60);
+}
+
+void lcdc_scroll_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	if(reg == 0xFF42)
+	{
+		state->lcdc.scroll_y = data;
+	}
+	else if(reg == 0xFF43)
+	{
+		state->lcdc.scroll_x = data;
+	}
+	else
+	{
+		fatal("BUG: attempt to write scroll stuff to non-scroll reg");
+	}
+}
+
+void lcdc_ly_write(emu_state *restrict state unused, uint16_t reg unused, uint8_t data unused)
+{
+#ifndef NDEBUG
+	fatal("write to LY (FF44); you can't just vsync yourself!");
+#else
+	error("write to LY (FF44) is being ignored");
+#endif
+}
+
+void lcdc_lyc_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+{
+	state->lcdc.lyc = data;
+}
+
+void lcdc_window_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	if(reg == 0xFF4A)
+	{
+		state->lcdc.window_y = data;
+	}
+	else if(reg == 0xFF4B)
+	{
+		state->lcdc.window_x = data;
+	}
+	else
+	{
+		fatal("BUG: Attempt to write window data to non-window register");
+	}
 }
 
 void bg_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)

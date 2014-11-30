@@ -83,12 +83,13 @@ static mem_read_fn hw_reg_read[0x80] =
 	sound_read, sound_read, sound_read, sound_read,
 
 	/* 40..45 - LCD controller */
-	lcdc_read, lcdc_read, lcdc_read, lcdc_read, lcdc_read, lcdc_read,
+	lcdc_control_read, lcdc_stat_read, lcdc_scroll_read,
+	lcdc_scroll_read, lcdc_ly_read, lcdc_lyc_read,
 
 	no_hardware, /* 46 - DMA - DMA transfer and control */
 
 	/* 47..4B - more graphics stuff */
-	lcdc_read, lcdc_read, lcdc_read, lcdc_read, lcdc_read,
+	lcdc_read, lcdc_read, lcdc_read, lcdc_window_read, lcdc_window_read,
 
 	/* 4C..4E - NO HARDWARE */
 	no_hardware, no_hardware, no_hardware,
@@ -303,13 +304,13 @@ static mem_write8_fn hw_reg_write[0x80] =
 	sound_write, sound_write, sound_write, sound_write,
 
 	/* 40..45 - LCD controller */
-	lcdc_write, lcdc_write, lcdc_write,
-	lcdc_write, lcdc_write, lcdc_write,
+	lcdc_control_write, lcdc_stat_write, lcdc_scroll_write,
+	lcdc_scroll_write, lcdc_ly_write, lcdc_lyc_write,
 
 	dma_write, /* 46 - DMA */
 
 	/* 47..4B - more video */
-	lcdc_write, lcdc_write, lcdc_write, lcdc_write, lcdc_write,
+	lcdc_write, lcdc_write, lcdc_write, lcdc_window_write, lcdc_window_write,
 
 	/* 4C..4E - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write,
