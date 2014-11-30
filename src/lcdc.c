@@ -85,7 +85,7 @@ void lcdc_tick(emu_state *restrict state)
 			signal_interrupt(state, INT_VBLANK);
 
 			// Blit
-			CALL_FRONTEND(state, blit_canvas);
+			BLIT_CANVAS(state);
 		}
 
 		if(state->lcdc.curr_clk % 456 == 0)

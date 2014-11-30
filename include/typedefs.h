@@ -2,6 +2,9 @@
 #define __TYPEDEFS_H__
 
 typedef struct frontend_t frontend;
+typedef struct frontend_audio_t frontend_audio;
+typedef struct frontend_video_t frontend_video;
+typedef struct frontend_input_t frontend_input;
 
 typedef struct oam_t oam;
 typedef struct cps_t cps;

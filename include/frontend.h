@@ -4,34 +4,68 @@
 #include "config.h"	// bool
 #include "typedefs.h"	// typedefs
 
-struct frontend_t
+struct frontend_input_t
 {
-	// Initialisation
-	bool (*init_video)(emu_state *);	/*! Initalise the video output */
-	bool (*init_audio)(emu_state *);	/*! Initalise the audio output */
-	bool (*init_input)(emu_state *);	/*! Initalise the keyboard input */
+	bool (*init)(emu_state *);	/*! Initalise the keyboard input */
+	void (*finish)(emu_state *);	/*! Deinitalise the keyboard input */
 
-	// Finalisation
-	void (*finish_video)(emu_state *);	/*! Deinitalise the video output */
-	void (*finish_audio)(emu_state *);	/*! Deinitalise the audio output */
-	void (*finish_input)(emu_state *);	/*! Deinitalise the keyboard input */
-
-	// Video related functions
-	void (*blit_canvas)(emu_state *);	/*! Blit the canvas */
-
-	// Audio related functions
-	void (*output_sample)(emu_state *);	/*! Output an audio sample */
-
-	// Event loop (ingest external events here)
+	// Event loop (ingest input events here)
 	int (*event_loop)(emu_state *);
 };
 
+struct frontend_audio_t
+{
+	bool (*init)(emu_state *);	/*! Initalise the audio output */
+	void (*finish)(emu_state *);	/*! Deinitalise the audio output */
+	void (*output_sample)(emu_state *);	/*! Output an audio sample */
+};
 
-/*! Frontend that does nothing */
-extern frontend null_frontend;
+struct frontend_video_t
+{
+	bool (*init)(emu_state *);	/*! Initalise the video output */
+	void (*finish)(emu_state *);	/*! Deinitalise the video output */
+	void (*blit_canvas)(emu_state *);	/*! Blit the canvas */
+};
+
+struct frontend_t
+{
+	frontend_input input;
+	frontend_audio audio;
+	frontend_video video;
+};
 
 
-#define CALL_FRONTEND(state, fn) ((*(state->front.fn))(state))
+/*! Frontends that do nothing */
+extern frontend_input null_frontend_input;
+extern frontend_audio null_frontend_audio;
+extern frontend_video null_frontend_video;
 
+
+#define CALL_FRONTEND(state, type, fn) ((*(state->front.type.fn))(state))
+
+#define INIT_INPUT(state) CALL_FRONTEND(state, input, init)
+#define INIT_AUDIO(state) CALL_FRONTEND(state, audio, init)
+#define INIT_VIDEO(state) CALL_FRONTEND(state, video, init)
+#define FINISH_INPUT(state) CALL_FRONTEND(state, input, finish)
+#define FINISH_AUDIO(state) CALL_FRONTEND(state, audio, finish)
+#define FINISH_VIDEO(state) CALL_FRONTEND(state, video, finish)
+
+#define INIT_ALL(state) \
+	{ \
+		INIT_INPUT(state); \
+		INIT_AUDIO(state); \
+		INIT_VIDEO(state); \
+	}
+
+#define FINISH_ALL(state) \
+	{ \
+		CALL_FRONTEND(state, input, finish); \
+		CALL_FRONTEND(state, audio, finish); \
+		CALL_FRONTEND(state, video, finish); \
+	}
+
+#define BLIT_CANVAS(state) CALL_FRONTEND(state, video, blit_canvas)
+#define OUTPUT_SAMPLE(state) CALL_FRONTEND(state, audio, output_sample)
+#define EVENT_LOOP(state) CALL_FRONTEND(state, input, event_loop)
 
 #endif /*__FRONTEND_H__*/

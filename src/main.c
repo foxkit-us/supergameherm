@@ -2,7 +2,7 @@
 
 #include "ctl_unit.h"	// init_ctl, execute
 #include "debug.h"	// print_cycles
-#include "frontend.h"	// null_frontend
+#include "frontend.h"	// null_frontend_*
 #include "lcdc.h"	// lcdc_tick
 #include "print.h"	// fatal, error, debug
 #include "rom_read.h"	// offsets
@@ -27,7 +27,11 @@ emu_state * init_emulator(void)
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
 
-	state->front = null_frontend;
+	state->front.input = null_frontend_input;
+	state->front.audio = null_frontend_audio;
+	state->front.video = null_frontend_video;
+
+	INIT_ALL(state)
 
 	return state;
 }
@@ -35,6 +39,8 @@ emu_state * init_emulator(void)
 static void finish_emulator(emu_state *restrict state)
 {
 	print_cycles(state);
+
+	FINISH_ALL(state)
 
 	free(state->cart_data);
 	free(state);
@@ -51,7 +57,7 @@ int main(int argc, char *argv[])
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
 
-	printf("sizeof state: %zd\n", sizeof(emu_state));
+	//printf("sizeof state: %zd\n", sizeof(emu_state));
 
 	if(argc < 2)
 	{
@@ -90,7 +96,7 @@ int main(int argc, char *argv[])
 
 	do
 	{
-		int val = CALL_FRONTEND(state, event_loop);
+		int val = EVENT_LOOP(state);
 		if(unlikely(val))
 		{
 			do_exit = true;
