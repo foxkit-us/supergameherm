@@ -10,10 +10,15 @@
 #ifdef unlikely
 #	undef unlikely
 #endif
+#ifdef alignment
+#	undef alignment
+#endif
 
 #define unused __pragma(warning(disable:4100))
 #define unlikely(x) (x)
 #define likely(x) (x)
+#define alignment(x) __declspec(align(x))
+
 #if (_MSC_VER >= 1400)
 #	define restrict __restrict
 #else
