@@ -309,7 +309,8 @@ void bg_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	if(state->system != SYSTEM_CGB)
 	{
-		return doofus_write(state, reg, data);
+		doofus_write(state, reg, data);
+		return;
 	}
 
 	// TODO
@@ -320,7 +321,8 @@ void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	if(state->system != SYSTEM_CGB)
 	{
-		return doofus_write(state, reg, data);
+		doofus_write(state, reg, data);
+		return;
 	}
 
 	// TODO
@@ -331,7 +333,8 @@ void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	if(state->system != SYSTEM_CGB)
 	{
-		return doofus_write(state, reg, data);
+		doofus_write(state, reg, data);
+		return;
 	}
 
 	// TODO
@@ -342,7 +345,8 @@ void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data
 {
 	if(state->system != SYSTEM_CGB)
 	{
-		return doofus_write(state, reg, data);
+		doofus_write(state, reg, data);
+		return;
 	}
 
 	// TODO
