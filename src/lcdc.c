@@ -134,10 +134,18 @@ uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 		return state->lcdc.lcd_control.reg;
 	case 0xFF41:
 		return state->lcdc.stat.reg;
+	case 0xFF42:
+		return state->lcdc.scroll_y;
+	case 0xFF43:
+		return state->lcdc.scroll_x;
 	case 0xFF44:
 		return state->lcdc.ly;
 	case 0xFF45:
 		return state->lcdc.lyc;
+	case 0xFF4A:
+		return state->lcdc.window_y;
+	case 0xFF4B:
+		return state->lcdc.window_x;
 	default:
 		error("lcdc: unknown register %04X (R)", reg);
 		return 0xFF;
@@ -154,6 +162,12 @@ void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	case 0xFF41:
 		state->lcdc.stat.reg = data;
 		break;
+	case 0xFF42:
+		state->lcdc.scroll_y = data;
+		break;
+	case 0xFF43:
+		state->lcdc.scroll_x = data;
+		break;
 	case 0xFF44:
 #ifndef NDEBUG
 		fatal("write to LY (FF44); you can't just vsync yourself!");
@@ -163,6 +177,12 @@ void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		break;
 	case 0xFF45:
 		state->lcdc.lyc = data;
+		break;
+	case 0xFF4A:
+		state->lcdc.window_y = data;
+		break;
+	case 0xFF4B:
+		state->lcdc.window_x = data;
 		break;
 	default:
 		error("lcdc: unknown register %04X (W)", reg);
