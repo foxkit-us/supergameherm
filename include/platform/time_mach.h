@@ -5,6 +5,7 @@
 
 #include <mach/clock.h>	// clock_serv_t, mach_timespec_t, etc.
 #include <mach/mach.h>	// mach_port_deallocate
+#include <mach/mach_time.h>
 
 static inline uint64_t get_time(void)
 {
