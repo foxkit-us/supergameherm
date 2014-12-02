@@ -36,8 +36,7 @@ emu_state * init_emulator(const char *rom_path)
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
 	{
-		perror("open rom");
-		fatal("Can't open ROM file %s", rom_path);
+		perror("fopen");
 		free(state);
 		state = NULL;
 		goto end_init;
@@ -117,7 +116,7 @@ int main(int argc, char *argv[])
 
 	if((state = init_emulator(argv[1])) == NULL)
 	{
-		fatal("Out of memory :(");
+		fatal("Error initalising the emulator :(");
 		return EXIT_FAILURE;
 	}
 
