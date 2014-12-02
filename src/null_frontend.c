@@ -1,5 +1,6 @@
 #include "sgherm.h"	// emu_state, unused
 #include "print.h"	// debug
+#include "signals.h"	// do_exit
 #include "frontend.h"	// frontend
 
 bool null_init_video(emu_state *state unused)
@@ -109,15 +110,14 @@ frontend_key null_get_key(emu_state *state unused)
 	return KEY_NONE;
 }
 
-int null_event_loop(emu_state *state unused)
+int null_event_loop(emu_state *state)
 {
-	static bool did_notice = false;
+	debug("Executing null event loop");
 
-	if(unlikely(!did_notice))
+	do
 	{
-		debug("Executing null event loop");
-		did_notice = true;
-	}
+		step_emulator(state);
+	} while(!do_exit);
 
 	return 0;
 }

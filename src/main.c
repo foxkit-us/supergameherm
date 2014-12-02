@@ -18,9 +18,11 @@
 #include <string.h>	// memset
 
 
-emu_state * init_emulator(void)
+emu_state * init_emulator(const char *rom_path)
 {
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
+	cart_header *header;
+	FILE *rom;
 
 	state->interrupts.enabled = true;
 	state->bank = 1;
@@ -32,7 +34,31 @@ emu_state * init_emulator(void)
 	state->front.video = null_frontend_video;
 	state->front.event_loop = null_event_loop;
 
-	INIT_ALL(state)
+	if((rom = fopen(rom_path, "rb")) == NULL)
+	{
+		perror("open rom");
+		fatal("Can't open ROM file %s", rom_path);
+		free(state);
+		state = NULL;
+		goto end_init;
+	}
+
+	if(unlikely(!read_rom_data(state, rom, &header)))
+	{
+		fatal("can't read ROM data (ROM is corrupt)?");
+		free(state);
+		state = NULL;
+		goto end_init;
+	}
+
+	// Initalise state
+	init_ctl(state);
+
+	// Start the clock
+	state->start_time = get_time();
+
+end_init:
+	fclose(rom);
 
 	return state;
 }
@@ -41,19 +67,39 @@ static void finish_emulator(emu_state *restrict state)
 {
 	print_cycles(state);
 
-	FINISH_ALL(state)
-
 	free(state->cart_data);
 	free(state);
 }
 
+bool step_emulator(emu_state *restrict state)
+{
+	static uint32_t count_cur_second = 0, game_seconds = 0;
+
+	execute(state);
+	lcdc_tick(state);
+	serial_tick(state);
+	timer_tick(state);
+	sound_tick(state);
+	//clock_tick(state);
+
+	if(unlikely(++count_cur_second == state->freq))
+	{
+		count_cur_second = 0;
+		if((++game_seconds % 10) == 0)
+		{
+			debug("GBC seconds: %ld", ++game_seconds);
+		}
+	}
+
+	state->cycles++;
+
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
-	FILE *rom;
 	emu_state *state;
-	cart_header *header;
-	uint32_t count_cur_second = 0, game_seconds = 0;
-	int code = EXIT_SUCCESS;
+	int val;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -66,63 +112,20 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(unlikely((state = init_emulator()) == NULL))
+	// Register the handlers
+	register_handlers();
+
+	if((state = init_emulator(argv[1])) == NULL)
 	{
 		fatal("Out of memory :(");
 		return EXIT_FAILURE;
 	}
 
-	if(unlikely((rom = fopen(argv[1], "rb")) == NULL))
-	{
-		perror("open rom");
-		fatal("Can't open ROM file %s", argv[1]);
-		return EXIT_FAILURE;
-	}
+	INIT_ALL(state)
+	val = EVENT_LOOP(state);
 
-	if(unlikely(!read_rom_data(state, rom, &header)))
-	{
-		fatal("can't read ROM data (ROM is corrupt)?");
-		return EXIT_FAILURE;
-	}
-
-	fclose(rom);
-
-	init_ctl(state);
-
-	// Register the handlers
-	register_handlers();
-
-	// Set the starting clock
-	state->start_time = get_time();
-
-	do
-	{
-		int val = EVENT_LOOP(state);
-		if(unlikely(val))
-		{
-			do_exit = true;
-			code = val;
-		}
-
-		execute(state);
-		lcdc_tick(state);
-		serial_tick(state);
-		timer_tick(state);
-		sound_tick(state);
-		//clock_tick(state);
-
-		if(unlikely(++count_cur_second == state->freq))
-		{
-			count_cur_second = 0;
-			if((++game_seconds % 10) == 0)
-			{
-				debug("GBC seconds: %ld", ++game_seconds);
-			}
-		}
-	}
-	while(likely(++state->cycles && !do_exit));
-
+	FINISH_ALL(state)
 	finish_emulator(state);
 
-	return code;
+	return val;
 }
