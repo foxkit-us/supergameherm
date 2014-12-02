@@ -4,13 +4,25 @@
 #include "config.h"	// bool
 #include "typedefs.h"	// typedefs
 
+
+typedef enum
+{
+	KEY_NONE,
+	KEY_UP,
+	KEY_DOWN,
+	KEY_LEFT,
+	KEY_RIGHT,
+	KEY_A,
+	KEY_B,
+	KEY_SELECT,
+	KEY_START,
+} frontend_key;
+
 struct frontend_input_t
 {
 	bool (*init)(emu_state *);	/*! Initalise the keyboard input */
 	void (*finish)(emu_state *);	/*! Deinitalise the keyboard input */
-
-	// Event loop (ingest input events here)
-	int (*event_loop)(emu_state *);
+	frontend_key (*get_key)(emu_state *);	/*! Get a key */
 };
 
 struct frontend_audio_t
@@ -32,6 +44,8 @@ struct frontend_t
 	frontend_input input;
 	frontend_audio audio;
 	frontend_video video;
+
+	int (*event_loop)(emu_state *);	/*! Event loop function (for use with toolkits */
 };
 
 
@@ -39,9 +53,10 @@ struct frontend_t
 extern frontend_input null_frontend_input;
 extern frontend_audio null_frontend_audio;
 extern frontend_video null_frontend_video;
-
+int null_event_loop(emu_state *);
 
 #define CALL_FRONTEND(state, type, fn) ((*(state->front.type.fn))(state))
+#define EVENT_LOOP(state) ((*(state->front.event_loop))(state))
 
 #define INIT_INPUT(state) CALL_FRONTEND(state, input, init)
 #define INIT_AUDIO(state) CALL_FRONTEND(state, audio, init)
@@ -66,6 +81,6 @@ extern frontend_video null_frontend_video;
 
 #define BLIT_CANVAS(state) CALL_FRONTEND(state, video, blit_canvas)
 #define OUTPUT_SAMPLE(state) CALL_FRONTEND(state, audio, output_sample)
-#define EVENT_LOOP(state) CALL_FRONTEND(state, input, event_loop)
+#define GET_KEY(state) CALL_FRONTEND(state, input, get_key)
 
 #endif /*__FRONTEND_H__*/

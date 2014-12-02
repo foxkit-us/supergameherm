@@ -30,6 +30,7 @@ emu_state * init_emulator(void)
 	state->front.input = null_frontend_input;
 	state->front.audio = null_frontend_audio;
 	state->front.video = null_frontend_video;
+	state->front.event_loop = null_event_loop;
 
 	INIT_ALL(state)
 

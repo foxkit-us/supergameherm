@@ -96,6 +96,19 @@ void null_output_sample(emu_state *state unused)
 	}
 }
 
+frontend_key null_get_key(emu_state *state unused)
+{
+	static bool did_notice = false;
+
+	if(unlikely(!did_notice))
+	{
+		debug("Not getting a null keystroke");
+		did_notice = true;
+	}
+
+	return KEY_NONE;
+}
+
 int null_event_loop(emu_state *state unused)
 {
 	static bool did_notice = false;
@@ -113,7 +126,7 @@ int null_event_loop(emu_state *state unused)
 frontend_input null_frontend_input = {
 	&null_init_input,
 	&null_finish_input,
-	&null_event_loop,
+	&null_get_key,
 };
 
 frontend_audio null_frontend_audio = {
@@ -127,3 +140,4 @@ frontend_video null_frontend_video = {
 	&null_finish_video,
 	&null_blit_canvas,
 };
+
