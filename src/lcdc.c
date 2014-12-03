@@ -27,11 +27,6 @@ void init_lcdc(emu_state *restrict state)
 	state->lcdc.lyc = 0;
 }
 
-static inline void _lcdc_inc_mode(emu_state *restrict state)
-{
-	state->lcdc.stat.params.mode_flag++;
-}
-
 void lcdc_tick(emu_state *restrict state)
 {
 	state->lcdc.curr_clk++;
@@ -49,7 +44,7 @@ void lcdc_tick(emu_state *restrict state)
 		if(state->lcdc.curr_clk >= 80)
 		{
 			state->lcdc.curr_clk = 0;
-			_lcdc_inc_mode(state);
+			state->lcdc.stat.params.mode_flag = 3;
 		}
 		break;
 	case 3:
@@ -57,7 +52,7 @@ void lcdc_tick(emu_state *restrict state)
 		if(state->lcdc.curr_clk >= 172)
 		{
 			state->lcdc.curr_clk = 0;
-			_lcdc_inc_mode(state);
+			state->lcdc.stat.params.mode_flag = 0;
 		}
 		break;
 	case 0:
@@ -68,7 +63,7 @@ void lcdc_tick(emu_state *restrict state)
 			if((++state->lcdc.ly) == 144)
 			{
 				/* going to v-blank */
-				_lcdc_inc_mode(state);
+				state->lcdc.stat.params.mode_flag = 1;
 			}
 			else
 			{
@@ -98,7 +93,7 @@ void lcdc_tick(emu_state *restrict state)
 		{
 			state->lcdc.curr_clk = 0;
 			state->lcdc.ly = 0;
-			_lcdc_inc_mode(state);
+			state->lcdc.stat.params.mode_flag = 2;
 		}
 
 		break;
@@ -114,6 +109,10 @@ void lcdc_tick(emu_state *restrict state)
 			signal_interrupt(state, INT_LCD_STAT);
 		}
 	}
+	else
+	{
+		state->lcdc.stat.params.lyc_state = false;
+	}
 }
 
 uint8_t lcdc_read(emu_state *restrict state unused, uint16_t reg)
@@ -128,7 +127,9 @@ uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
-		fatal("read from VRAM while not in h/v-blank");
+		// Game freak write shitty code and write to VRAM anyway.
+		// Pokémon RGB break if we fatal here.
+		warning("read from VRAM while not in h/v-blank");
 		return 0xFF;
 	}
 
@@ -244,7 +245,10 @@ void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
-		fatal("write to VRAM while not in h/v-blank");
+		// Game freak write shitty code and write to VRAM anyway.
+		// Pokémon RGB break if we fatal here.
+		warning("write to VRAM while not in h/v-blank");
+		return;
 	}
 
 	state->lcdc.vram[bank][reg - 0x8000] = data;
