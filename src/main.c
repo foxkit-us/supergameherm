@@ -52,6 +52,7 @@ emu_state * init_emulator(const char *rom_path)
 
 	// Initalise state
 	init_ctl(state);
+	init_lcdc(state);
 
 	// Start the clock
 	state->start_time = get_time();
