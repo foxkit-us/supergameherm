@@ -58,25 +58,25 @@ int null_event_loop(emu_state *);
 #define CALL_FRONTEND(state, type, fn) ((*(state->front.type.fn))(state))
 #define EVENT_LOOP(state) ((*(state->front.event_loop))(state))
 
-#define INIT_INPUT(state) CALL_FRONTEND(state, input, init)
-#define INIT_AUDIO(state) CALL_FRONTEND(state, audio, init)
-#define INIT_VIDEO(state) CALL_FRONTEND(state, video, init)
-#define FINISH_INPUT(state) CALL_FRONTEND(state, input, finish)
-#define FINISH_AUDIO(state) CALL_FRONTEND(state, audio, finish)
-#define FINISH_VIDEO(state) CALL_FRONTEND(state, video, finish)
+#define FRONTEND_INIT_INPUT(state) CALL_FRONTEND(state, input, init)
+#define FRONTEND_INIT_AUDIO(state) CALL_FRONTEND(state, audio, init)
+#define FRONTEND_INIT_VIDEO(state) CALL_FRONTEND(state, video, init)
+#define FRONTEND_FINISH_INPUT(state) CALL_FRONTEND(state, input, finish)
+#define FRONTEND_FINISH_AUDIO(state) CALL_FRONTEND(state, audio, finish)
+#define FRONTEND_FINISH_VIDEO(state) CALL_FRONTEND(state, video, finish)
 
-#define INIT_ALL(state) \
+#define FRONTEND_INIT_ALL(state) \
 	{ \
-		INIT_INPUT(state); \
-		INIT_AUDIO(state); \
-		INIT_VIDEO(state); \
+		FRONTEND_INIT_INPUT(state); \
+		FRONTEND_INIT_AUDIO(state); \
+		FRONTEND_INIT_VIDEO(state); \
 	}
 
-#define FINISH_ALL(state) \
+#define FRONTEND_FINISH_ALL(state) \
 	{ \
-		CALL_FRONTEND(state, input, finish); \
-		CALL_FRONTEND(state, audio, finish); \
-		CALL_FRONTEND(state, video, finish); \
+		FRONTEND_FINISH_INPUT(state); \
+		FRONTEND_FINISH_AUDIO(state); \
+		FRONTEND_FINISH_VIDEO(state); \
 	}
 
 #define BLIT_CANVAS(state) CALL_FRONTEND(state, video, blit_canvas)

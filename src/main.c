@@ -120,10 +120,10 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	INIT_ALL(state)
+	FRONTEND_INIT_ALL(state)
 	val = EVENT_LOOP(state);
 
-	FINISH_ALL(state)
+	FRONTEND_FINISH_ALL(state)
 	finish_emulator(state);
 
 	return val;
