@@ -29,7 +29,13 @@ void init_lcdc(emu_state *restrict state)
 
 static inline void _lcdc_inc_mode(emu_state *restrict state)
 {
-	state->lcdc.stat.params.mode_flag++;
+	uint8_t mode = state->lcdc.stat.params.mode_flag + 1;
+	if(mode > 4)
+	{
+		mode = 0;
+	}
+
+	state->lcdc.stat.params.mode_flag = 0;
 }
 
 void lcdc_tick(emu_state *restrict state)
