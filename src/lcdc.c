@@ -36,7 +36,8 @@ void lcdc_tick(emu_state *restrict state)
 {
 	state->lcdc.curr_clk++;
 
-	if(unlikely(state->stop))
+	if(unlikely(state->stop) ||
+	   unlikely(!state->lcdc.lcd_control.params.enable))
 	{
 		return;
 	}
@@ -125,7 +126,7 @@ uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 {
 	uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
 	uint8_t bank = state->lcdc.vram_bank;
-	if(curr_mode > 1)
+	if(curr_mode > 2)
 	{
 		fatal("read from VRAM while not in h/v-blank");
 		return 0xFF;
@@ -241,7 +242,7 @@ void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
 	uint8_t bank = state->lcdc.vram_bank;
-	if(curr_mode > 1)
+	if(curr_mode > 2)
 	{
 		fatal("write to VRAM while not in h/v-blank");
 	}
