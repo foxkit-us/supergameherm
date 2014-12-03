@@ -20,7 +20,7 @@ macro(platform_checks)
 			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
 		endif()
 
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700")
 	endif()
 
 	test_big_endian(BIG_ENDIAN)
