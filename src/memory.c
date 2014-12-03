@@ -406,6 +406,11 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			fatal("RAM banks for this cart (type %04X) aren't done yet sorry :(",
 					state->cart_data[OFF_CART_TYPE]);
 		}
+	case 0x8:
+	case 0x9:
+		/* VRAM */
+		vram_write(state, location, data);
+		return;
 	case 0xA:
 	case 0xB:
 		/* switched RAM bank */
