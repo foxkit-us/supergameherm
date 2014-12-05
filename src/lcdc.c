@@ -68,7 +68,7 @@ void lcdc_tick(emu_state *restrict state)
 			{
 				uint8_t tile = state->lcdc.vram[0x0][next_tile];
 				uint32_t pixels;
-				uint32_t *mem = (uint32_t *)state->lcdc.vram[0x0] + start + (tile * 8) + pixel_y_offset;
+				uint32_t *mem = (uint32_t *)(state->lcdc.vram[0x0] + start + (tile * 8) + pixel_y_offset);
 				if(!state->lcdc.lcd_control.params.bg_char_sel)
 				{
 					tile -= 0x80;
