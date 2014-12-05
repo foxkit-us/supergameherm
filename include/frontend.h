@@ -20,23 +20,29 @@ typedef enum
 
 struct frontend_input_t
 {
-	bool (*init)(emu_state *);	/*! Initalise the keyboard input */
-	void (*finish)(emu_state *);	/*! Deinitalise the keyboard input */
+	bool (*init)(emu_state *);		/*! Initalise the keyboard input */
+	void (*finish)(emu_state *);		/*! Deinitalise the keyboard input */
 	frontend_key (*get_key)(emu_state *);	/*! Get a key */
+
+	void *data;				/*! Opaque data */
 };
 
 struct frontend_audio_t
 {
-	bool (*init)(emu_state *);	/*! Initalise the audio output */
-	void (*finish)(emu_state *);	/*! Deinitalise the audio output */
+	bool (*init)(emu_state *);		/*! Initalise the audio output */
+	void (*finish)(emu_state *);		/*! Deinitalise the audio output */
 	void (*output_sample)(emu_state *);	/*! Output an audio sample */
+
+	void *data;				/*! Opaque data */
 };
 
 struct frontend_video_t
 {
-	bool (*init)(emu_state *);	/*! Initalise the video output */
-	void (*finish)(emu_state *);	/*! Deinitalise the video output */
+	bool (*init)(emu_state *);		/*! Initalise the video output */
+	void (*finish)(emu_state *);		/*! Deinitalise the video output */
 	void (*blit_canvas)(emu_state *);	/*! Blit the canvas */
+
+	void *data;				/*! Opaque data */
 };
 
 struct frontend_t
@@ -45,7 +51,9 @@ struct frontend_t
 	frontend_audio audio;
 	frontend_video video;
 
-	int (*event_loop)(emu_state *);	/*! Event loop function (for use with toolkits */
+	int (*event_loop)(emu_state *);	/*! Event loop function (for use with toolkits) */
+
+	void *data;			/*! Opaque data */
 };
 
 
