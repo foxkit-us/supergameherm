@@ -29,13 +29,13 @@ void init_lcdc(emu_state *restrict state)
 
 void lcdc_tick(emu_state *restrict state)
 {
-	state->lcdc.curr_clk++;
-
 	if(unlikely(state->stop) ||
 	   unlikely(!state->lcdc.lcd_control.params.enable))
 	{
 		return;
 	}
+
+	state->lcdc.curr_clk++;
 
 	switch(state->lcdc.stat.params.mode_flag)
 	{
@@ -49,10 +49,48 @@ void lcdc_tick(emu_state *restrict state)
 		break;
 	case 3:
 		/* second mode - reading VRAM for h scan line */
+		if(state->lcdc.curr_clk % 43 == 0)
+		{
+			/* write 8 tiles out to the framebuffer */
+			uint16_t next_tile = 0x1800;
+			uint8_t skip = ++state->lcdc.curr_h_blk;
+			uint8_t curr_tile = 0;
+			uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
+			uint8_t pixel_y_offset = state->lcdc.ly / 8;
+
+			if(state->lcdc.lcd_control.params.bg_code_sel)
+			{
+				next_tile += 0x400;
+			}
+			next_tile += (32 * state->lcdc.ly) + skip;
+
+			for(; curr_tile < 8; curr_tile++, next_tile++)
+			{
+				uint8_t tile = state->lcdc.vram[0x0][next_tile];
+				uint32_t pixels;
+				uint32_t *mem = (uint32_t *)state->lcdc.vram[0x0] + start + (tile * 8) + pixel_y_offset;
+				if(!state->lcdc.lcd_control.params.bg_char_sel)
+				{
+					tile -= 0x80;
+				}
+
+				pixels = interleave(*mem);
+				state->lcdc.out[skip][state->lcdc.ly] = (pixels & 0x3) * 0x40;
+				state->lcdc.out[skip + 1][state->lcdc.ly] = (pixels & 0x0C >> 2) * 0x40;
+				state->lcdc.out[skip + 2][state->lcdc.ly] = (pixels & 0x30 >> 4) * 0x40;
+				state->lcdc.out[skip + 3][state->lcdc.ly] = (pixels & 0xC0 >> 6) * 0x40;
+				state->lcdc.out[skip + 4][state->lcdc.ly] = (pixels & 0x300 >> 6) * 0x40;
+				state->lcdc.out[skip + 5][state->lcdc.ly] = (pixels & 0xC00 >> 6) * 0x40;
+				state->lcdc.out[skip + 6][state->lcdc.ly] = (pixels & 0x3000 >> 6) * 0x40;
+				state->lcdc.out[skip + 7][state->lcdc.ly] = (pixels & 0xC000 >> 6) * 0x40;
+			}
+		}
+
 		if(state->lcdc.curr_clk >= 172)
 		{
 			state->lcdc.curr_clk = 0;
 			state->lcdc.stat.params.mode_flag = 0;
+			state->lcdc.curr_h_blk = 0;
 		}
 		break;
 	case 0:
@@ -232,6 +270,26 @@ uint8_t sprite_pal_data_read(emu_state *restrict state, uint16_t reg)
 
 	// TODO
 	return state->memory[reg];
+}
+
+void dump_lcdc_state(emu_state *restrict state)
+{
+	debug("---LCDC---");
+	debug("CTRL: %02X (%s %s %s %s %s %s %s %s)",
+	      state->lcdc.lcd_control.reg,
+	      (state->lcdc.lcd_control.params.dmg_bg) ? "BG" : "bg",
+	      (state->lcdc.lcd_control.params.obj) ? "OBJ" : "obj",
+	      (state->lcdc.lcd_control.params.obj_block_size) ? "8x16" : "8x8",
+	      (state->lcdc.lcd_control.params.bg_code_sel) ? "9C" : "98",
+	      (state->lcdc.lcd_control.params.bg_char_sel) ? "sign" : "SIGN",
+	      (state->lcdc.lcd_control.params.win) ? "WIN" : "win",
+	      (state->lcdc.lcd_control.params.win_code_sel) ? "9C" : "98",
+	      (state->lcdc.lcd_control.params.enable) ? "E" : "e"
+	);
+	debug("STAT: %02X (MODE=%d)",
+	      state->lcdc.stat.reg, state->lcdc.stat.params.mode_flag);
+	debug("ICLK: %02X", state->lcdc.curr_clk);
+	debug("LY  : %02X", state->lcdc.ly);
 }
 
 void lcdc_write(emu_state *restrict state unused, uint16_t reg, uint8_t data unused)
