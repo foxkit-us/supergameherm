@@ -17,7 +17,6 @@
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
-
 emu_state * init_emulator(const char *rom_path, frontend_type input,
 		frontend_type audio, frontend_type video,
 		frontend_type event_loop)
@@ -65,7 +64,7 @@ end_init:
 	return state;
 }
 
-static void finish_emulator(emu_state *restrict state)
+void finish_emulator(emu_state *restrict state)
 {
 	print_cycles(state);
 

@@ -10,6 +10,11 @@ const frontend_input *frontend_set_input[] =
 #else
 	&null_frontend_input,
 #endif
+#ifdef HAVE_COMPILER_MSVC
+	&w32_frontend_input,
+#else
+	&null_frontend_input,
+#endif
 };
 
 /*! Video frontends */
@@ -21,11 +26,17 @@ const frontend_video *frontend_set_video[] =
 #else
 	&null_frontend_video,
 #endif
+#ifdef HAVE_COMPILER_MSVC
+	&w32_frontend_video,
+#else
+	&null_frontend_video,
+#endif
 };
 
 /*! Audio frontends */
 const frontend_audio *frontend_set_audio[] =
 {
+	&null_frontend_audio,
 	&null_frontend_audio,
 	&null_frontend_audio,
 };
@@ -36,6 +47,11 @@ const frontend_event_loop frontend_set_event_loop[] =
 	&null_event_loop,
 #ifdef HAVE_LIBCACA
 	&libcaca_event_loop,
+#else
+	&null_event_loop,
+#endif
+#ifdef HAVE_COMPILER_MSVC
+	&w32_event_loop,
 #else
 	&null_event_loop,
 #endif

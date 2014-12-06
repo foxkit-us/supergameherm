@@ -57,11 +57,19 @@ extern const frontend_video libcaca_frontend_video;
 int libcaca_event_loop(emu_state *);
 #endif
 
+/*! Win32 frotnend */
+#ifdef HAVE_COMPILER_MSVC	/* XXX - won't work on msys */
+extern const frontend_input w32_frontend_input;
+extern const frontend_video w32_frontend_video;
+int w32_event_loop(emu_state *);
+#endif
+
 /*! Frontend indicies */
 typedef enum
 {
 	FRONT_NULL = 0,
 	FRONT_LIBCACA = 1,
+	FRONT_WIN32 = 2,
 } frontend_type;
 
 extern const frontend_input *frontend_set_input[];
