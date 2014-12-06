@@ -37,8 +37,6 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 
 	if(!(state->input.col & col_sel))
 	{
-		// Unsolicited key event
-		debug("Unsolicited key event");
 		return;
 	}
 

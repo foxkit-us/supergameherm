@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 	// Register the handlers
 	register_handlers();
 
-	state = init_emulator(argv[1], FRONT_NULL, FRONT_NULL, FRONT_NULL, FRONT_NULL);
+	state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
 	if(!state)
 	{
 		fatal("Error initalising the emulator :(");

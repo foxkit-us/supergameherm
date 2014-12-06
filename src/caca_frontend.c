@@ -136,6 +136,8 @@ input_key libcaca_get_key(emu_state *state)
 
 int libcaca_event_loop(emu_state *state)
 {
+	int key_mask = 0;
+
 	debug("Executing libcaca event loop");
 
 	do
@@ -144,7 +146,16 @@ int libcaca_event_loop(emu_state *state)
 		if(state->lcdc.stat.params.mode_flag == 3)
 		{
 			input_key key = GET_KEY(state);
-			joypad_signal(state, key, (key != INPUT_NONE));
+			if(key != INPUT_NONE)
+			{
+				key_mask |= key;
+				joypad_signal(state, key_mask, true);
+			}
+			else
+			{
+				joypad_signal(state, key_mask, false);
+				key_mask = 0;
+			}
 		}
 
 	} while(!do_exit);
