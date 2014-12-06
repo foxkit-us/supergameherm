@@ -37,7 +37,7 @@ bool libcaca_init_video(emu_state *state)
 	caca_set_display_title(video->display, "SuperGameHerm");
 
 	video->dither = caca_create_dither(32, 160, 144, 4*160,
-			0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+			0xff000000, 0x00ff0000, 0x0000ff00, 0);
 	if(!(video->dither))
 	{
 		warning("Failed to initalise the libcaca video frontend");
@@ -79,7 +79,7 @@ void libcaca_blit_canvas(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
 
-	caca_dither_bitmap(video->canvas, 0, 0, 159, 143, video->dither, state->lcdc.out);
+	caca_dither_bitmap(video->canvas, 0, 0, 160, 144, video->dither, state->lcdc.out);
 	caca_refresh_display(video->display);
 }
 
