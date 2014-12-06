@@ -29,9 +29,9 @@ emu_state * init_emulator(const char *rom_path)
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
 
-	state->front.input = null_frontend_input;
-	state->front.audio = null_frontend_audio;
-	state->front.video = null_frontend_video;
+	memcpy(&(state->front.input), &null_frontend_input, sizeof(frontend_input));
+	memcpy(&(state->front.audio), &null_frontend_audio, sizeof(frontend_audio));
+	memcpy(&(state->front.video), &null_frontend_video, sizeof(frontend_video));
 	state->front.event_loop = null_event_loop;
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
