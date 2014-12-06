@@ -98,27 +98,37 @@ input_key libcaca_get_key(emu_state *state)
 	{
 	case CACA_KEY_UP:
 		return INPUT_UP;
+
 	case CACA_KEY_DOWN:
 		return INPUT_DOWN;
+
 	case CACA_KEY_LEFT:
 		return INPUT_LEFT;
+
 	case CACA_KEY_RIGHT:
 		return INPUT_RIGHT;
 
 	case 'a':
 	case 'A':
+	case 'z':
+	case 'Z':
 		return INPUT_A;
+
 	case 's':
 	case 'S':
+	case 'x':
+	case 'X':
 		return INPUT_B;
 
 	case CACA_KEY_RETURN:
 		return INPUT_START;
+
 	case CACA_KEY_BACKSPACE:
 		return INPUT_SELECT;
 
 	case CACA_KEY_ESCAPE:
 		do_exit = true;
+
 	default:
 		return INPUT_NONE;
 	}
