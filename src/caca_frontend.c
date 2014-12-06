@@ -153,14 +153,14 @@ int libcaca_event_loop(emu_state *state)
 }
 
 
-frontend_video libcaca_frontend_video = {
+const frontend_video libcaca_frontend_video = {
 	&libcaca_init_video,
 	&libcaca_finish_video,
 	&libcaca_blit_canvas,
 	NULL,
 };
 
-frontend_input libcaca_frontend_input = {
+const frontend_input libcaca_frontend_input = {
 	&libcaca_init_input,
 	&libcaca_finish_input,
 	&libcaca_get_key,

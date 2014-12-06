@@ -19,4 +19,7 @@ typedef struct registers_t register_state;
 typedef struct snd_state_t snd_state;
 typedef struct timer_state_t timer_state;
 
+// Depends on emu_state *sigh*
+typedef int (*frontend_event_loop)(emu_state *);
+
 #endif /*__TYPEDEFS_H__*/

@@ -1,6 +1,9 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+// Have the libcaca backend
+#cmakedefine HAVE_LIBCACA
+
 // System is POSIX
 #cmakedefine HAVE_POSIX
 

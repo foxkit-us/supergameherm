@@ -112,7 +112,8 @@ macro(libcaca_check)
 	option(LIBCACA_ENABLE "Enable libcaca frontend" on)
 	if(LIBCACA_ENABLE)
 		find_package(libcaca)
-		if(LIBCACA_FOUND)
+		if(libcaca_FOUND)
+			set(HAVE_LIBCACA 1)
 			set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} "src/caca_frontend.c")
 			include_directories(${libcaca_INCLUDE_DIR})
 			set(LIBS_ADDITIONAL ${LIBS_ADDITIONAL} ${libcaca_LIBRARY})
@@ -134,7 +135,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE
 
 add_executable("sgherm" src/main.c src/ctl_unit.c src/input.c src/lcdc.c
 	src/memory.c src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c 
-	src/debug.c src/signals.c src/util.c src/null_frontend.c ${SOURCES_ADDITIONAL})
+	src/debug.c src/signals.c src/util.c src/frontend.c src/null_frontend.c ${SOURCES_ADDITIONAL})
 target_link_libraries(sgherm ${LIBS_ADDITIONAL})
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

@@ -44,13 +44,32 @@ struct frontend_t
 	void *data;				/*! Opaque data */
 };
 
-
-/*! Frontends that do nothing */
-extern frontend_input null_frontend_input;
-extern frontend_audio null_frontend_audio;
-extern frontend_video null_frontend_video;
+/*! Null frontends */
+extern const frontend_input null_frontend_input;
+extern const frontend_audio null_frontend_audio;
+extern const frontend_video null_frontend_video;
 int null_event_loop(emu_state *);
 
+/*! libcaca frontends */
+#ifdef HAVE_LIBCACA
+extern const frontend_input libcaca_frontend_input;
+extern const frontend_video libcaca_frontend_video;
+int libcaca_event_loop(emu_state *);
+#endif
+
+/*! Frontend indicies */
+typedef enum
+{
+	FRONT_NULL = 0,
+	FRONT_LIBCACA = 1,
+} frontend_type;
+
+extern const frontend_input *frontend_set_input[];
+extern const frontend_video *frontend_set_video[];
+extern const frontend_audio *frontend_set_audio[];
+extern const frontend_event_loop frontend_set_event_loop[];
+
+// Helpers to call functions
 #define CALL_FRONTEND(state, type, fn) ((*(state->front.type.fn))(state))
 #define EVENT_LOOP(state) ((*(state->front.event_loop))(state))
 
@@ -78,7 +97,5 @@ int null_event_loop(emu_state *);
 #define BLIT_CANVAS(state) CALL_FRONTEND(state, video, blit_canvas)
 #define OUTPUT_SAMPLE(state) CALL_FRONTEND(state, audio, output_sample)
 #define GET_KEY(state) CALL_FRONTEND(state, input, get_key)
-
-
 
 #endif /*__FRONTEND_H__*/

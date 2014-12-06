@@ -124,21 +124,21 @@ int null_event_loop(emu_state *state)
 }
 
 
-frontend_input null_frontend_input = {
+const frontend_input null_frontend_input = {
 	&null_init_input,
 	&null_finish_input,
 	&null_get_key,
 	NULL,
 };
 
-frontend_audio null_frontend_audio = {
+const frontend_audio null_frontend_audio = {
 	&null_init_audio,
 	&null_finish_audio,
 	&null_output_sample,
 	NULL,
 };
 
-frontend_video null_frontend_video = {
+const frontend_video null_frontend_video = {
 	&null_init_video,
 	&null_finish_video,
 	&null_blit_canvas,
