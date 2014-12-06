@@ -18,7 +18,9 @@
 #include <string.h>	// memset
 
 
-emu_state * init_emulator(const char *rom_path)
+emu_state * init_emulator(const char *rom_path, frontend_type input,
+		frontend_type audio, frontend_type video,
+		frontend_type event_loop)
 {
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
@@ -29,10 +31,10 @@ emu_state * init_emulator(const char *rom_path)
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
 
-	memcpy(&(state->front.input), &null_frontend_input, sizeof(frontend_input));
-	memcpy(&(state->front.audio), &null_frontend_audio, sizeof(frontend_audio));
-	memcpy(&(state->front.video), &null_frontend_video, sizeof(frontend_video));
-	state->front.event_loop = null_event_loop;
+	memcpy(&(state->front.input), frontend_set_input[input], sizeof(frontend_input));
+	memcpy(&(state->front.audio), frontend_set_audio[audio], sizeof(frontend_audio));
+	memcpy(&(state->front.video), frontend_set_video[video], sizeof(frontend_video));
+	state->front.event_loop = frontend_set_event_loop[event_loop];
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
 	{
@@ -104,8 +106,6 @@ int main(int argc, char *argv[])
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
 
-	//printf("sizeof state: %zd\n", sizeof(emu_state));
-
 	if(argc < 2)
 	{
 		fatal("You must specify a ROM file... -.-");
@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
 	// Register the handlers
 	register_handlers();
 
-	if((state = init_emulator(argv[1])) == NULL)
+	state = init_emulator(argv[1], FRONT_NULL, FRONT_NULL, FRONT_NULL, FRONT_NULL);
+	if(!state)
 	{
 		fatal("Error initalising the emulator :(");
 		return EXIT_FAILURE;
