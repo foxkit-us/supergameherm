@@ -8,6 +8,24 @@
 #include <stdlib.h>	// calloc
 
 
+#define LEN 144
+#define WID 160
+#define BPP 32
+#define PITCH 4
+
+#ifdef LITTLE_ENDIAN
+#define RED	0x000000ff
+#define GREEN	0x0000ff00
+#define BLUE	0x00ff0000
+#define ALPHA	0xff000000
+#else
+#define RED	0xff000000
+#define GREEN	0x00ff0000
+#define BLUE	0x0000ff00
+#define ALPHA	0x000000ff
+#endif
+
+
 typedef struct libcaca_video_data_t
 {
 	caca_canvas_t *canvas;
@@ -25,7 +43,7 @@ bool libcaca_init_video(emu_state *state)
 	video = calloc(sizeof(libcaca_video_data), 1);
 	state->front.video.data = (void *)video;
 
-	video->canvas = caca_create_canvas(160, 144);
+	video->canvas = caca_create_canvas(LEN, WID);
 	video->display = caca_create_display(video->canvas);
 	if(!(video->display))
 	{
@@ -36,8 +54,8 @@ bool libcaca_init_video(emu_state *state)
 
 	caca_set_display_title(video->display, "SuperGameHerm");
 
-	video->dither = caca_create_dither(32, 160, 144, 4*160,
-			0xff000000, 0x00ff0000, 0x0000ff00, 0);
+	video->dither = caca_create_dither(BPP, LEN, WID, PITCH*WID,
+			RED, GREEN, BLUE, ALPHA);
 	if(!(video->dither))
 	{
 		warning("Failed to initalise the libcaca video frontend");
@@ -79,7 +97,8 @@ void libcaca_blit_canvas(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
 
-	caca_dither_bitmap(video->canvas, 0, 0, 160, 144, video->dither, state->lcdc.out);
+	caca_dither_bitmap(video->canvas, 0, 0, LEN, WID, video->dither,
+			state->lcdc.out);
 	caca_refresh_display(video->display);
 }
 
