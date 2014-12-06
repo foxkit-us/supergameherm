@@ -97,10 +97,22 @@ bool step_emulator(emu_state *restrict state)
 	return true;
 }
 
+int main_common(emu_state *state)
+{
+	register_handlers();
+
+	FRONTEND_INIT_ALL(state)
+	int val = EVENT_LOOP(state);
+
+	FRONTEND_FINISH_ALL(state)
+	finish_emulator(state);
+
+	return val;
+}
+
 int main(int argc, char *argv[])
 {
 	emu_state *state;
-	int val;
 
 	printf("Super Game Herm!\n");
 	printf("Beta version!\n\n");
@@ -111,9 +123,6 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	// Register the handlers
-	register_handlers();
-
 	state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
 	if(!state)
 	{
@@ -121,11 +130,5 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	FRONTEND_INIT_ALL(state)
-	val = EVENT_LOOP(state);
-
-	FRONTEND_FINISH_ALL(state)
-	finish_emulator(state);
-
-	return val;
+	return main_common(state);
 }
