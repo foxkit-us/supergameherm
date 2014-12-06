@@ -108,7 +108,7 @@ input_key null_get_key(emu_state *state unused)
 		did_notice = true;
 	}
 
-	return KEY_NONE;
+	return INPUT_NONE;
 }
 
 int null_event_loop(emu_state *state)

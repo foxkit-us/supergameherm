@@ -3,13 +3,14 @@
 
 #include "config.h"	// bool
 #include "typedefs.h"	// typedefs
+#include "input.h"	// input_key
 
 
 struct frontend_input_t
 {
 	bool (*init)(emu_state *);		/*! Initalise the keyboard input */
 	void (*finish)(emu_state *);		/*! Deinitalise the keyboard input */
-	frontend_key (*get_key)(emu_state *);	/*! Get a key */
+	input_key (*get_key)(emu_state *);	/*! Get a key */
 
 	void *data;				/*! Opaque data */
 };
