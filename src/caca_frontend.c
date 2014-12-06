@@ -162,7 +162,7 @@ int libcaca_event_loop(emu_state *state)
 	do
 	{
 		step_emulator(state);
-		if(state->lcdc.stat.params.mode_flag == 3)
+		if(state->lcdc.stat.params.mode_flag == 3 && state->input.col)
 		{
 			input_key key = GET_KEY(state);
 			if(key != INPUT_NONE)
@@ -170,13 +170,12 @@ int libcaca_event_loop(emu_state *state)
 				key_mask |= key;
 				joypad_signal(state, key_mask, true);
 			}
-			else
+			else if(key_mask)
 			{
 				joypad_signal(state, key_mask, false);
 				key_mask = 0;
 			}
 		}
-
 	} while(!do_exit);
 
 	return 0;
