@@ -5,19 +5,6 @@
 #include "typedefs.h"	// typedefs
 
 
-typedef enum
-{
-	KEY_NONE,
-	KEY_UP,
-	KEY_DOWN,
-	KEY_LEFT,
-	KEY_RIGHT,
-	KEY_A,
-	KEY_B,
-	KEY_SELECT,
-	KEY_START,
-} frontend_key;
-
 struct frontend_input_t
 {
 	bool (*init)(emu_state *);		/*! Initalise the keyboard input */
@@ -51,9 +38,9 @@ struct frontend_t
 	frontend_audio audio;
 	frontend_video video;
 
-	int (*event_loop)(emu_state *);	/*! Event loop function (for use with toolkits) */
+	int (*event_loop)(emu_state *);		/*! Event loop function (for use with toolkits) */
 
-	void *data;			/*! Opaque data */
+	void *data;				/*! Opaque data */
 };
 
 
@@ -90,5 +77,7 @@ int null_event_loop(emu_state *);
 #define BLIT_CANVAS(state) CALL_FRONTEND(state, video, blit_canvas)
 #define OUTPUT_SAMPLE(state) CALL_FRONTEND(state, audio, output_sample)
 #define GET_KEY(state) CALL_FRONTEND(state, input, get_key)
+
+
 
 #endif /*__FRONTEND_H__*/

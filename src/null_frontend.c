@@ -1,6 +1,7 @@
 #include "sgherm.h"	// emu_state, unused
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
+#include "input.h"	// input_key
 #include "frontend.h"	// frontend
 
 bool null_init_video(emu_state *state unused)
@@ -97,7 +98,7 @@ void null_output_sample(emu_state *state unused)
 	}
 }
 
-frontend_key null_get_key(emu_state *state unused)
+input_key null_get_key(emu_state *state unused)
 {
 	static bool did_notice = false;
 
