@@ -978,26 +978,20 @@ static inline void ld_a_ff00_c(emu_state *restrict state, uint8_t data[] unused)
  */
 static inline void ld_hl_sp_imm8(emu_state *restrict state, uint8_t data[])
 {
-	/* per docs, this is a SIGNED add */
-	int8_t n = data[0];
-	uint32_t temp = REG_SP(state) + n;
-
-	REG_HL(state) = (uint16_t)temp;
+	int8_t val = (int8_t)data[0];
+	REG_HL(state) = REG_SP(state) + val;
+	uint16_t temp = REG_SP(state) ^ val ^ REG_HL(state);
 
 	FLAGS_CLEAR(state);
 
-	if(temp)
+	if((temp & 0x100) == 0x100)
 	{
-		if(((REG_SP(state) & 0xFF) + (n & 0xFF)) & 0x100)
-		{
-			FLAG_SET(state, FLAG_C);
-		}
+		FLAG_SET(state, FLAG_C);
+	}
 
-		// Half carry
-		if(((REG_SP(state) & 0x0F) + (n & 0x0F)) & 0x10)
-		{
-			FLAG_SET(state, FLAG_H);
-		}
+	if((temp & 0x10) == 0x10)
+	{
+		FLAG_SET(state, FLAG_H);
 	}
 
 	state->wait = 12;

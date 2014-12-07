@@ -889,26 +889,23 @@ static inline void sbc_imm8(emu_state *restrict state, uint8_t data[])
  */
 static inline void add_sp_imm8(emu_state *restrict state, uint8_t data[])
 {
-	uint8_t to_add = data[0];
-	uint32_t temp = REG_SP(state) + to_add;
+	int8_t val = (int8_t)data[0];
+	uint16_t temp = REG_SP(state) + val;
+	uint16_t temp2 = REG_SP(state) ^ val ^ temp;
+
+	REG_SP(state) = temp;
 
 	FLAGS_CLEAR(state);
 
-	if(temp)
+	if((temp2 & 0x100) == 0x100)
 	{
-		if(((REG_SP(state) & 0xFF) + (to_add & 0xFF)) & 0x100)
-		{
-			FLAG_SET(state, FLAG_C);
-		}
-
-		// Half carry
-		if(((REG_SP(state) & 0x0F) + (to_add & 0x0F)) & 0x10)
-		{
-			FLAG_SET(state, FLAG_H);
-		}
+		FLAG_SET(state, FLAG_C);
 	}
 
-	REG_SP(state) = (uint16_t)temp;
+	if((temp2 & 0x10) == 0x10)
+	{
+		FLAG_SET(state, FLAG_H);
+	}
 
 	state->wait = 16;
 }
