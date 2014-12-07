@@ -94,7 +94,7 @@ typedef enum
 } cb_ops;
 
 
-typedef void (*opcode_t)(emu_state *restrict state);
+typedef void (*opcode_t)(emu_state *restrict state, uint8_t data[]);
 
 
 void init_ctl(emu_state *restrict state);
