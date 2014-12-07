@@ -80,19 +80,17 @@ macro(compiler_checks)
 		# /G5 - Enable Pentium optimisations
 		# /Gr - __fastcall as deafult
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4
-		/WX /Ot /Oa /Gy")
+		/Ot /Oa /Gy")
 		# /MTd - statically link to runtime library
 		# /W4 - enable all warnings
-		# /WX - warnings are errors (-Werror in clang)
 		# /Ot, /Oa - still enable some performance improvements
 		# /Gy - function-level linking (slightly faster)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zp4
-		/MT /Za /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /GF")
+		/MT /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /GF")
 		# /Zp4 - 4-byte struct alignment (~150k cycle/sec speed up on
 		# P5 microarchitecture)
 		# /MT - statically link to runtime library (larger file size,
 		# but higher compatibility)
-		# /Za - disable MS language extensions
 		# /W3 - enable most warnings
 		# /Zi - still build debug symbol files (easier testing)
 		# /Ox - "fuller" optimisation
@@ -102,6 +100,7 @@ macro(compiler_checks)
 		# /Ob2 - force inlining of functions
 		# /GF - combine duplicate const strings into one (smaller file
 		# size, and less data cache misses)
+		set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} src/winmain.c)
 	else()
 		message("I'm at a loss as to what compiler you have, hope it all works out.")
 		set(HAVE_COMPILER_UNKNOWN "1")
