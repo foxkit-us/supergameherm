@@ -232,7 +232,6 @@ static inline void call_z_imm16(emu_state *restrict state, uint8_t data[])
 	else
 	{
 		state->wait = 12;
-		REG_PC(state) += 3;
 	}
 }
 
@@ -329,10 +328,6 @@ static inline void jp_c_imm16(emu_state *restrict state, uint8_t data[])
 		REG_PC(state) = (data[1]<<8)|data[0];
 
 		state->wait += 4;
-	}
-	else
-	{
-		REG_PC(state) += 3;
 	}
 }
 
