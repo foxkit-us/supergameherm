@@ -142,9 +142,9 @@ static inline void call_nz_imm16(emu_state *restrict state, uint8_t data[])
 	}
 }
 
-static inline void reset_common(emu_state *restrict state, uint8_t data[])
+static inline void reset_common(emu_state *restrict state, uint8_t data[] unused)
 {
-	uint16_t to = data[0] - 0xC7;
+	uint16_t to = mem_read8(state, REG_PC(state) - 1) - 0xC7;
 
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_PC(state));
