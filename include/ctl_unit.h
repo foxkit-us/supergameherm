@@ -59,9 +59,6 @@ struct interrupt_state_t
 	bool enabled;			/*! Interrupts enabled */
 	uint8_t mask;			/*! Interrupt mask */
 	uint8_t pending;		/*! Pending interrupts */
-
-	// Optimisation - cache the next interrupt jump address
-	interrupt_list next_jmp;
 };
 
 
@@ -110,6 +107,6 @@ void doofus_write(emu_state *restrict, uint16_t, uint8_t);
 
 
 #define signal_interrupt(state, interrupt) \
-	mem_write8((state), 0xFF0F, (interrupt) | ((state)->interrupts.pending))
+	((state)->interrupts.pending |= (interrupt))
 
 #endif /*!__CTL_UNIT_H__*/
