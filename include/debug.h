@@ -7,7 +7,6 @@
 
 extern const char * const mnemonics[0x100];
 extern const char * const mnemonics_cb[0x100];
-extern const int instr_len[0x100];
 extern const char * const flags_expect[0x100];
 extern const char * const flags_cb_expect[0x100];
 

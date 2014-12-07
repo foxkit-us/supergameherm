@@ -6,7 +6,6 @@
 #include "debug.h"		// state dumps etc
 #include "print.h"		// fatal
 
-
 #include <assert.h>		// assert
 #include <stdlib.h>		// NULL
 
@@ -116,6 +115,27 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 #include "instr_misc.c"
 #include "instr_stack.c"
 
+
+/*! Bit length of given instructions */
+static const int instr_len[0x100] =
+{
+	1, 3, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 2, 1,		// 0x00
+	2, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1,		// 0x10
+	2, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1,		// 0x20
+	2, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1,		// 0x30
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0x40
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0x50
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0x60
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0x70
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0x80
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0x90
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0xA0
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		// 0xB0
+	1, 1, 3, 3, 3, 1, 2, 1, 1, 1, 3, 2, 3, 3, 2, 1,		// 0xC0
+	1, 1, 3, 0, 3, 1, 2, 1, 1, 1, 3, 0, 3, 0, 2, 1,		// 0xD0
+	2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 3, 0, 0, 0, 2, 1,		// 0xE0
+	2, 1, 2, 1, 0, 1, 2, 1, 2, 1, 3, 1, 0, 0, 2, 1,		// 0xF0
+};
 
 static const opcode_t handlers[0x100] =
 {
@@ -239,6 +259,8 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
+	uint8_t op_data[2];
+	int op_len;
 	opcode_t handler;
 #ifndef NDEBUG
 	uint16_t pc_prev = REG_PC(state);
@@ -290,12 +312,21 @@ bool execute(emu_state *restrict state)
 		return true;
 	}
 
-	opcode = mem_read8(state, REG_PC(state));
+	opcode = mem_read8(state, REG_PC(state)++);
+	op_len = instr_len[opcode] - 1;
+
+	if(op_len > 0)
+	{
+		for(int i = 0; i < op_len; i++)
+		{
+			op_data[i] = mem_read8(state, REG_PC(state)++);
+		}
+	}
 
 #ifndef NDEBUG
 	if(opcode == 0xCB)
 	{
-		cb = mem_read8(state, REG_PC(state) + 1);
+		cb = op_data[1];
 		flag_req = flags_cb_expect[cb];
 	}
 	else
@@ -305,7 +336,7 @@ bool execute(emu_state *restrict state)
 #endif /*NDEBUG*/
 
 	handler = handlers[opcode];
-	handler(state);
+	handler(state, op_data);
 
 #ifndef NDEBUG
 	// Flag assertions

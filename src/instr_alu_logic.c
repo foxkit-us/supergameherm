@@ -2,7 +2,7 @@
  * @brief RLCA (0x07)
  * @result A is rotated left; C = old bit 7
  */
-static inline void rlca(emu_state *restrict state)
+static inline void rlca(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAGS_CLEAR(state);
 
@@ -13,7 +13,6 @@ static inline void rlca(emu_state *restrict state)
 		FLAG_SET(state, FLAG_C);
 	}
 
-	REG_PC(state)++;
 	state->wait = 4;
 }
 
@@ -21,7 +20,7 @@ static inline void rlca(emu_state *restrict state)
  * @brief RRCA (0x0F)
  * @result A is rotated right; C = old bit 0
  */
-static inline void rrca(emu_state *restrict state)
+static inline void rrca(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAGS_CLEAR(state);
 
@@ -32,7 +31,6 @@ static inline void rrca(emu_state *restrict state)
 		FLAG_SET(state, FLAG_C);
 	}
 
-	REG_PC(state)++;
 	state->wait = 4;
 }
 
@@ -40,7 +38,7 @@ static inline void rrca(emu_state *restrict state)
  * @brief RLA (0x17)
  * @result A is rotated left through the carry flag
  */
-static inline void rla(emu_state *restrict state)
+static inline void rla(emu_state *restrict state, uint8_t data[] unused)
 {
 	uint8_t carry = (IS_FLAG(state, FLAG_C) != 0);
 
@@ -54,7 +52,6 @@ static inline void rla(emu_state *restrict state)
 	REG_A(state) <<= 1;
 	REG_A(state) |= carry;
 
-	REG_PC(state)++;
 	state->wait = 4;
 }
 
@@ -62,7 +59,7 @@ static inline void rla(emu_state *restrict state)
  * @brief RRA (0x1F)
  * @result A is rotated right through the carry flag
  */
-static inline void rra(emu_state *restrict state)
+static inline void rra(emu_state *restrict state, uint8_t data[] unused)
 {
 	uint8_t carry = ((IS_FLAG(state, FLAG_C) != 0) << 7);
 
@@ -76,7 +73,6 @@ static inline void rra(emu_state *restrict state)
 	REG_A(state) >>= 1;
 	REG_A(state) |= carry;
 
-	REG_PC(state)++;
 	state->wait = 4;
 }
 
@@ -84,12 +80,11 @@ static inline void rra(emu_state *restrict state)
 * @brief CPL (0x2F)
 * @result all bits of A are negated
 */
-static inline void cpl(emu_state *restrict state)
+static inline void cpl(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAG_SET(state, FLAG_H | FLAG_N);
 
 	REG_A(state) ^= ~(REG_A(state));
-	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -98,12 +93,10 @@ static inline void cpl(emu_state *restrict state)
 * @brief SCF (0x37)
 * @result C flag set
 */
-static inline void scf(emu_state *restrict state)
+static inline void scf(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAG_UNSET(state, FLAG_H | FLAG_N);
 	FLAG_SET(state, FLAG_C);
-
-	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -112,12 +105,10 @@ static inline void scf(emu_state *restrict state)
 * @brief CCF (0x3F)
 * @result C flag inverted
 */
-static inline void ccf(emu_state *restrict state)
+static inline void ccf(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAG_UNSET(state, FLAG_H | FLAG_N);
 	FLAG_FLIP(state, FLAG_C);
-
-	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -133,8 +124,6 @@ static inline void and_common(emu_state *restrict state, uint8_t to_and)
 		FLAG_SET(state, FLAG_Z);
 	}
 
-	REG_PC(state)++;
-
 	state->wait = 4;
 }
 
@@ -142,7 +131,7 @@ static inline void and_common(emu_state *restrict state, uint8_t to_and)
 * @brief AND B (0xA0)
 * @result A &= B; Z flag set if A is now zero
 */
-static inline void and_b(emu_state *restrict state)
+static inline void and_b(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, REG_B(state));
 }
@@ -151,7 +140,7 @@ static inline void and_b(emu_state *restrict state)
 * @brief AND C (0xA1)
 * @result A &= C; Z flag set if A is now zero
 */
-static inline void and_c(emu_state *restrict state)
+static inline void and_c(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, REG_C(state));
 }
@@ -160,7 +149,7 @@ static inline void and_c(emu_state *restrict state)
 * @brief AND D (0xA2)
 * @result A &= D; Z flag set if A is now zero
 */
-static inline void and_d(emu_state *restrict state)
+static inline void and_d(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, REG_D(state));
 }
@@ -169,7 +158,7 @@ static inline void and_d(emu_state *restrict state)
 * @brief AND E (0xA3)
 * @result A &= E; Z flag set if A is now zero
 */
-static inline void and_e(emu_state *restrict state)
+static inline void and_e(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, REG_E(state));
 }
@@ -178,7 +167,7 @@ static inline void and_e(emu_state *restrict state)
 * @brief AND H (0xA4)
 * @result A &= H; Z flag set if A is now zero
 */
-static inline void and_h(emu_state *restrict state)
+static inline void and_h(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, REG_H(state));
 }
@@ -187,7 +176,7 @@ static inline void and_h(emu_state *restrict state)
 * @brief AND L (0xA5)
 * @result A &= L; Z flag set if A is now zero
 */
-static inline void and_l(emu_state *restrict state)
+static inline void and_l(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, REG_L(state));
 }
@@ -196,7 +185,7 @@ static inline void and_l(emu_state *restrict state)
 * @brief AND (HL) (0xA6)
 * @result A &= contents of memory at HL; Z flag set if A is now zero
 */
-static inline void and_hl(emu_state *restrict state)
+static inline void and_hl(emu_state *restrict state, uint8_t data[] unused)
 {
 	and_common(state, mem_read8(state, REG_HL(state)));
 
@@ -208,7 +197,7 @@ static inline void and_hl(emu_state *restrict state)
 * @brief AND A (0xA7)
 * @result Z flag set if A is now zero
 */
-static inline void and_a(emu_state *restrict state)
+static inline void and_a(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAGS_OVERWRITE(state, FLAG_H);
 
@@ -216,8 +205,6 @@ static inline void and_a(emu_state *restrict state)
 	{
 		FLAG_SET(state, FLAG_Z);
 	}
-
-	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -233,8 +220,6 @@ static inline void xor_common(emu_state *restrict state, char to_xor)
 		FLAG_SET(state, FLAG_Z);
 	}
 
-	REG_PC(state)++;
-
 	state->wait = 4;
 }
 
@@ -242,7 +227,7 @@ static inline void xor_common(emu_state *restrict state, char to_xor)
 * @brief XOR B (0xA8)
 * @result A ^= B; Z flag set if A is now zero
 */
-static inline void xor_b(emu_state *restrict state)
+static inline void xor_b(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, REG_B(state));
 }
@@ -251,7 +236,7 @@ static inline void xor_b(emu_state *restrict state)
 * @brief XOR C (0xA9)
 * @result A ^= C; Z flag set if A is now zero
 */
-static inline void xor_c(emu_state *restrict state)
+static inline void xor_c(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, REG_C(state));
 }
@@ -260,7 +245,7 @@ static inline void xor_c(emu_state *restrict state)
 * @brief XOR D (0xAA)
 * @result A ^= D; Z flag set if A is now zero
 */
-static inline void xor_d(emu_state *restrict state)
+static inline void xor_d(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, REG_D(state));
 }
@@ -269,7 +254,7 @@ static inline void xor_d(emu_state *restrict state)
 * @brief XOR E (0xAB)
 * @result A ^= E; Z flag set if A is now zero
 */
-static inline void xor_e(emu_state *restrict state)
+static inline void xor_e(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, REG_E(state));
 }
@@ -278,7 +263,7 @@ static inline void xor_e(emu_state *restrict state)
 * @brief XOR H (0xAC)
 * @result A ^= H; Z flag set if A is now zero
 */
-static inline void xor_h(emu_state *restrict state)
+static inline void xor_h(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, REG_H(state));
 }
@@ -287,7 +272,7 @@ static inline void xor_h(emu_state *restrict state)
 * @brief XOR L (0xAD)
 * @result A ^= L; Z flag set if A is now zero
 */
-static inline void xor_l(emu_state *restrict state)
+static inline void xor_l(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, REG_L(state));
 }
@@ -296,7 +281,7 @@ static inline void xor_l(emu_state *restrict state)
 * @brief XOR (HL) (0xAE)
 * @result A ^= contents of memory at HL; Z flag set if A is now zero
 */
-static inline void xor_hl(emu_state *restrict state)
+static inline void xor_hl(emu_state *restrict state, uint8_t data[] unused)
 {
 	xor_common(state, mem_read8(state, REG_HL(state)));
 
@@ -308,13 +293,11 @@ static inline void xor_hl(emu_state *restrict state)
 * @brief XOR A (0xAF)
 * @result A = 0; Z flag set
 */
-static inline void xor_a(emu_state *restrict state)
+static inline void xor_a(emu_state *restrict state, uint8_t data[] unused)
 {
 	REG_A(state) = 0;
 
 	FLAGS_OVERWRITE(state, FLAG_Z);
-
-	REG_PC(state)++;
 
 	state->wait = 4;
 }
@@ -330,8 +313,6 @@ static inline void or_common(emu_state *restrict state, uint8_t to_or)
 		FLAG_SET(state, FLAG_Z);
 	}
 
-	REG_PC(state)++;
-
 	state->wait = 4;
 }
 
@@ -339,7 +320,7 @@ static inline void or_common(emu_state *restrict state, uint8_t to_or)
 * @brief OR B (0xB0)
 * @result A |= B; Z flag set if A is zero
 */
-static inline void or_b(emu_state *restrict state)
+static inline void or_b(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_B(state));
 }
@@ -348,7 +329,7 @@ static inline void or_b(emu_state *restrict state)
 * @brief OR C (0xB1)
 * @result A |= C; Z flag set if A is zero
 */
-static inline void or_c(emu_state *restrict state)
+static inline void or_c(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_C(state));
 }
@@ -357,7 +338,7 @@ static inline void or_c(emu_state *restrict state)
 * @brief OR D (0xB2)
 * @result A |= D; Z flag set if A is zero
 */
-static inline void or_d(emu_state *restrict state)
+static inline void or_d(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_D(state));
 }
@@ -366,7 +347,7 @@ static inline void or_d(emu_state *restrict state)
 * @brief OR E (0xB3)
 * @result A |= E; Z flag set if A is zero
 */
-static inline void or_e(emu_state *restrict state)
+static inline void or_e(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_E(state));
 }
@@ -375,7 +356,7 @@ static inline void or_e(emu_state *restrict state)
 * @brief OR H (0xB4)
 * @result A |= H; Z flag set if A is zero
 */
-static inline void or_h(emu_state *restrict state)
+static inline void or_h(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_H(state));
 }
@@ -384,7 +365,7 @@ static inline void or_h(emu_state *restrict state)
 * @brief OR L (0xB5)
 * @result A |= L; Z flag set if A is zero
 */
-static inline void or_l(emu_state *restrict state)
+static inline void or_l(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_L(state));
 }
@@ -393,7 +374,7 @@ static inline void or_l(emu_state *restrict state)
 * @brief OR (HL) (0xB6)
 * @result A |= contents of memory at HL; Z flag set if A is zero
 */
-static inline void or_hl(emu_state *restrict state)
+static inline void or_hl(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, mem_read8(state, REG_HL(state)));
 
@@ -405,7 +386,7 @@ static inline void or_hl(emu_state *restrict state)
 * @brief OR A (0xB7)
 * @result A |= A; Z flag set if A is zero
 */
-static inline void or_a(emu_state *restrict state)
+static inline void or_a(emu_state *restrict state, uint8_t data[] unused)
 {
 	or_common(state, REG_A(state));
 }
@@ -427,8 +408,6 @@ static inline void cp_common(emu_state *restrict state, uint8_t cmp)
 		FLAG_SET(state, FLAG_H);
 	}
 
-	REG_PC(state)++;
-
 	state->wait = 4;
 }
 
@@ -436,7 +415,7 @@ static inline void cp_common(emu_state *restrict state, uint8_t cmp)
 * @brief CP B (0xB8)
 * @result flags set based on how equivalent B is to A
 */
-static inline void cp_b(emu_state *restrict state)
+static inline void cp_b(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_B(state));
 }
@@ -445,7 +424,7 @@ static inline void cp_b(emu_state *restrict state)
 * @brief CP C (0xB9)
 * @result flags set based on how equivalent C is to A
 */
-static inline void cp_c(emu_state *restrict state)
+static inline void cp_c(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_C(state));
 }
@@ -454,7 +433,7 @@ static inline void cp_c(emu_state *restrict state)
 * @brief CP D (0xBA)
 * @result flags set based on how equivalent D is to A
 */
-static inline void cp_d(emu_state *restrict state)
+static inline void cp_d(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_D(state));
 }
@@ -463,7 +442,7 @@ static inline void cp_d(emu_state *restrict state)
 * @brief CP E (0xBB)
 * @result flags set based on how equivalent E is to A
 */
-static inline void cp_e(emu_state *restrict state)
+static inline void cp_e(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_E(state));
 }
@@ -472,7 +451,7 @@ static inline void cp_e(emu_state *restrict state)
 * @brief CP H (0xBC)
 * @result flags set based on how equivalent H is to A
 */
-static inline void cp_h(emu_state *restrict state)
+static inline void cp_h(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_H(state));
 }
@@ -481,7 +460,7 @@ static inline void cp_h(emu_state *restrict state)
 * @brief CP L (0xBD)
 * @result flags set based on how equivalent L is to A
 */
-static inline void cp_l(emu_state *restrict state)
+static inline void cp_l(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_L(state));
 }
@@ -490,7 +469,7 @@ static inline void cp_l(emu_state *restrict state)
 * @brief CP (HL) (0xBE)
 * @result flags set based on how equivalent contents of memory at HL are to A
 */
-static inline void cp_hl(emu_state *restrict state)
+static inline void cp_hl(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, mem_read8(state, REG_HL(state)));
 
@@ -502,7 +481,7 @@ static inline void cp_hl(emu_state *restrict state)
 * @brief CP A (0xBF)
 * @result flags set based on how equivalent A is to A... wait.. really?
 */
-static inline void cp_a(emu_state *restrict state)
+static inline void cp_a(emu_state *restrict state, uint8_t data[] unused)
 {
 	cp_common(state, REG_A(state));
 }
@@ -511,9 +490,9 @@ static inline void cp_a(emu_state *restrict state)
 * @brief CB ..
 * @note this is just a dispatch function for SWAP/BIT/etc
 */
-static inline void cb_dispatch(emu_state *restrict state)
+static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 {
-	int8_t opcode = mem_read8(state, ++REG_PC(state));
+	int8_t opcode = data[0];
 	uint8_t *write_to;
 	uint8_t maybe_temp;
 	uint8_t bit_number;
@@ -737,17 +716,15 @@ static inline void cb_dispatch(emu_state *restrict state)
 		mem_write8(state, REG_HL(state), maybe_temp);
 		state->wait += 8;
 	}
-
-	REG_PC(state)++;
 }
 
 /*!
  * @brief AND n (0xE6)
  * @result A &= n
  */
-static inline void and_imm8(emu_state *restrict state)
+static inline void and_imm8(emu_state *restrict state, uint8_t data[])
 {
-	uint8_t n = mem_read8(state, ++REG_PC(state));
+	uint8_t n = data[0];
 	and_common(state, n);
 
 	// and_common already adds 4
@@ -758,9 +735,9 @@ static inline void and_imm8(emu_state *restrict state)
  * @brief XOR n (0xEE)
  * @result A ^= n
  */
-static inline void xor_imm8(emu_state *restrict state)
+static inline void xor_imm8(emu_state *restrict state, uint8_t data[])
 {
-	uint8_t n = mem_read8(state, ++REG_PC(state));
+	uint8_t n = data[0];
 	xor_common(state, n);
 
 	// xor_common already adds 4
@@ -771,9 +748,9 @@ static inline void xor_imm8(emu_state *restrict state)
  * @brief OR n (0xF6)
  * @result A |= n
  */
-static inline void or_imm8(emu_state *restrict state)
+static inline void or_imm8(emu_state *restrict state, uint8_t data[])
 {
-	uint8_t n = mem_read8(state, ++REG_PC(state));
+	uint8_t n = data[0];
 	or_common(state, n);
 
 	// and_common already adds 4
@@ -784,9 +761,9 @@ static inline void or_imm8(emu_state *restrict state)
  * @brief CP n (0xFE) - compare A with 8-bit immediate value
  * @result flags register modified based on result
  */
-static inline void cp_imm8(emu_state *restrict state)
+static inline void cp_imm8(emu_state *restrict state, uint8_t data[])
 {
-	cp_common(state, mem_read8(state, ++REG_PC(state)));
+	cp_common(state, data[0]);
 
 	// cp_common already adds 4
 	state->wait += 4;
