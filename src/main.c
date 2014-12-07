@@ -25,6 +25,13 @@ emu_state * init_emulator(const char *rom_path, frontend_type input,
 	cart_header *header;
 	FILE *rom;
 
+	if((rom = fopen(rom_path, "rb")) == NULL)
+	{
+		perror("fopen");
+		free(state);
+		return NULL;
+	}
+
 	state->interrupts.enabled = true;
 	state->bank = 1;
 	state->wait = 1;
@@ -35,20 +42,13 @@ emu_state * init_emulator(const char *rom_path, frontend_type input,
 	memcpy(&(state->front.video), frontend_set_video[video], sizeof(frontend_video));
 	state->front.event_loop = frontend_set_event_loop[event_loop];
 
-	if((rom = fopen(rom_path, "rb")) == NULL)
-	{
-		perror("fopen");
-		free(state);
-		state = NULL;
-		goto end_init;
-	}
 
 	if(unlikely(!read_rom_data(state, rom, &header)))
 	{
 		fatal("can't read ROM data (ROM is corrupt)?");
 		free(state);
-		state = NULL;
-		goto end_init;
+		fclose(rom);
+		return NULL;
 	}
 
 	// Initalise state
@@ -58,7 +58,6 @@ emu_state * init_emulator(const char *rom_path, frontend_type input,
 	// Start the clock
 	state->start_time = get_time();
 
-end_init:
 	fclose(rom);
 
 	return state;
@@ -124,7 +123,7 @@ int main(int argc, char *argv[])
 	}
 
 	state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
-	if(!state)
+	if(state == NULL)
 	{
 		fatal("Error initalising the emulator :(");
 		return EXIT_FAILURE;
