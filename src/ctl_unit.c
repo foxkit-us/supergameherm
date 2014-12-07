@@ -10,6 +10,24 @@
 #include <stdlib.h>		// NULL
 
 
+void compute_irq(emu_state *restrict state)
+{
+	if(state->interrupts.enabled)
+	{
+		state->interrupts.irq = state->interrupts.pending & state->interrupts.mask & 0x1F;
+	}
+	else
+	{
+		state->interrupts.irq = 0;
+	}
+}
+
+void signal_interrupt(emu_state *restrict state, int interrupt)
+{
+	state->interrupts.pending |= interrupt;
+	compute_irq(state);
+}
+
 uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 {
 	return state->interrupts.pending;
@@ -17,12 +35,19 @@ uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 
 void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	state->interrupts.pending = data;
+	state->interrupts.pending = data & 0x1F;
+	compute_irq(state);
+}
+
+uint8_t int_mask_flag_read(emu_state *restrict state, uint16_t location unused)
+{
+	return state->interrupts.mask;
 }
 
 void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 {
-	state->interrupts.mask = data;
+	state->interrupts.mask = data & 0x1F;
+	compute_irq(state);
 }
 
 #include "instr_alu_arith.c"
@@ -125,7 +150,7 @@ void init_ctl(emu_state *restrict state)
 /*! Call the needed interrupt handler */
 static inline void call_interrupt(emu_state *restrict state)
 {
-	uint8_t mask = (state->interrupts.mask & state->interrupts.pending) & 0x1F;
+	uint8_t mask = state->interrupts.irq;
 	uint8_t jump;
 
 	assert(state->interrupts.mask != 0);
@@ -158,8 +183,11 @@ static inline void call_interrupt(emu_state *restrict state)
 	}
 	else
 	{
+		compute_irq(state);
 		return;
 	}
+
+	compute_irq(state);
 
 	// Push pc to the stack
 	REG_SP(state) -= 2;
@@ -238,11 +266,12 @@ bool execute(emu_state *restrict state)
 			state->interrupts.enabled = false;
 		}
 
+		compute_irq(state);
 		state->interrupts.next_cycle = INT_NEXT_NONE;
 	}
 
 	// Check for interrupts
-	if(state->interrupts.enabled && state->interrupts.pending)
+	if(state->interrupts.irq)
 	{
 		call_interrupt(state);
 	}

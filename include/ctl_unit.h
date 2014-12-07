@@ -25,17 +25,6 @@
 
 typedef enum
 {
-	SYSTEM_DMG,
-	SYSTEM_MGB,
-	SYSTEM_MGL,
-	SYSTEM_SGB,
-	SYSTEM_SGB2,
-	SYSTEM_CGB
-} system_types;
-
-
-typedef enum
-{
 	INT_ID_NONE = 0x0000,
 	INT_ID_VBLANK = 0x0040,
 	INT_ID_LCD_STAT = 0x0048,
@@ -44,7 +33,6 @@ typedef enum
 	INT_ID_JOYPAD = 0x0060
 } /* Ralf Brown's */ interrupt_list;
 
-
 typedef enum
 {
 	INT_NEXT_NONE = 0,
@@ -52,15 +40,15 @@ typedef enum
 	INT_NEXT_DISABLE,
 } interrupt_next;
 
-
 struct interrupt_state_t
 {
 	interrupt_next next_cycle;	/*! Interrupts will be enabled next cycle */
 	bool enabled;			/*! Interrupts enabled */
 	uint8_t mask;			/*! Interrupt mask */
 	uint8_t pending;		/*! Pending interrupts */
-};
 
+	uint8_t irq;			/*! Current interrupts waiting */
+};
 
 typedef enum
 {
@@ -100,13 +88,13 @@ bool execute(emu_state *restrict);
 uint8_t int_flag_read(emu_state *restrict, uint16_t);
 void int_flag_write(emu_state *restrict, uint16_t, uint8_t);
 void int_mask_flag_write(emu_state *restrict, uint8_t);
+uint8_t int_mask_flag_read(emu_state *restrict, uint16_t);
 
 uint8_t no_hardware(emu_state *restrict, uint16_t);
 void readonly_reg_write(emu_state *restrict, uint16_t, uint8_t);
 void doofus_write(emu_state *restrict, uint16_t, uint8_t);
 
-
-#define signal_interrupt(state, interrupt) \
-	((state)->interrupts.pending |= (interrupt))
+void compute_irq(emu_state *restrict);
+void signal_interrupt(emu_state *restrict, int);
 
 #endif /*!__CTL_UNIT_H__*/

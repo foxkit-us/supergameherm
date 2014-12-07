@@ -180,7 +180,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 			}
 			else if(location == 0xFFFF)
 			{
-				return state->interrupts.mask;
+				return int_mask_flag_read(state, location);
 			}
 
 			break;

@@ -14,9 +14,18 @@
 #include "frontend.h"	// frontend
 
 
+typedef enum
+{
+	SYSTEM_DMG,
+	SYSTEM_MGB,
+	SYSTEM_MGL,
+	SYSTEM_SGB,
+	SYSTEM_SGB2,
+	SYSTEM_CGB
+} system_types;
+
 // 8-bit address space
 #define MEM_SIZE	0x10000
-
 
 struct registers_t
 {
