@@ -166,7 +166,7 @@ int libcaca_event_loop(emu_state *state)
 
 		step_emulator(state);
 
-		if(mode == 1 && clock == 1 && state->input.col)
+		if(unlikely(mode == 1 && clock == 1 && state->input.col))
 		{
 			input_key key = GET_KEY(state);
 			if(key != INPUT_NONE)
