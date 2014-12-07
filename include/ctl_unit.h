@@ -33,21 +33,14 @@ typedef enum
 	INT_ID_JOYPAD = 0x0060
 } /* Ralf Brown's */ interrupt_list;
 
-typedef enum
-{
-	INT_NEXT_NONE = 0,
-	INT_NEXT_ENABLE,
-	INT_NEXT_DISABLE,
-} interrupt_next;
-
 struct interrupt_state_t
 {
-	interrupt_next next_cycle;	/*! Interrupts will be enabled next cycle */
-	bool enabled;			/*! Interrupts enabled */
-	uint8_t mask;			/*! Interrupt mask */
-	uint8_t pending;		/*! Pending interrupts */
+	uint8_t enable_ctr;	/*! Enable counter */
+	bool enabled;		/*! Interrupts enabled */
+	uint8_t mask;		/*! Interrupt mask */
+	uint8_t pending;	/*! Pending interrupts */
 
-	uint8_t irq;			/*! Current interrupts waiting */
+	uint8_t irq;		/*! Current interrupts waiting */
 };
 
 typedef enum

@@ -32,7 +32,8 @@ static inline void stop(emu_state *restrict state, uint8_t data[] unused)
  */
 static inline void di(emu_state *restrict state, uint8_t data[] unused)
 {
-	state->interrupts.next_cycle = INT_NEXT_DISABLE;
+	state->interrupts.enabled = false;
+	state->interrupts.irq = 0;
 
 	state->wait = 4;
 }
@@ -43,11 +44,18 @@ static inline void di(emu_state *restrict state, uint8_t data[] unused)
  */
 static inline void ei(emu_state *restrict state, uint8_t data[] unused)
 {
-	state->interrupts.next_cycle = INT_NEXT_ENABLE;
+	// Next instruction isn't halt, so immediately set flag
+	if(mem_read8(state, REG_PC(state)) == 0x76)
+	{
+		state->interrupts.enable_ctr = 1;
+	}
+	else
+	{
+		state->interrupts.enable_ctr = 2;
+	}
 
 	state->wait = 4;
 }
-
 
 /*!
  * @brief HALT (0x76)

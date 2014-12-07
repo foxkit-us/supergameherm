@@ -311,7 +311,16 @@ static inline void retc(emu_state *restrict state, uint8_t data[] unused)
  */
 static inline void reti(emu_state *restrict state, uint8_t data[] unused)
 {
-	state->interrupts.enabled = true;
+	// Immediate on halt
+	if(mem_read8(state, REG_PC(state)) == 0x76)
+	{
+		state->interrupts.enable_ctr = 1;
+	}
+	else
+	{
+		state->interrupts.enable_ctr = 2;
+	}
+
 	ret(state, NULL);
 }
 

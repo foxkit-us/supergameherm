@@ -16,10 +16,6 @@ void compute_irq(emu_state *restrict state)
 	{
 		state->interrupts.irq = state->interrupts.pending & state->interrupts.mask & 0x1F;
 	}
-	else
-	{
-		state->interrupts.irq = 0;
-	}
 }
 
 void signal_interrupt(emu_state *restrict state, int interrupt)
@@ -35,7 +31,7 @@ uint8_t int_flag_read(emu_state *restrict state, uint16_t location unused)
 
 void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
 {
-	state->interrupts.pending = data & 0x1F;
+	state->interrupts.pending = data;
 	compute_irq(state);
 }
 
@@ -46,7 +42,7 @@ uint8_t int_mask_flag_read(emu_state *restrict state, uint16_t location unused)
 
 void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 {
-	state->interrupts.mask = data & 0x1F;
+	state->interrupts.mask = data;
 	compute_irq(state);
 }
 
@@ -183,11 +179,8 @@ static inline void call_interrupt(emu_state *restrict state)
 	}
 	else
 	{
-		compute_irq(state);
 		return;
 	}
-
-	compute_irq(state);
 
 	// Push pc to the stack
 	REG_SP(state) -= 2;
@@ -203,6 +196,7 @@ static inline void call_interrupt(emu_state *restrict state)
 
 	// Interrupts are locked out before handling
 	state->interrupts.enabled = false;
+	state->interrupts.irq = 0;
 }
 
 #ifndef NDEBUG
@@ -255,25 +249,22 @@ bool execute(emu_state *restrict state)
 		}
 	}
 
-	if(state->interrupts.next_cycle)
-	{
-		if(state->interrupts.next_cycle == INT_NEXT_ENABLE)
-		{
-			state->interrupts.enabled = true;
-		}
-		else if(state->interrupts.next_cycle == INT_NEXT_DISABLE)
-		{
-			state->interrupts.enabled = false;
-		}
-
-		compute_irq(state);
-		state->interrupts.next_cycle = INT_NEXT_NONE;
-	}
-
 	// Check for interrupts
 	if(state->interrupts.irq)
 	{
 		call_interrupt(state);
+	}
+
+	switch(state->interrupts.enable_ctr)
+	{
+	case 2:
+		state->interrupts.enable_ctr--;
+		break;
+	case 1:
+		state->interrupts.enable_ctr = 0;
+		state->interrupts.enabled = true;
+		compute_irq(state);
+		break;
 	}
 
 	if(state->halt || state->stop)
