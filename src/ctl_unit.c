@@ -21,6 +21,7 @@ void compute_irq(emu_state *restrict state)
 void signal_interrupt(emu_state *restrict state, int interrupt)
 {
 	state->interrupts.pending |= interrupt;
+	state->halt = state->stop = false;
 	compute_irq(state);
 }
 
@@ -37,6 +38,7 @@ void int_flag_write(emu_state *restrict state, uint16_t location unused, uint8_t
 
 uint8_t int_mask_flag_read(emu_state *restrict state, uint16_t location unused)
 {
+	printf("Mask read: %X\n", state->interrupts.mask);
 	return state->interrupts.mask;
 }
 

@@ -63,10 +63,7 @@ static inline void ei(emu_state *restrict state, uint8_t data[] unused)
  */
 static inline void halt(emu_state *restrict state, uint8_t data[] unused)
 {
-	if(state->interrupts.enabled)
-	{
-		state->halt = true;
-	}
+	state->halt = true;
 
 	state->wait = 4;
 }
