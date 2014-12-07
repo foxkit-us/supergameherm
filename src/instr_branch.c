@@ -6,7 +6,7 @@ static inline void jr_imm8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t to_add = data[0];
 
-	REG_PC(state) += to_add + 1;
+	REG_PC(state) += to_add;
 
 	state->wait = 12;
 }
@@ -17,7 +17,7 @@ static inline void jr_imm8(emu_state *restrict state, uint8_t data[])
  */
 static inline void jr_nz_imm8(emu_state *restrict state, uint8_t data[])
 {
-	int8_t to_add = data[0] + 1;
+	int8_t to_add = data[0];
 
 	state->wait = 8;
 
@@ -35,7 +35,7 @@ static inline void jr_nz_imm8(emu_state *restrict state, uint8_t data[])
  */
 static inline void jr_z_imm8(emu_state *restrict state, uint8_t data[])
 {
-	int8_t to_add = data[0] + 1;
+	int8_t to_add = data[0];
 
 	state->wait = 8;
 
@@ -53,7 +53,7 @@ static inline void jr_z_imm8(emu_state *restrict state, uint8_t data[])
  */
 static inline void jr_nc_imm8(emu_state *restrict state, uint8_t data[])
 {
-	int8_t to_add = data[0] + 1;
+	int8_t to_add = data[0];
 
 	state->wait = 8;
 
@@ -71,7 +71,7 @@ static inline void jr_nc_imm8(emu_state *restrict state, uint8_t data[])
  */
 static inline void jr_c_imm8(emu_state *restrict state, uint8_t data[])
 {
-	int8_t to_add = data[0] + 1;
+	int8_t to_add = data[0];
 
 	state->wait = 8;
 

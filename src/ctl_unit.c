@@ -249,7 +249,7 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 	}
 	else
 	{
-		debug("opcode: %02X cb %02X [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
+		debug("opcode: %02X [cb %02X] [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
 			opcode, cb, mnemonics_cb[cb], pc_prev, flags_prev);
 	}
 }
@@ -259,7 +259,7 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
-	uint8_t op_data[2];
+	uint8_t op_data[2] = {0xFF, 0xFF};
 	int op_len;
 	opcode_t handler;
 #ifndef NDEBUG
@@ -326,7 +326,7 @@ bool execute(emu_state *restrict state)
 #ifndef NDEBUG
 	if(opcode == 0xCB)
 	{
-		cb = op_data[1];
+		cb = op_data[0];
 		flag_req = flags_cb_expect[cb];
 	}
 	else
