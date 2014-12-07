@@ -49,33 +49,39 @@ void lcdc_tick(emu_state *restrict state)
 		break;
 	case 3:
 		/* second mode - reading VRAM for h scan line */
-		if(state->lcdc.curr_clk % 43 == 0)
+		if(state->lcdc.curr_clk >= 172)
 		{
-			/* write 4 tiles out to the framebuffer */
+			state->lcdc.curr_clk = 0;
+			state->lcdc.stat.params.mode_flag = 0;
+		}
+		break;
+	case 0:
+		/* third mode - h-blank */
+		if(state->lcdc.curr_clk >= 204)
+		{
 			uint16_t next_tile = 0x1800;
-			uint8_t skip = state->lcdc.curr_h_blk++ * 32;
-			uint8_t curr_tile = 0;
+			uint8_t skip = 0, curr_tile = 0;
 			uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
-			uint8_t pixel_y_offset = state->lcdc.ly / 8;
+			uint8_t pixel_y_offset = state->lcdc.ly % 8;
 			uint32_t val[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
 
-			if(state->lcdc.lcd_control.params.bg_code_sel)
+			if (state->lcdc.lcd_control.params.bg_code_sel)
 			{
 				next_tile += 0x400;
 			}
-			next_tile += (32 * state->lcdc.ly) + (skip / 8);
+			next_tile += 32 * state->lcdc.ly;
 
-			for(; curr_tile < 4; curr_tile++, next_tile++, skip += 8)
+			for (; curr_tile < 20; curr_tile++, next_tile++, skip += 8)
 			{
 				uint8_t tile = state->lcdc.vram[0x0][next_tile];
 				uint32_t pixels;
 				uint32_t *mem = (uint32_t *)(state->lcdc.vram[0x0] + start + (tile * 8) + pixel_y_offset);
-				if(!state->lcdc.lcd_control.params.bg_char_sel)
+				if (!state->lcdc.lcd_control.params.bg_char_sel)
 				{
 					tile -= 0x80;
 				}
 
-				pixels = interleave(*mem);
+				/*pixels = interleave(*mem);
 				state->lcdc.out[skip][state->lcdc.ly] = val[(pixels & 0x3)];
 				state->lcdc.out[skip + 1][state->lcdc.ly] = val[(pixels & 0x300 >> 8)];
 				state->lcdc.out[skip + 2][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
@@ -85,9 +91,9 @@ void lcdc_tick(emu_state *restrict state)
 				state->lcdc.out[skip + 4][state->lcdc.ly] = val[(pixels & 0x3)];
 				state->lcdc.out[skip + 5][state->lcdc.ly] = val[(pixels & 0x300 >> 8)];
 				state->lcdc.out[skip + 6][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
-				state->lcdc.out[skip + 7][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];
+				state->lcdc.out[skip + 7][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];*/
 
-				/*pixels = interleave(*mem);
+				pixels = interleave(*mem);
 				state->lcdc.out[state->lcdc.ly][skip] = val[(pixels & 0x3)];
 				state->lcdc.out[state->lcdc.ly][skip + 1] = val[(pixels & 0x300 >> 8)];
 				state->lcdc.out[state->lcdc.ly][skip + 2] = val[(pixels & 0x30000 >> 16)];
@@ -97,21 +103,9 @@ void lcdc_tick(emu_state *restrict state)
 				state->lcdc.out[state->lcdc.ly][skip + 4] = val[(pixels & 0x3)];
 				state->lcdc.out[state->lcdc.ly][skip + 5] = val[(pixels & 0x300 >> 8)];
 				state->lcdc.out[state->lcdc.ly][skip + 6] = val[(pixels & 0x30000 >> 16)];
-				state->lcdc.out[state->lcdc.ly][skip + 7] = val[(pixels & 0x3000000 >> 24)];*/
+				state->lcdc.out[state->lcdc.ly][skip + 7] = val[(pixels & 0x3000000 >> 24)];
 			}
-		}
 
-		if(state->lcdc.curr_clk >= 172)
-		{
-			state->lcdc.curr_clk = 0;
-			state->lcdc.stat.params.mode_flag = 0;
-			state->lcdc.curr_h_blk = 0;
-		}
-		break;
-	case 0:
-		/* third mode - h-blank */
-		if(state->lcdc.curr_clk >= 204)
-		{
 			state->lcdc.curr_clk = 0;
 			if((++state->lcdc.ly) == 144)
 			{
