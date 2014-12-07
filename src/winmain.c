@@ -14,7 +14,7 @@ emu_state * init_emulator(const char *rom_path, frontend_type input,
 void finish_emulator(emu_state *restrict state);
 bool step_emulator(emu_state *restrict state);
 
-bool do_exit = false;
+extern bool do_exit;
 HWND hwnd;
 HDC mem;
 HBITMAP bm;
@@ -181,18 +181,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char *szCmdLine
 	ShowWindow(hwnd, iCmdShow);
 	UpdateWindow(hwnd);
 
-	if(strlen(szCmdLine) == 0)
+	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
 		OPENFILENAME ofn;
+		ZeroMemory(&szROMName, sizeof(szROMName));
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER;
-		ofn.hInstance = hInstance;
 		ofn.hwndOwner = hwnd;
 		ofn.lpstrFile = szROMName;
 		ofn.lpstrFilter = "All Game Boy ROMs\0*.gb;*.gbc\0Original Game Boy (DMG) ROMs\0*.gb\0";
 		ofn.lpstrTitle = "Open Game!";
 		ofn.nMaxFile = sizeof(szROMName);
-
+		
 		if(!GetOpenFileName(&ofn))
 		{
 			DestroyWindow(hwnd);
