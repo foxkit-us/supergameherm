@@ -46,11 +46,11 @@ void w32_blit_canvas(emu_state *state)
 
 	SetBitmapBits(bm, 92960, (LPVOID)g_state->lcdc.out);
 
-	if(BitBlt(hdc, 0, 0, 160, 144, mem, 0, 0, SRCCOPY))
+	BitBlt(hdc, 0, 0, 160, 144, mem, 0, 0, SRCCOPY);/* != 0x0)
 	{
 		printf("0x%08X", GetLastError());
 	//	abort();
-	}
+	}*/
 
 	ReleaseDC(hwnd, hdc);
 }

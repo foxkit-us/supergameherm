@@ -51,20 +51,21 @@ void lcdc_tick(emu_state *restrict state)
 		/* second mode - reading VRAM for h scan line */
 		if(state->lcdc.curr_clk % 43 == 0)
 		{
-			/* write 8 tiles out to the framebuffer */
+			/* write 4 tiles out to the framebuffer */
 			uint16_t next_tile = 0x1800;
-			uint8_t skip = ++state->lcdc.curr_h_blk;
+			uint8_t skip = state->lcdc.curr_h_blk++ * 32;
 			uint8_t curr_tile = 0;
 			uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
 			uint8_t pixel_y_offset = state->lcdc.ly / 8;
+			uint32_t val[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
 
 			if(state->lcdc.lcd_control.params.bg_code_sel)
 			{
 				next_tile += 0x400;
 			}
-			next_tile += (32 * state->lcdc.ly) + skip;
+			next_tile += (32 * state->lcdc.ly) + (skip / 8);
 
-			for(; curr_tile < 8; curr_tile++, next_tile++)
+			for(; curr_tile < 4; curr_tile++, next_tile++, skip += 8)
 			{
 				uint8_t tile = state->lcdc.vram[0x0][next_tile];
 				uint32_t pixels;
@@ -75,14 +76,28 @@ void lcdc_tick(emu_state *restrict state)
 				}
 
 				pixels = interleave(*mem);
-				state->lcdc.out[skip][state->lcdc.ly] = (pixels & 0x3) * 0x40;
-				state->lcdc.out[skip + 1][state->lcdc.ly] = (pixels & 0x0C >> 2) * 0x40;
-				state->lcdc.out[skip + 2][state->lcdc.ly] = (pixels & 0x30 >> 4) * 0x40;
-				state->lcdc.out[skip + 3][state->lcdc.ly] = (pixels & 0xC0 >> 6) * 0x40;
-				state->lcdc.out[skip + 4][state->lcdc.ly] = (pixels & 0x300 >> 6) * 0x40;
-				state->lcdc.out[skip + 5][state->lcdc.ly] = (pixels & 0xC00 >> 6) * 0x40;
-				state->lcdc.out[skip + 6][state->lcdc.ly] = (pixels & 0x3000 >> 6) * 0x40;
-				state->lcdc.out[skip + 7][state->lcdc.ly] = (pixels & 0xC000 >> 6) * 0x40;
+				state->lcdc.out[skip][state->lcdc.ly] = val[(pixels & 0x3)];
+				state->lcdc.out[skip + 1][state->lcdc.ly] = val[(pixels & 0x300 >> 8)];
+				state->lcdc.out[skip + 2][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
+				state->lcdc.out[skip + 3][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];
+
+				pixels = interleave(*++mem);
+				state->lcdc.out[skip + 4][state->lcdc.ly] = val[(pixels & 0x3)];
+				state->lcdc.out[skip + 5][state->lcdc.ly] = val[(pixels & 0x300 >> 8)];
+				state->lcdc.out[skip + 6][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
+				state->lcdc.out[skip + 7][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];
+
+				/*pixels = interleave(*mem);
+				state->lcdc.out[state->lcdc.ly][skip] = val[(pixels & 0x3)];
+				state->lcdc.out[state->lcdc.ly][skip + 1] = val[(pixels & 0x300 >> 8)];
+				state->lcdc.out[state->lcdc.ly][skip + 2] = val[(pixels & 0x30000 >> 16)];
+				state->lcdc.out[state->lcdc.ly][skip + 3] = val[(pixels & 0x3000000 >> 24)];
+
+				pixels = interleave(*++mem);
+				state->lcdc.out[state->lcdc.ly][skip + 4] = val[(pixels & 0x3)];
+				state->lcdc.out[state->lcdc.ly][skip + 5] = val[(pixels & 0x300 >> 8)];
+				state->lcdc.out[state->lcdc.ly][skip + 6] = val[(pixels & 0x30000 >> 16)];
+				state->lcdc.out[state->lcdc.ly][skip + 7] = val[(pixels & 0x3000000 >> 24)];*/
 			}
 		}
 
@@ -416,3 +431,25 @@ void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data
 	state->memory[reg] = data;
 }
 
+void magical_mystery_cure(void)
+{
+	lcdc_read(NULL, 0);
+	lcdc_control_read(NULL, 0);
+	lcdc_stat_read(NULL, 0);
+	lcdc_scroll_read(NULL, 0);
+	lcdc_ly_read(NULL, 0);
+	lcdc_lyc_read(NULL, 0);
+	lcdc_window_read(NULL, 0);
+	bg_pal_ind_read(NULL, 0);
+	bg_pal_data_read(NULL, 0);
+	sprite_pal_ind_read(NULL, 0);
+	sprite_pal_data_read(NULL, 0);
+	lcdc_write(NULL, 0, 0);
+	lcdc_control_write(NULL, 0, 0);
+	lcdc_stat_write(NULL, 0, 0);
+	lcdc_scroll_write(NULL, 0, 0);
+	lcdc_ly_write(NULL, 0, 0);
+	lcdc_lyc_write(NULL, 0, 0);
+	lcdc_window_write(NULL, 0, 0);
+	vram_write(NULL, 0, 0);
+}

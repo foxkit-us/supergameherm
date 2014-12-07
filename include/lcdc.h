@@ -180,7 +180,7 @@ struct lcdc_state_t
 	uint_fast8_t ly;	/*! Present line being transferred (144-153 = V-Blank) */
 	uint_fast8_t lyc;	/*! LY comparison (set stat.lyc_state when == ly) */
 
-	uint32_t out[160][144];	/*! Simulated LCD screen buffer */
+	uint32_t out[144][160];	/*! Simulated LCD screen buffer */
 };
 
 void init_lcdc(emu_state *restrict);
