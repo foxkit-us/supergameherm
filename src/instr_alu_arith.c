@@ -83,14 +83,22 @@ static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
 
 	FLAG_UNSET(state, FLAG_N);
 
-	if(temp & 0x10000)
+	if(temp > 0xFFFF)
 	{
 		FLAG_SET(state, FLAG_C);
 	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_C);
+	}
 
-	if(((REG_HL(state) & 0xFFF) + (to_add & 0xFFF)) & 0x1000)
+	if((REG_HL(state) & 0xFFF) > (temp & 0xFFF))
 	{
 		FLAG_SET(state, FLAG_H);
+	}
+	else
+	{
+		FLAG_UNSET(state, FLAG_H);
 	}
 
 	REG_HL(state) = (uint16_t)temp;
