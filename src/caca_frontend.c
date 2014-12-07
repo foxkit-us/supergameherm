@@ -161,8 +161,12 @@ int libcaca_event_loop(emu_state *state)
 
 	do
 	{
+		uint8_t mode = state->lcdc.stat.params.mode_flag;
+		uint_fast16_t clock = state->lcdc.curr_clk;
+
 		step_emulator(state);
-		if(state->lcdc.stat.params.mode_flag == 3 && state->input.col)
+
+		if(mode == 1 && clock == 1 && state->input.col)
 		{
 			input_key key = GET_KEY(state);
 			if(key != INPUT_NONE)
