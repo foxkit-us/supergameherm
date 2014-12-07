@@ -752,12 +752,26 @@ static inline void sub_a(emu_state *restrict state, uint8_t data[] unused)
 
 static inline void sbc_common(emu_state *restrict state, uint8_t to_sub)
 {
-	if(REG_F(state) & FLAG_C)
+	uint8_t f = IS_FLAG(state, FLAG_C) ? 1 : 0;
+	uint8_t temp = REG_A(state) - to_sub - f;
+
+	FLAGS_OVERWRITE(state, FLAG_N);
+
+	if((REG_A(state) - f) < to_sub)
 	{
-		to_sub++;
+		FLAG_SET(state, FLAG_C);
 	}
 
-	sub_common(state, to_sub);
+	if(((REG_A(state) & 0x0f) - f) < (to_sub & 0x0f))
+	{
+		FLAG_SET(state, FLAG_H);
+	}
+
+	REG_A(state) = (uint8_t)temp;
+	if(REG_A(state) == 0)
+	{
+		FLAG_SET(state, FLAG_Z);
+	}
 }
 
 /*!
