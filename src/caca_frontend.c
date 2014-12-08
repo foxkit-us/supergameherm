@@ -14,15 +14,15 @@
 #define PITCH 4
 
 #ifdef LITTLE_ENDIAN
-#define RED	0x000000ff
-#define GREEN	0x0000ff00
-#define BLUE	0x00ff0000
 #define ALPHA	0xff000000
+#define RED	0x00ff0000
+#define GREEN	0x0000ff00
+#define BLUE	0x000000ff
 #else
-#define RED	0xff000000
-#define GREEN	0x00ff0000
-#define BLUE	0x0000ff00
 #define ALPHA	0x000000ff
+#define RED	0x0000ff00
+#define GREEN	0x00ff0000
+#define BLUE	0xff000000
 #endif
 
 
@@ -54,8 +54,8 @@ bool libcaca_init_video(emu_state *state)
 
 	caca_set_display_title(video->display, "SuperGameHerm");
 
-	video->dither = caca_create_dither(BPP, LEN, WID, PITCH*WID,
-			RED, GREEN, BLUE, ALPHA);
+	video->dither = caca_create_dither(BPP, LEN, WID, WID*PITCH,
+			RED, GREEN, BLUE, 0);
 	if(!(video->dither))
 	{
 		warning("Failed to initalise the libcaca video frontend");
@@ -96,8 +96,10 @@ void libcaca_finish_input(emu_state *state unused)
 void libcaca_blit_canvas(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
+	int wid = caca_get_canvas_width(video->canvas);
+	int height = caca_get_canvas_height(video->canvas);
 
-	caca_dither_bitmap(video->canvas, 0, 0, LEN, WID, video->dither,
+	caca_dither_bitmap(video->canvas, 0, 0, wid, height, video->dither,
 			state->lcdc.out);
 	caca_refresh_display(video->display);
 }
