@@ -590,6 +590,7 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 	case CB_OP_RL:
 	{
 		uint8_t hi = (*write_to) & 0x80;
+		bool set_low = IS_FLAG(state, FLAG_C);
 
 		FLAGS_CLEAR(state);
 
@@ -597,6 +598,11 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 		if(hi)
 		{
 			FLAG_SET(state, FLAG_C);
+		}
+
+		if(set_low)
+		{
+			*write_to |= 0x01;
 		}
 
 		if(!(*write_to))
