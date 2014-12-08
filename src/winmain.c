@@ -8,12 +8,6 @@ emu_state *g_state;
 #include "print.h"	// debug
 #include "frontend.h"	// frontend
 
-emu_state * init_emulator(const char *rom_path, frontend_type input,
-		frontend_type audio, frontend_type video,
-		frontend_type event_loop);
-void finish_emulator(emu_state *restrict state);
-bool step_emulator(emu_state *restrict state);
-
 extern bool do_exit;
 HWND hwnd;
 HDC mem;
@@ -44,13 +38,9 @@ void w32_blit_canvas(emu_state *state)
 {
 	HDC hdc = GetDC(hwnd);
 
-	SetBitmapBits(bm, 92960, (LPVOID)g_state->lcdc.out);
+	SetBitmapBits(bm, 92960, (LPVOID)state->lcdc.out);
 
-	BitBlt(hdc, 0, 0, 160, 144, mem, 0, 0, SRCCOPY);/* != 0x0)
-	{
-		printf("0x%08X", GetLastError());
-	//	abort();
-	}*/
+	BitBlt(hdc, 0, 0, 160, 144, mem, 0, 0, SRCCOPY);
 
 	ReleaseDC(hwnd, hdc);
 }
@@ -210,14 +200,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char *szCmdLine
 		return -1;
 	}
 
-	FRONTEND_INIT_ALL(g_state)
-
-	EVENT_LOOP(g_state);
-
-	FRONTEND_FINISH_ALL(g_state)
-	finish_emulator(g_state);
-
-	return 0;
+	return main_common(g_state);
 }
 
 LRESULT CALLBACK HermProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)

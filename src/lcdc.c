@@ -64,6 +64,7 @@ void lcdc_tick(emu_state *restrict state)
 			uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
 			uint8_t pixel_y_offset = state->lcdc.ly % 8;
 			uint32_t val[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
+			uint16_t letter_a[8] = { 0x7C7C, 0x00C6, 0xC600, 0x00FE, 0xC6C6, 0x00C6, 0xC600, 0x0000 };
 
 			if (state->lcdc.lcd_control.params.bg_code_sel)
 			{
@@ -74,8 +75,8 @@ void lcdc_tick(emu_state *restrict state)
 			for (; curr_tile < 20; curr_tile++, next_tile++, skip += 8)
 			{
 				uint8_t tile = state->lcdc.vram[0x0][next_tile];
-				uint32_t pixels;
-				uint32_t *mem = (uint32_t *)(state->lcdc.vram[0x0] + start + (tile * 8) + pixel_y_offset);
+				uint8_t pixel_temp;
+				uint16_t *mem = (uint16_t *)(/*state->lcdc.vram[0x0] + start + (tile * 8)*/ letter_a + pixel_y_offset);
 				if (!state->lcdc.lcd_control.params.bg_char_sel)
 				{
 					tile -= 0x80;
@@ -93,17 +94,22 @@ void lcdc_tick(emu_state *restrict state)
 				state->lcdc.out[skip + 6][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
 				state->lcdc.out[skip + 7][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];*/
 
-				pixels = interleave(*mem);
-				state->lcdc.out[state->lcdc.ly][skip] = val[(pixels & 0x3)];
-				state->lcdc.out[state->lcdc.ly][skip + 1] = val[(pixels & 0x300 >> 8)];
-				state->lcdc.out[state->lcdc.ly][skip + 2] = val[(pixels & 0x30000 >> 16)];
-				state->lcdc.out[state->lcdc.ly][skip + 3] = val[(pixels & 0x3000000 >> 24)];
-
-				pixels = interleave(*++mem);
-				state->lcdc.out[state->lcdc.ly][skip + 4] = val[(pixels & 0x3)];
-				state->lcdc.out[state->lcdc.ly][skip + 5] = val[(pixels & 0x300 >> 8)];
-				state->lcdc.out[state->lcdc.ly][skip + 6] = val[(pixels & 0x30000 >> 16)];
-				state->lcdc.out[state->lcdc.ly][skip + 7] = val[(pixels & 0x3000000 >> 24)];
+				pixel_temp = (*mem & 0x01) | (*mem & 0x100 >> 7);
+				state->lcdc.out[state->lcdc.ly][skip] = val[pixel_temp];
+				pixel_temp = (*mem & 0x02 >> 1) | (*mem & 0x200 >> 8);
+				state->lcdc.out[state->lcdc.ly][skip + 1] = val[pixel_temp];
+				pixel_temp = (*mem & 0x04 >> 2) | (*mem & 0x400 >> 9);
+				state->lcdc.out[state->lcdc.ly][skip + 2] = val[pixel_temp];
+				pixel_temp = (*mem & 0x08 >> 3) | (*mem & 0x800 >> 10);
+				state->lcdc.out[state->lcdc.ly][skip + 3] = val[pixel_temp];
+				pixel_temp = (*mem & 0x10 >> 4) | (*mem & 0x1000 >> 11);
+				state->lcdc.out[state->lcdc.ly][skip + 4] = val[pixel_temp];
+				pixel_temp = (*mem & 0x20 >> 5) | (*mem & 0x2000 >> 12);
+				state->lcdc.out[state->lcdc.ly][skip + 5] = val[pixel_temp];
+				pixel_temp = (*mem & 0x40 >> 6) | (*mem & 0x4000 >> 13);
+				state->lcdc.out[state->lcdc.ly][skip + 6] = val[pixel_temp];
+				pixel_temp = (*mem & 0x80 >> 7) | (*mem & 0x8000 >> 14);
+				state->lcdc.out[state->lcdc.ly][skip + 7] = val[pixel_temp];
 			}
 
 			state->lcdc.curr_clk = 0;
