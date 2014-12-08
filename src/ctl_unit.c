@@ -96,7 +96,7 @@ static const opcode_t handlers[0x100] =
 	/* 0x70 */ ld_hl_b, ld_hl_c, ld_hl_d, ld_hl_e, ld_hl_h, ld_hl_l, halt, ld_hl_a,
 	/* 0x78 */ ld_a_b, ld_a_c, ld_a_d, ld_a_e, ld_a_h, ld_a_l, ld_a_hl, ld_a_a,
 	/* 0x80 */ add_b, add_c, add_d, add_e, add_h, add_l, add_hl, add_a,
-	/* 0x88 */ adc_b, adc_c, adc_d, adc_e, adc_h, adc_h, adc_hl, adc_a,
+	/* 0x88 */ adc_b, adc_c, adc_d, adc_e, adc_h, adc_l, adc_hl, adc_a,
 	/* 0x90 */ sub_b, sub_c, sub_d, sub_e, sub_h, sub_l, sub_hl, sub_a,
 	/* 0x98 */ sbc_b, sbc_c, sbc_d, sbc_e, sbc_h, sbc_l, sbc_hl, sbc_a,
 	/* 0xA0 */ and_b, and_c, and_d, and_e, and_h, and_l, and_hl, and_a,
