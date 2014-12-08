@@ -698,7 +698,7 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 		FLAGS_CLEAR(state);
 
 		*write_to = swap_8(*write_to);
-		if(*write_to)
+		if(!(*write_to))
 		{
 			FLAG_SET(state, FLAG_Z);
 		}
