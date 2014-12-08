@@ -535,6 +535,7 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 		write_to = &REG_L(state);
 		break;
 	case CB_REG_HL:
+		maybe_temp = mem_read8(state, REG_HL(state));
 		write_to = &maybe_temp;
 		break;
 	case CB_REG_A:
@@ -543,11 +544,6 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 	}
 
 	uint8_t val = (1 << bit_number);
-
-	if(reg == CB_REG_HL)
-	{
-		maybe_temp = mem_read8(state, REG_HL(state));
-	}
 
 	switch(op)
 	{
