@@ -347,7 +347,7 @@ static inline void inc_hl_mem(emu_state *restrict state, uint8_t data[] unused)
 
 	FLAG_UNSET(state, FLAG_N);
 
-	if(!(val ^ 0x0F))
+	if(!(++val & 0x0F))
 	{
 		FLAG_SET(state, FLAG_H);
 	}
@@ -356,7 +356,7 @@ static inline void inc_hl_mem(emu_state *restrict state, uint8_t data[] unused)
 		FLAG_UNSET(state, FLAG_H);
 	}
 
-	if(!(++val))
+	if(!val)
 	{
 		FLAG_SET(state, FLAG_Z);
 	}
