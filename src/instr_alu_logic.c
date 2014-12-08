@@ -84,7 +84,7 @@ static inline void cpl(emu_state *restrict state, uint8_t data[] unused)
 {
 	FLAG_SET(state, FLAG_H | FLAG_N);
 
-	REG_A(state) ^= ~(REG_A(state));
+	REG_A(state) ^= 0xFF;
 
 	state->wait = 4;
 }
