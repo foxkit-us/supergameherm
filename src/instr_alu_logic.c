@@ -494,10 +494,11 @@ static inline void cp_a(emu_state *restrict state, uint8_t data[] unused)
 */
 static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 {
-	int8_t opcode = data[0];
+	uint8_t opcode = data[0];
 	uint8_t *write_to;
 	uint8_t maybe_temp;
 	uint8_t bit_number;
+	uint8_t val;
 	cb_regs reg = (cb_regs)(opcode & 0x7);
 	cb_ops op;
 
@@ -506,11 +507,12 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 	if(opcode >= 0x40)
 	{
 		bit_number = (opcode & 0x38) >> 3;
-		op = (cb_ops)(((opcode & 0xC0) >> 7) + 8);
+		val = (1 << bit_number);
+		op = (cb_ops)(((opcode & 0xC0) >> 6) + 7);
 	}
 	else
 	{
-		bit_number = 0;
+		bit_number = val = 0;
 		op = (cb_ops)(opcode >> 3);
 	}
 
@@ -542,8 +544,6 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 		write_to = &REG_A(state);
 		break;
 	}
-
-	uint8_t val = (1 << bit_number);
 
 	switch(op)
 	{
@@ -593,7 +593,7 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 
 		FLAGS_CLEAR(state);
 
-		(*write_to) <<= 1;
+		*write_to <<= 1;
 		if(hi)
 		{
 			FLAG_SET(state, FLAG_C);
@@ -699,9 +699,13 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] unused)
 		break;
 	case CB_OP_BIT:
 		/* test bit <bit_number> of register <reg> */
-		if(*write_to & val)
+		if((*write_to & val) != val)
 		{
 			FLAG_SET(state, FLAG_Z);
+		}
+		else
+		{
+			FLAG_UNSET(state, FLAG_Z);
 		}
 
 		FLAG_SET(state, FLAG_H);
