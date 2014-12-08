@@ -5,12 +5,17 @@
 #include "typedefs.h"	// typedefs
 #include "input.h"	// input_key
 
+struct frontend_input_return_t
+{
+	input_key key;
+	bool press;
+};
 
 struct frontend_input_t
 {
 	bool (*init)(emu_state *);		/*! Initalise the keyboard input */
 	void (*finish)(emu_state *);		/*! Deinitalise the keyboard input */
-	input_key (*get_key)(emu_state *);	/*! Get a key */
+	void (*get_key)(emu_state *, frontend_input_return *);		/*! Get a key */
 
 	void *data;				/*! Opaque data */
 };
@@ -78,15 +83,16 @@ extern const frontend_audio *frontend_set_audio[];
 extern const frontend_event_loop frontend_set_event_loop[];
 
 // Helpers to call functions
-#define CALL_FRONTEND(state, type, fn) ((*(state->front.type.fn))(state))
+#define CALL_FRONTEND_0(state, type, fn) ((*(state->front.type.fn))(state))
+#define CALL_FRONTEND_1(state, type, fn, _1) ((*(state->front.type.fn))(state, _1))
 #define EVENT_LOOP(state) ((*(state->front.event_loop))(state))
 
-#define FRONTEND_INIT_INPUT(state) CALL_FRONTEND(state, input, init)
-#define FRONTEND_INIT_AUDIO(state) CALL_FRONTEND(state, audio, init)
-#define FRONTEND_INIT_VIDEO(state) CALL_FRONTEND(state, video, init)
-#define FRONTEND_FINISH_INPUT(state) CALL_FRONTEND(state, input, finish)
-#define FRONTEND_FINISH_AUDIO(state) CALL_FRONTEND(state, audio, finish)
-#define FRONTEND_FINISH_VIDEO(state) CALL_FRONTEND(state, video, finish)
+#define FRONTEND_INIT_INPUT(state) CALL_FRONTEND_0(state, input, init)
+#define FRONTEND_INIT_AUDIO(state) CALL_FRONTEND_0(state, audio, init)
+#define FRONTEND_INIT_VIDEO(state) CALL_FRONTEND_0(state, video, init)
+#define FRONTEND_FINISH_INPUT(state) CALL_FRONTEND_0(state, input, finish)
+#define FRONTEND_FINISH_AUDIO(state) CALL_FRONTEND_0(state, audio, finish)
+#define FRONTEND_FINISH_VIDEO(state) CALL_FRONTEND_0(state, video, finish)
 
 #define FRONTEND_INIT_ALL(state) \
 	{ \
@@ -102,8 +108,8 @@ extern const frontend_event_loop frontend_set_event_loop[];
 		FRONTEND_FINISH_VIDEO(state); \
 	}
 
-#define BLIT_CANVAS(state) CALL_FRONTEND(state, video, blit_canvas)
-#define OUTPUT_SAMPLE(state) CALL_FRONTEND(state, audio, output_sample)
-#define GET_KEY(state) CALL_FRONTEND(state, input, get_key)
+#define BLIT_CANVAS(state) CALL_FRONTEND_0(state, video, blit_canvas)
+#define OUTPUT_SAMPLE(state) CALL_FRONTEND_0(state, audio, output_sample)
+#define GET_KEY(state, ret) CALL_FRONTEND_1(state, input, get_key, ret)
 
 #endif /*__FRONTEND_H__*/

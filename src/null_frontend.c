@@ -1,7 +1,7 @@
 #include "sgherm.h"	// emu_state, unused
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
-#include "input.h"	// input_key
+#include "input.h"	// int
 #include "frontend.h"	// frontend
 
 bool null_init_video(emu_state *state unused)
@@ -98,7 +98,7 @@ void null_output_sample(emu_state *state unused)
 	}
 }
 
-input_key null_get_key(emu_state *state unused)
+void null_get_key(emu_state *state unused, frontend_input_return *ret unused)
 {
 	static bool did_notice = false;
 
@@ -107,8 +107,6 @@ input_key null_get_key(emu_state *state unused)
 		debug("Not getting a null keystroke");
 		did_notice = true;
 	}
-
-	return INPUT_NONE;
 }
 
 int null_event_loop(emu_state *state)

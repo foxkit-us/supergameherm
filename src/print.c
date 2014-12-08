@@ -5,14 +5,18 @@
 
 #include "util.h"	// unused
 
+
+FILE *to_stdout;
+FILE *to_stderr;
+
 void fatal(const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);
 
-	fprintf(stderr, "FATAL ERROR during execution: ");
-	vfprintf(stderr, str, argp);
-	fprintf(stderr, "\n");
+	fprintf(to_stderr, "FATAL ERROR during execution: ");
+	vfprintf(to_stderr, str, argp);
+	fprintf(to_stderr, "\n");
 
 	va_end(argp);
 
@@ -25,9 +29,9 @@ void error(const char *str, ...)
 	va_list argp;
 	va_start(argp, str);
 
-	fprintf(stderr, "ERROR during execution: ");
-	vfprintf(stderr, str, argp);
-	fprintf(stderr, "\n");
+	fprintf(to_stderr, "ERROR during execution: ");
+	vfprintf(to_stderr, str, argp);
+	fprintf(to_stderr, "\n");
 
 	va_end(argp);
 }
@@ -37,9 +41,9 @@ void info(const char *str, ...)
 	va_list argp;
 	va_start(argp, str);
 
-	fprintf(stderr, "info: ");
-	vfprintf(stderr, str, argp);
-	fprintf(stderr, "\n");
+	fprintf(to_stderr, "info: ");
+	vfprintf(to_stderr, str, argp);
+	fprintf(to_stderr, "\n");
 
 	va_end(argp);
 }
@@ -49,9 +53,9 @@ void warning(const char *str, ...)
 	va_list argp;
 	va_start(argp, str);
 
-	fprintf(stderr, "WARNING: ");
-	vfprintf(stderr, str, argp);
-	fprintf(stderr, "\n");
+	fprintf(to_stderr, "WARNING: ");
+	vfprintf(to_stderr, str, argp);
+	fprintf(to_stderr, "\n");
 
 	va_end(argp);
 }
@@ -67,8 +71,8 @@ void debug(const char *str, ...)
 	va_list argp;
 	va_start(argp, str);
 
-	vfprintf(stderr, str, argp);
-	fprintf(stderr, "\n");
+	vfprintf(to_stderr, str, argp);
+	fprintf(to_stderr, "\n");
 
 	va_end(argp);
 }

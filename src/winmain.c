@@ -16,7 +16,7 @@ HBITMAP bm;
 bool w32_init_video(emu_state *state unused)
 {
 	HDC hdc = GetDC(hwnd);
-	
+
 	mem = CreateCompatibleDC(hdc);
 	bm = CreateBitmap(160, 144, 1, 32, NULL);
 	if(bm == NULL)
@@ -96,9 +96,10 @@ void TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-input_key w32_get_key(emu_state *state)
+void w32_get_key(emu_state *state, frontend_input_return *ret)
 {
-	return (input_key)((uint8_t)state->front.input.data);
+	#warning "Shit's broke here"
+	return (int)((uint8_t)state->front.input.data);
 }
 
 void StepEmulator(emu_state *state)
@@ -183,7 +184,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char *szCmdLine
 		ofn.lpstrFilter = "All Game Boy ROMs\0*.gb;*.gbc\0Original Game Boy (DMG) ROMs\0*.gb\0";
 		ofn.lpstrTitle = "Open Game!";
 		ofn.nMaxFile = sizeof(szROMName);
-		
+
 		if(!GetOpenFileName(&ofn))
 		{
 			DestroyWindow(hwnd);

@@ -1,6 +1,8 @@
 #ifndef __PRINT_H_
 #define __PRINT_H_
 
+#include <stdio.h>	// FILE *
+
 /*!
  * @brief	Display an error and quit fast.
  * @param	str	The format of the error to print.
@@ -37,5 +39,11 @@ void warning(const char *str, ...);
  * 		messages; use info instead.
  */
 void debug(const char *str, ...);
+
+/*! Where stdout goes with these functions */
+extern FILE *to_stdout;
+
+/*! Where stderr goes with these functions */
+extern FILE *to_stderr;
 
 #endif /*!__PRINT_H_*/

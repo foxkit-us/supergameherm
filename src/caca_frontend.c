@@ -6,6 +6,9 @@
 #include <caca.h>	// libcaca
 #include <stdbool.h>	// bool
 #include <stdlib.h>	// calloc
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 
 #define LEN 144
@@ -31,6 +34,9 @@ typedef struct libcaca_video_data_t
 	caca_canvas_t *canvas;
 	caca_display_t *display;
 	caca_dither_t *dither;
+
+	FILE *stdout_new;
+	FILE *stderr_new;
 } libcaca_video_data;
 
 
@@ -43,14 +49,29 @@ bool libcaca_init_video(emu_state *state)
 	video = calloc(sizeof(libcaca_video_data), 1);
 	state->front.video.data = (void *)video;
 
-	video->canvas = caca_create_canvas(LEN, WID);
-	video->display = caca_create_display(video->canvas);
+	// Redirect stdout and stderr
+	video->stdout_new = fopen("stdout.log", "w");
+	video->stderr_new = fopen("stderr.log", "w");
+
+	if(!(video->stdout_new && video->stderr_new))
+	{
+		perror("fopen");
+		free(video);
+		return false;
+	}
+
+	to_stdout = video->stdout_new;
+	to_stderr = video->stderr_new;
+
+	video->display = caca_create_display(NULL);
 	if(!(video->display))
 	{
 		warning("Failed to initalise the libcaca video frontend");
-		caca_free_canvas(video->canvas);
+		free(video);
 		return false;
 	}
+
+	video->canvas = caca_get_canvas(video->display);
 
 	caca_set_display_title(video->display, "SuperGameHerm");
 
@@ -60,7 +81,7 @@ bool libcaca_init_video(emu_state *state)
 	{
 		warning("Failed to initalise the libcaca video frontend");
 		caca_free_display(video->display);
-		caca_free_canvas(video->canvas);
+		free(video);
 		return false;
 	}
 
@@ -77,14 +98,19 @@ void libcaca_finish_video(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
 
-	info("libcaca video frontend has left the building!");
-
 	caca_free_display(video->display);
 	caca_free_dither(video->dither);
-	caca_free_canvas(video->canvas);
-	free(video);
 
+	fclose(video->stdout_new);
+	fclose(video->stderr_new);
+
+	to_stdout = stdout;
+	to_stderr = stderr;
+
+	free(video);
 	state->front.video.data = NULL;
+
+	info("libcaca video frontend has left the building!");
 }
 
 void libcaca_finish_input(emu_state *state unused)
@@ -104,65 +130,85 @@ void libcaca_blit_canvas(emu_state *state)
 	caca_refresh_display(video->display);
 }
 
-input_key libcaca_get_key(emu_state *state)
+void libcaca_get_key(emu_state *state, frontend_input_return *ret)
 {
 	libcaca_video_data *video = state->front.video.data;
 	caca_event_t ev;
-	int ret = caca_get_event(video->display, CACA_EVENT_KEY_PRESS, &ev, 0);
+	int ev_type;
 
-	if(!ret)
+	if(!caca_get_event(video->display, CACA_EVENT_KEY_PRESS |
+		CACA_EVENT_KEY_RELEASE | CACA_EVENT_QUIT, &ev, 0))
 	{
-		return INPUT_NONE;
+		ret->key = 0;
+		return;
 	}
 
-	switch(caca_get_event_key_ch(&ev))
+	ev_type = caca_get_event_type(&ev);
+
+	if(ev_type & (CACA_EVENT_KEY_PRESS | CACA_EVENT_KEY_RELEASE))
 	{
-	case CACA_KEY_UP:
-		return INPUT_UP;
+		ret->press = ev_type & CACA_EVENT_KEY_PRESS ? true : false;
 
-	case CACA_KEY_DOWN:
-		return INPUT_DOWN;
+		switch(caca_get_event_key_ch(&ev))
+		{
+		case CACA_KEY_UP:
+			ret->key = INPUT_UP;
+			break;
 
-	case CACA_KEY_LEFT:
-		return INPUT_LEFT;
+		case CACA_KEY_DOWN:
+			ret->key = INPUT_DOWN;
+			break;
 
-	case CACA_KEY_RIGHT:
-		return INPUT_RIGHT;
+		case CACA_KEY_LEFT:
+			ret->key = INPUT_LEFT;
+			break;
 
-	case 'a':
-	case 'A':
-	case 'z':
-	case 'Z':
-		return INPUT_A;
+		case CACA_KEY_RIGHT:
+			ret->key = INPUT_RIGHT;
+			break;
 
-	case 's':
-	case 'S':
-	case 'x':
-	case 'X':
-		return INPUT_B;
+		case 'a':
+		case 'A':
+		case 'z':
+		case 'Z':
+			ret->key = INPUT_A;
+			break;
 
-	case CACA_KEY_RETURN:
-		return INPUT_START;
+		case 's':
+		case 'S':
+		case 'x':
+		case 'X':
+			ret->key = INPUT_B;
+			break;
 
-	case CACA_KEY_BACKSPACE:
-		return INPUT_SELECT;
+		case CACA_KEY_RETURN:
+			ret->key = INPUT_START;
+			break;
 
-	case CACA_KEY_ESCAPE:
+		case CACA_KEY_BACKSPACE:
+			ret->key = INPUT_SELECT;
+			break;
+
+		case CACA_KEY_ESCAPE:
+			do_exit = true;
+			ret->key = 0;
+			break;
+		}
+	}
+	else if(ev_type & CACA_EVENT_QUIT)
+	{
 		do_exit = true;
-
-	default:
-		return INPUT_NONE;
+		ret->key = 0;
 	}
 }
 
 int libcaca_event_loop(emu_state *state)
 {
-	int key_mask = 0;
-
 	debug("Executing libcaca event loop");
 
 	do
 	{
+		frontend_input_return ret;
 		uint8_t mode = state->lcdc.stat.params.mode_flag;
 		uint_fast16_t clock = state->lcdc.curr_clk;
 
@@ -170,16 +216,10 @@ int libcaca_event_loop(emu_state *state)
 
 		if(unlikely(mode == 1 && clock == 1 && state->input.col))
 		{
-			input_key key = GET_KEY(state);
-			if(key != INPUT_NONE)
+			GET_KEY(state, &ret);
+			if(ret.key > 0)
 			{
-				key_mask |= key;
-				joypad_signal(state, key_mask, true);
-			}
-			else if(key_mask)
-			{
-				joypad_signal(state, key_mask, false);
-				key_mask = 0;
+				joypad_signal(state, ret.key, ret.press);
 			}
 		}
 	} while(!do_exit);

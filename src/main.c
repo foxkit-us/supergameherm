@@ -113,8 +113,11 @@ int main(int argc, char *argv[])
 {
 	emu_state *state;
 
-	printf("Super Game Herm!\n");
-	printf("Beta version!\n\n");
+	to_stdout = stdout;
+	to_stderr = stderr;
+
+	fprintf(to_stdout, "Super Game Herm!\n");
+	fprintf(to_stdout, "Beta version!\n\n");
 
 	if(argc < 2)
 	{
