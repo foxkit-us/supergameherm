@@ -9,40 +9,88 @@ emu_state *g_state;
 #include "frontend.h"	// frontend
 
 extern bool do_exit;
-HWND hwnd;
-HDC mem;
-HBITMAP bm;
 
-bool w32_init_video(emu_state *state UNUSED)
+typedef struct video_state
 {
-	HDC hdc = GetDC(hwnd);
+	/*! the window handle */
+	HWND hWnd;
+	/*! the memory DC for the window handle */
+	HDC mem;
+	/*! the bitmap blitted to mem every vblank */
+	HBITMAP bm;
+} video_state;
 
-	mem = CreateCompatibleDC(hdc);
-	bm = CreateBitmap(160, 144, 1, 32, NULL);
-	if(bm == NULL)
+bool w32_init_video(emu_state *state)
+{
+	HINSTANCE hInstance = GetModuleHandle(NULL);
+	WNDCLASSEX wndcl;
+	HDC hdc;
+	video_state *s;
+
+	s = (video_state *)state->front.video.data = calloc(sizeof(video_state), 1);
+
+	ZeroMemory(&wndcl, sizeof(wndcl));
+	wndcl.cbSize = sizeof(wndcl);
+	wndcl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wndcl.hCursor = LoadCursor(hInstance, IDC_ARROW);
+	wndcl.hInstance = hInstance;
+	wndcl.lpfnWndProc = HermProc;
+	wndcl.lpszClassName = "HermWindow";
+	wndcl.style = CS_HREDRAW | CS_VREDRAW;
+
+	if(!RegisterClassEx(&wndcl))
 	{
-		printf("error creating bitmap (0x%08X)\n", GetLastError());
+		error("registering window class: %04X\n", GetLastError());
 		return false;
 	}
-	SelectObject(mem, bm);
+
+	s->hWnd = CreateWindowEx(WS_EX_CLIENTEDGE, "HermWindow", "Super Game Herm!",
+		WS_BORDER | WS_CAPTION | WS_MINIMIZEBOX,
+		CW_USEDEFAULT, CW_USEDEFAULT, 160, 144, NULL, NULL, hInstance,
+		NULL);
+	if(s->hWnd == NULL)
+	{
+		error(state, "creating window: %04X\n", GetLastError());
+		return false;
+	}
+
+	ShowWindow(s->hWnd, SW_NORMAL);
+	UpdateWindow(s->hWnd);
+
+	hdc = GetDC(s->hWnd);
+
+	s->mem = CreateCompatibleDC(hdc);
+	s->bm = CreateBitmap(160, 144, 1, 32, NULL);
+	if(s->bm == NULL)
+	{
+		error(state, "creating bitmap: 0x%08X\n", GetLastError());
+		return false;
+	}
+	SelectObject(s->mem, s->bm);
 	return true;
 }
 
-void w32_finish_video(emu_state *state UNUSED)
+void w32_finish_video(emu_state *state)
 {
-	DeleteObject(bm);
-	DeleteDC(mem);
+	video_state *s = (video_state *)state->front.video.data;
+	
+	DeleteObject(s->bm);
+	DeleteDC(s->mem);
+
+	free(s);
+	state->front.video.data = NULL;
 }
 
 void w32_blit_canvas(emu_state *state)
 {
-	HDC hdc = GetDC(hwnd);
+	video_state *s = (video_state *)state->front.video.data;
+	HDC hdc = GetDC(s->hWnd);
 
-	SetBitmapBits(bm, 92960, (LPVOID)state->lcdc.out);
+	SetBitmapBits(s->bm, 92960, (LPVOID)state->lcdc.out);
 
-	BitBlt(hdc, 0, 0, 160, 144, mem, 0, 0, SRCCOPY);
+	BitBlt(hdc, 0, 0, 160, 144, s->mem, 0, 0, SRCCOPY);
 
-	ReleaseDC(hwnd, hdc);
+	ReleaseDC(s->hWnd, hdc);
 }
 
 bool w32_init_input(emu_state *state)
@@ -109,12 +157,13 @@ void StepEmulator(emu_state *state)
 
 int w32_event_loop(emu_state *state)
 {
+	video_state *s = (video_state *)state->front.video.data;
 	MSG msg;
 
 	while(!do_exit)
 	{
 		StepEmulator(g_state);
-		if(PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE) > 0x0)
+		if(PeekMessage(&msg, s->hWnd, 0, 0, PM_REMOVE) > 0x0)
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -138,71 +187,53 @@ const frontend_input w32_frontend_input = {
 	NULL
 };
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char *szCmdLine, int iCmdShow)
+char *AskUserForROMPath(void)
 {
 	char szROMName[MAX_PATH];
-	WNDCLASSEX wndcl;
+
+	OPENFILENAME ofn;
+	ZeroMemory(&szROMName, sizeof(szROMName));
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER;
+	//ofn.hwndOwner = hwnd;
+	ofn.lpstrFile = szROMName;
+	ofn.lpstrFilter = "All Game Boy ROMs\0*.gb;*.gbc\0Original Game Boy (DMG) ROMs\0*.gb\0";
+	ofn.lpstrTitle = "Open Game!";
+	ofn.nMaxFile = sizeof(szROMName);
+
+	if(!GetOpenFileName(&ofn))
+	{
+		return NULL;
+	}
+	else
+	{
+		return strdup(szROMName);
+	}
+}
+
+int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, char *szCmdLine, int iCmdShow UNUSED)
+{
+	char *rom_path;
 
 	AllocConsole();
 	to_stdout = freopen("CONOUT$", "w", stdout);
 	to_stderr = freopen("CONOUT$", "w", stderr);
 
-	ZeroMemory(&wndcl, sizeof(wndcl));
-	wndcl.cbSize = sizeof(wndcl);
-	wndcl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wndcl.hCursor = LoadCursor(hInstance, IDC_ARROW);
-	wndcl.hInstance = hInstance;
-	wndcl.lpfnWndProc = HermProc;
-	wndcl.lpszClassName = "HermWindow";
-	wndcl.style = CS_HREDRAW | CS_VREDRAW;
-
-	if(!RegisterClassEx(&wndcl))
-	{
-		printf("error = %04X\n", GetLastError());
-		abort();
-	}
-
-	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "HermWindow", "Super Game Herm!",
-		WS_BORDER | WS_CAPTION | WS_MINIMIZEBOX,
-		CW_USEDEFAULT, CW_USEDEFAULT, 160, 144, NULL, NULL, hInstance,
-		NULL);
-	if(hwnd == NULL)
-	{
-		printf("error = %04X\n", GetLastError());
-		abort();
-	}
-
-	ShowWindow(hwnd, iCmdShow);
-	UpdateWindow(hwnd);
-
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
-		OPENFILENAME ofn;
-		ZeroMemory(&szROMName, sizeof(szROMName));
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER;
-		ofn.hwndOwner = hwnd;
-		ofn.lpstrFile = szROMName;
-		ofn.lpstrFilter = "All Game Boy ROMs\0*.gb;*.gbc\0Original Game Boy (DMG) ROMs\0*.gb\0";
-		ofn.lpstrTitle = "Open Game!";
-		ofn.nMaxFile = sizeof(szROMName);
-
-		if(!GetOpenFileName(&ofn))
-		{
-			DestroyWindow(hwnd);
-			return -1;
-		}
+		rom_path = AskUserForROMPath();
 	} else {
-		strncpy(szROMName, szCmdLine, sizeof(szROMName));
+		rom_path = strdup(szCmdLine);
 	}
 
-	if((g_state = init_emulator(szROMName, FRONT_WIN32, FRONT_NULL,
+	if((g_state = init_emulator(rom_path, FRONT_WIN32, FRONT_NULL,
 		FRONT_WIN32, FRONT_WIN32)) == NULL)
 	{
-		DestroyWindow(hwnd);
 		return -1;
 	}
+
+	free(rom_path);
 
 	return main_common(g_state);
 }
