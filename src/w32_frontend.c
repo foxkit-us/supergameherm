@@ -144,8 +144,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char *szCmdLine
 	WNDCLASSEX wndcl;
 
 	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
+	to_stdout = freopen("CONOUT$", "w", stdout);
+	to_stderr = freopen("CONOUT$", "w", stderr);
 
 	ZeroMemory(&wndcl, sizeof(wndcl));
 	wndcl.cbSize = sizeof(wndcl);

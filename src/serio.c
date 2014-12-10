@@ -23,7 +23,7 @@ uint8_t serial_read(emu_state *restrict state, uint16_t reg)
 		return res;
 	}
 	default:
-		error("serial: unknown register %04X (R)", reg);
+		error(state, "serial: unknown register %04X (R)", reg);
 		return 0xFF;
 	}
 }
@@ -49,7 +49,7 @@ void serial_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		state->ser.use_internal = (data && 0x01 == 0x01);
 		break;
 	default:
-		error("serial: unknown register %04X (W)", reg);
+		error(state, "serial: unknown register %04X (W)", reg);
 		break;
 	}
 }

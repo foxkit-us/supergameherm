@@ -44,7 +44,7 @@ bool libcaca_init_video(emu_state *state)
 {
 	libcaca_video_data *video;
 
-	info("Initalising the libcaca video frontend!");
+	info(state, "Initalising the libcaca video frontend!");
 
 	video = calloc(sizeof(libcaca_video_data), 1);
 	state->front.video.data = (void *)video;
@@ -66,7 +66,7 @@ bool libcaca_init_video(emu_state *state)
 	video->display = caca_create_display(NULL);
 	if(!(video->display))
 	{
-		warning("Failed to initalise the libcaca video frontend");
+		warning(state, "Failed to initalise the libcaca video frontend");
 		free(video);
 		return false;
 	}
@@ -79,7 +79,7 @@ bool libcaca_init_video(emu_state *state)
 			RED, GREEN, BLUE, 0);
 	if(!(video->dither))
 	{
-		warning("Failed to initalise the libcaca video frontend");
+		warning(state, "Failed to initalise the libcaca video frontend");
 		caca_free_display(video->display);
 		free(video);
 		return false;
@@ -110,7 +110,7 @@ void libcaca_finish_video(emu_state *state)
 	free(video);
 	state->front.video.data = NULL;
 
-	info("libcaca video frontend has left the building!");
+	info(state, "libcaca video frontend has left the building!");
 }
 
 void libcaca_finish_input(emu_state *state UNUSED)
@@ -206,7 +206,7 @@ void libcaca_get_key(emu_state *state, frontend_input_return *ret)
 
 int libcaca_event_loop(emu_state *state)
 {
-	debug("Executing libcaca event loop");
+	debug(state, "Executing libcaca event loop");
 
 	do
 	{

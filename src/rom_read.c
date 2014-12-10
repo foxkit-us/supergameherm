@@ -54,13 +54,13 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 	if(unlikely((actual_size = ftell(rom)) < 0x8000))
 	{
-		error("ROM is too small");
+		error(state, "ROM is too small");
 		goto close_rom;
 	}
 
 	if(unlikely((state->cart_data = (uint8_t *)malloc(actual_size)) == NULL))
 	{
-		error("Could not allocate RAM for ROM");
+		error(state, "Could not allocate RAM for ROM");
 		goto close_rom;
 	}
 
@@ -81,15 +81,15 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 			   sizeof(graphic_expected)) != 0))
 	{
 #ifdef NDEBUG
-		error("invalid nintendo graphic (don't care)");
+		error(state, "invalid nintendo graphic (don't care)");
 #else
-		fatal("invalid nintendo graphic!");
+		fatal(state, "invalid nintendo graphic!");
 		goto close_rom;
 #endif
 	}
 	else
 	{
-		debug("valid nintendo graphic found");
+		debug(state, "valid nintendo graphic found");
 	}
 
 	if ((*header)->cgb_title.compat & 0x80)
@@ -102,7 +102,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 		state->system = SYSTEM_CGB;
 
-		debug("cart type is CGB");
+		debug(state, "cart type is CGB");
 	}
 	else if ((*header)->sgb_title.sgb & 0x03)
 	{
@@ -112,7 +112,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 		state->system = SYSTEM_SGB;
 
-		debug("cart type is SGB");
+		debug(state, "cart type is SGB");
 	}
 	else
 	{
@@ -121,20 +121,20 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 		state->system = SYSTEM_DMG;
 
-		debug("cart type is DMG");
+		debug(state, "cart type is DMG");
 	}
 
-	debug("loading cart %s", title);
+	debug(state, "loading cart %s", title);
 	if(*publisher)
-		debug("publisher %s", publisher);
-	debug("type: %s", friendly_cart_names[(*header)->cart_type]);
+		debug(state, "publisher %s", publisher);
+	debug(state, "type: %s", friendly_cart_names[(*header)->cart_type]);
 
-	debug("Header size is %d\n", (*header)->rom_size);
+	debug(state, "Header size is %d\n", (*header)->rom_size);
 	size_in_bytes = 0x8000 << (*header)->rom_size;
 
 	if(actual_size != size_in_bytes)
 	{
-		fatal("ROM size %ld is not the expected %ld bytes",
+		fatal(state, "ROM size %ld is not the expected %ld bytes",
 		      actual_size, size_in_bytes);
 		goto close_rom;
 	}
@@ -145,15 +145,15 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	if(checksum != 1)
 	{
 #ifdef NDEBUG
-		error("invalid header checksum (don't care)");
+		error(state, "invalid header checksum (don't care)");
 #else
-		fatal("invalid header checksum!");
+		fatal(state, "invalid header checksum!");
 		goto close_rom;
 #endif
 	}
 	else
 	{
-		debug("Valid header checksum found");
+		debug(state, "Valid header checksum found");
 	}
 
 	// FIXME For now we're targeting DMG, not CGB.

@@ -31,7 +31,7 @@ uint8_t sound_read(emu_state *restrict state, uint16_t reg)
 	/*! NR 13 - ch 1 - frequency LSB */
 	case 0xFF13:
 	{
-		error("sound: read from write-only register FF13");
+		error(state, "sound: read from write-only register FF13");
 		return 0xFF;
 	}
 	/*! NR 14 - ch 1 - misc */
@@ -55,7 +55,7 @@ uint8_t sound_read(emu_state *restrict state, uint16_t reg)
 	/*! NR 23 - ch 2 - frequency LSB */
 	case 0xFF18:
 	{
-		error("sound: read from write-only register FF18");
+		error(state, "sound: read from write-only register FF18");
 		return 0xFF;
 	}
 	/*! NR 24 - ch 2 - misc */
@@ -99,7 +99,7 @@ uint8_t sound_read(emu_state *restrict state, uint16_t reg)
 	}
 	default:
 	{
-		error("sound: unrecognised register %04X (R)", reg);
+		error(state, "sound: unrecognised register %04X (R)", reg);
 		return 0xFF;
 	}
 	}
@@ -216,7 +216,7 @@ void sound_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		break;
 	}
 	default:
-		error("sound: unrecognised register %04X (W)", reg);
+		error(state, "sound: unrecognised register %04X (W)", reg);
 	}
 }
 

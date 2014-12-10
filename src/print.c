@@ -3,13 +3,14 @@
 #include <stdio.h>	// ?fprintf
 #include <stdlib.h>	// exit
 
+#include "sgherm.h"	// emu_state
 #include "util.h"	// UNUSED
 
 
 FILE *to_stdout;
 FILE *to_stderr;
 
-void fatal(const char *str, ...)
+void fatal(emu_state *state UNUSED, const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);
@@ -24,7 +25,7 @@ void fatal(const char *str, ...)
 	/* NOTREACHED */
 }
 
-void error(const char *str, ...)
+void error(emu_state *state UNUSED, const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);
@@ -36,7 +37,7 @@ void error(const char *str, ...)
 	va_end(argp);
 }
 
-void info(const char *str, ...)
+void info(emu_state *state UNUSED, const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);
@@ -48,7 +49,7 @@ void info(const char *str, ...)
 	va_end(argp);
 }
 
-void warning(const char *str, ...)
+void warning(emu_state *state UNUSED, const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);
@@ -61,12 +62,12 @@ void warning(const char *str, ...)
 }
 
 #ifdef NDEBUG
-void debug(const char *str UNUSED, ...)
+void debug(emu_state *state UNUSED, const char *str UNUSED, ...)
 {
 	// Stub
 }
 #else
-void debug(const char *str, ...)
+void debug(emu_state *state UNUSED, const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);

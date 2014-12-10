@@ -51,7 +51,7 @@ uint8_t timer_read(emu_state *restrict state, uint16_t reg)
 		return res;
 	}
 	default:
-		error("timer: unrecognised register %04X (R)", reg);
+		error(state, "timer: unrecognised register %04X (R)", reg);
 		return 0xFF;
 	}
 }
@@ -94,7 +94,7 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		return;
 	}
 	default:
-		error("timer: unrecognised register %04X (W)", reg);
+		error(state, "timer: unrecognised register %04X (W)", reg);
 	}
 }
 

@@ -43,7 +43,7 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 	if(down)
 	{
 		state->input.row &= ~row_sel;
-		debug("Pressing key %02X", key);
+		debug(state, "Pressing key %02X", key);
 	}
 	else
 	{
@@ -54,6 +54,6 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 
 		state->input.row |= row_sel;
 
-		debug("Depressing key %02X", key);
+		debug(state, "Depressing key %02X", key);
 	}
 }

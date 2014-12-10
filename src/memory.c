@@ -27,8 +27,8 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
  */
 uint8_t no_hardware(emu_state *restrict state UNUSED, uint16_t location)
 {
-	warning("no device present at %04X (emulator bug? incompatible GB?)", location);
-	warning("(a real GB spews 0xFF)");
+	warning(state, "no device present at %04X (emulator bug? incompatible GB?)", location);
+	warning(state, "(a real GB spews 0xFF)");
 	return 0xFF;
 }
 
@@ -146,7 +146,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	if(state->dma_membar_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
 		// XXX check into it and see how this is done
-		fatal("Prohibited read during DMA transfer");
+		fatal(state, "Prohibited read during DMA transfer");
 		return 0;
 	}
 
@@ -216,7 +216,7 @@ typedef void (*mem_write8_fn)(emu_state *restrict , uint16_t, uint8_t);
  */
 void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	warning("[%4X] attempted write of %02X to read-only register %04X (a real GB ignores this)",
+	warning(state, "[%4X] attempted write of %02X to read-only register %04X (a real GB ignores this)",
 	      REG_PC(state), data, location);
 }
 
@@ -226,7 +226,7 @@ void readonly_reg_write(emu_state *restrict state, uint16_t location, uint8_t da
  */
 void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	warning("[%4X] attempted doofus write of %02X to non-existant device at %04X (a real GB ignores this)",
+	warning(state, "[%4X] attempted doofus write of %02X to non-existant device at %04X (a real GB ignores this)",
 	      REG_PC(state), data, location);
 }
 
@@ -348,7 +348,7 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 {
 	if(state->dma_membar_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
-		fatal("Prohibited write during DMA transfer");
+		fatal(state, "Prohibited write during DMA transfer");
 		return;
 	}
 
@@ -359,13 +359,12 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		switch(state->cart_data[OFF_CART_TYPE])
 		{
 		case CART_ROM_ONLY:
-			warning("invalid memory write at %04X (%02X) (a real GB ignores this)",
+			warning(state, "invalid memory write at %04X (%02X) (a real GB ignores this)",
 			      location, data);
 		case CART_MBC1:
 		case CART_MBC1_RAM:
 		case CART_MBC1_RAM_BATT:
 			state->bank = data & 0x1F;
-			//debug("switching to bank %04X", state->bank);
 			return;
 		case CART_MBC3:
 		case CART_MBC3_RAM:
@@ -373,10 +372,9 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		case CART_MBC3_TIMER_BATT:
 		case CART_MBC3_TIMER_RAM_BATT:
 			state->bank = data & 0x7F;
-			//debug("switching to bank %04X", state->bank);
 			return;
 		default:
-			fatal("banks for this cart (type %04X [%s]) aren't done yet sorry :(",
+			fatal(state, "banks for this cart (type %04X [%s]) aren't done yet sorry :(",
 					state->cart_data[OFF_CART_TYPE],
 					friendly_cart_names[location >> 12]);
 		}
@@ -388,21 +386,19 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		case CART_MBC3:
 		case CART_MBC3_TIMER_BATT:
 		case CART_MBC5:
-			fatal("invalid memory write at %04X (%02X)",
+			fatal(state, "invalid memory write at %04X (%02X)",
 				location, data);
 		case CART_MBC3_RAM:
 		case CART_MBC3_RAM_BATT:
 		case CART_MBC3_TIMER_RAM_BATT:
 			state->ram_bank = data & 0x3;
-			debug("switching to RAM bank %04X", state->ram_bank);
 			return;
 		case CART_MBC5_RAM:
 		case CART_MBC5_RAM_BATT:
 			state->ram_bank = data & 0xF;
-			debug("switching to RAM bank %04X", state->ram_bank);
 			return;
 		default:
-			fatal("RAM banks for this cart (type %04X) aren't done yet sorry :(",
+			fatal(state, "RAM banks for this cart (type %04X) aren't done yet sorry :(",
 					state->cart_data[OFF_CART_TYPE]);
 		}
 	case 0x8:

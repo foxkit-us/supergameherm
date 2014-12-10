@@ -40,7 +40,7 @@ void register_handlers(void)
 		sigaction(SIGPIPE, &sa, NULL) ||
 		sigaction(SIGALRM, &sa, NULL))
 	{
-		error("Could not initalise signal handlers, possibly no stats printing :(");
+		error(NULL, "Could not initalise signal handlers, possibly no stats printing :(");
 	}
 }
 

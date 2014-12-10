@@ -169,7 +169,7 @@ void lcdc_tick(emu_state *restrict state)
 
 		break;
 	default:
-		fatal("somehow wound up in an unknown impossible video mode");
+		fatal(state, "somehow wound up in an unknown impossible video mode");
 	}
 
 	if(state->lcdc.ly == state->lcdc.lyc)
@@ -186,9 +186,9 @@ void lcdc_tick(emu_state *restrict state)
 	}
 }
 
-inline uint8_t lcdc_read(emu_state *restrict state UNUSED, uint16_t reg)
+inline uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 {
-	error("lcdc: unknown register %04X (R)", reg);
+	error(state, "lcdc: unknown register %04X (R)", reg);
 	return 0xFF;
 }
 
@@ -200,7 +200,7 @@ inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 	{
 		// Game freak write shitty code and write to VRAM anyway.
 		// Pokémon RGB break if we fatal here.
-		warning("read from VRAM while not in h/v-blank");
+		warning(state, "read from VRAM while not in h/v-blank");
 		return 0xFF;
 	}
 
@@ -229,7 +229,7 @@ inline uint8_t lcdc_scroll_read(emu_state *restrict state, uint16_t reg)
 	}
 	else
 	{
-		fatal("BUG: attempt to read scroll stuff from non-scroll reg");
+		fatal(state, "BUG: attempt to read scroll stuff from non-scroll reg");
 		return 0xFF;
 	}
 }
@@ -256,7 +256,7 @@ inline uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)
 	}
 	else
 	{
-		fatal("BUG: Attempt to read window stuff from non-window reg");
+		fatal(state, "BUG: Attempt to read window stuff from non-window reg");
 		return 0xFF;
 	}
 }
@@ -307,8 +307,8 @@ inline uint8_t sprite_pal_data_read(emu_state *restrict state, uint16_t reg)
 
 void dump_lcdc_state(emu_state *restrict state)
 {
-	debug("---LCDC---");
-	debug("CTRL: %02X (%s %s %s %s %s %s %s %s)",
+	debug(state, "---LCDC---");
+	debug(state, "CTRL: %02X (%s %s %s %s %s %s %s %s)",
 	      state->lcdc.lcd_control.reg,
 	      (state->lcdc.lcd_control.params.dmg_bg) ? "BG" : "bg",
 	      (state->lcdc.lcd_control.params.obj) ? "OBJ" : "obj",
@@ -319,15 +319,15 @@ void dump_lcdc_state(emu_state *restrict state)
 	      (state->lcdc.lcd_control.params.win_code_sel) ? "9C" : "98",
 	      (state->lcdc.lcd_control.params.enable) ? "E" : "e"
 	);
-	debug("STAT: %02X (MODE=%d)",
+	debug(state, "STAT: %02X (MODE=%d)",
 	      state->lcdc.stat.reg, state->lcdc.stat.params.mode_flag);
-	debug("ICLK: %02X", state->lcdc.curr_clk);
-	debug("LY  : %02X", state->lcdc.ly);
+	debug(state, "ICLK: %02X", state->lcdc.curr_clk);
+	debug(state, "LY  : %02X", state->lcdc.ly);
 }
 
-inline void lcdc_write(emu_state *restrict state UNUSED, uint16_t reg, uint8_t data UNUSED)
+inline void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data UNUSED)
 {
-	error("lcdc: unknown register %04X (W)", reg);
+	error(state, "lcdc: unknown register %04X (W)", reg);
 }
 
 inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -338,7 +338,7 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	{
 		// Game freak write shitty code and write to VRAM anyway.
 		// Pokémon RGB break if we fatal here.
-		warning("write to VRAM while not in h/v-blank");
+		warning(state, "write to VRAM while not in h/v-blank");
 		return;
 	}
 
@@ -367,16 +367,16 @@ inline void lcdc_scroll_write(emu_state *restrict state, uint16_t reg, uint8_t d
 	}
 	else
 	{
-		fatal("BUG: attempt to write scroll stuff to non-scroll reg");
+		fatal(state, "BUG: attempt to write scroll stuff to non-scroll reg");
 	}
 }
 
-inline void lcdc_ly_write(emu_state *restrict state UNUSED, uint16_t reg UNUSED, uint8_t data UNUSED)
+inline void lcdc_ly_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data UNUSED)
 {
 #ifndef NDEBUG
-	fatal("write to LY (FF44); you can't just vsync yourself!");
+	fatal(state, "write to LY (FF44); you can't just vsync yourself!");
 #else
-	error("write to LY (FF44) is being ignored");
+	error(state, "write to LY (FF44) is being ignored");
 #endif
 }
 
@@ -397,7 +397,7 @@ inline void lcdc_window_write(emu_state *restrict state, uint16_t reg, uint8_t d
 	}
 	else
 	{
-		fatal("BUG: Attempt to write window data to non-window register");
+		fatal(state, "BUG: Attempt to write window data to non-window register");
 	}
 }
 

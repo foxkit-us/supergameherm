@@ -45,7 +45,7 @@ emu_state * init_emulator(const char *rom_path, frontend_type input,
 
 	if(unlikely(!read_rom_data(state, rom, &header)))
 	{
-		fatal("can't read ROM data (ROM is corrupt)?");
+		fatal(state, "can't read ROM data (ROM is corrupt)?");
 		free(state);
 		fclose(rom);
 		return NULL;
@@ -87,7 +87,7 @@ bool step_emulator(emu_state *restrict state)
 		count_cur_second = 0;
 		if((++game_seconds % 10) == 0)
 		{
-			debug("GBC seconds: %ld", ++game_seconds);
+			debug(state, "GBC seconds: %ld", ++game_seconds);
 		}
 	}
 
@@ -121,14 +121,14 @@ int main(int argc, char *argv[])
 
 	if(argc < 2)
 	{
-		fatal("You must specify a ROM file... -.-");
+		fatal(NULL, "You must specify a ROM file... -.-");
 		return EXIT_FAILURE;
 	}
 
 	state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
 	if(state == NULL)
 	{
-		fatal("Error initalising the emulator :(");
+		fatal(NULL, "Error initalising the emulator :(");
 		return EXIT_FAILURE;
 	}
 

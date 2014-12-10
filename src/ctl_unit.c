@@ -121,15 +121,15 @@ void init_ctl(emu_state *restrict state)
 	switch(state->system)
 	{
 	case SYSTEM_SGB:
-		debug("Super Game Boy emulation");
+		debug(state, "Super Game Boy emulation");
 		REG_A(state) = 0x01;
 		break;
 	case SYSTEM_CGB:
-		debug("Game Boy Color emulation");
+		debug(state, "Game Boy Color emulation");
 		REG_A(state) = 0x11;
 		break;
 	default:
-		debug("original Game Boy emulation");
+		debug(state, "original Game Boy emulation");
 		REG_A(state) = 0x01;
 		break;
 	}
@@ -208,12 +208,12 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 
 	if(cb == 0)
 	{
-		debug("opcode: %02X [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
+		debug(state, "opcode: %02X [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
 			opcode, mnemonics[opcode], pc_prev, flags_prev);
 	}
 	else
 	{
-		debug("opcode: %02X [cb %02X] [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
+		debug(state, "opcode: %02X [cb %02X] [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
 			opcode, cb, mnemonics_cb[cb], pc_prev, flags_prev);
 	}
 }
@@ -309,7 +309,7 @@ bool execute(emu_state *restrict state)
 		if((REG_F(state) ^ flags_prev) & FLAG_Z)
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag Z changed when it wasn't supposed to");
+			fatal(state, "Flag Z changed when it wasn't supposed to");
 		}
 
 		break;
@@ -318,7 +318,7 @@ bool execute(emu_state *restrict state)
 		if(IS_FLAG(state, FLAG_Z))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag Z is set when it is NOT supposed to be");
+			fatal(state, "Flag Z is set when it is NOT supposed to be");
 		}
 
 		break;
@@ -327,7 +327,7 @@ bool execute(emu_state *restrict state)
 		if(!IS_FLAG(state, FLAG_Z))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag Z is NOT set when it is supposed to be");
+			fatal(state, "Flag Z is NOT set when it is supposed to be");
 		}
 
 		break;
@@ -340,7 +340,7 @@ bool execute(emu_state *restrict state)
 		if((REG_F(state) ^ flags_prev) & FLAG_N)
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag N changed when it wasn't supposed to");
+			fatal(state, "Flag N changed when it wasn't supposed to");
 		}
 
 		break;
@@ -349,7 +349,7 @@ bool execute(emu_state *restrict state)
 		if(IS_FLAG(state, FLAG_N))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag N is set when it is NOT supposed to be");
+			fatal(state, "Flag N is set when it is NOT supposed to be");
 		}
 
 		break;
@@ -358,7 +358,7 @@ bool execute(emu_state *restrict state)
 		if(!IS_FLAG(state, FLAG_N))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag N is NOT set when it is supposed to be");
+			fatal(state, "Flag N is NOT set when it is supposed to be");
 		}
 
 		break;
@@ -371,7 +371,7 @@ bool execute(emu_state *restrict state)
 		if((REG_F(state) ^ flags_prev) & FLAG_H)
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag H changed when it wasn't supposed to");
+			fatal(state, "Flag H changed when it wasn't supposed to");
 		}
 
 		break;
@@ -380,7 +380,7 @@ bool execute(emu_state *restrict state)
 		if(IS_FLAG(state, FLAG_H))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag H is set when it is NOT supposed to be");
+			fatal(state, "Flag H is set when it is NOT supposed to be");
 		}
 
 		break;
@@ -389,7 +389,7 @@ bool execute(emu_state *restrict state)
 		if(!IS_FLAG(state, FLAG_H))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag H is NOT set when it is supposed to be");
+			fatal(state, "Flag H is NOT set when it is supposed to be");
 		}
 
 		break;
@@ -402,7 +402,7 @@ bool execute(emu_state *restrict state)
 		if((REG_F(state) ^ flags_prev) & FLAG_C)
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag C changed when it wasn't supposed to");
+			fatal(state, "Flag C changed when it wasn't supposed to");
 		}
 
 		break;
@@ -411,7 +411,7 @@ bool execute(emu_state *restrict state)
 		if(IS_FLAG(state, FLAG_C))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag C is set when it is NOT supposed to be");
+			fatal(state, "Flag C is set when it is NOT supposed to be");
 		}
 
 		break;
@@ -420,7 +420,7 @@ bool execute(emu_state *restrict state)
 		if(!IS_FLAG(state, FLAG_C))
 		{
 			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal("Flag C is NOT set when it is supposed to be");
+			fatal(state, "Flag C is NOT set when it is supposed to be");
 		}
 
 		break;
