@@ -25,10 +25,10 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
  * @result emulation stopped because some doofus read from a non-existant
  * 	   device.
  */
-uint8_t no_hardware(emu_state *restrict state, uint16_t location)
+uint8_t no_hardware(emu_state *restrict state UNUSED, uint16_t location)
 {
-	warning("no device present at %04X (emulator bug? incompatible GB?) (a real GB spews 0xFF)",
-		location);
+	warning("no device present at %04X (emulator bug? incompatible GB?)", location);
+	warning("(a real GB spews 0xFF)");
 	return 0xFF;
 }
 
