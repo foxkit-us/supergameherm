@@ -2,8 +2,8 @@
 #define __PLATFORM_COMPILER_GCC_H__
 
 // Clobber previous definitions with extreme prejudice
-#ifdef unused
-#	undef unused
+#ifdef UNUSED
+#	undef UNUSED
 #endif
 #ifdef likely
 #	undef likely
@@ -15,7 +15,7 @@
 #	undef alignment
 #endif
 
-#define unused __attribute__((__unused__))
+#define UNUSED __attribute__((__unused__))
 #define unlikely(x) (!!__builtin_expect((x), 0))
 #define likely(x) (!!__builtin_expect((x), 1))
 #define alignment(x) __attribute__((aligned(x)))

@@ -1,8 +1,8 @@
 #pragma once
 
 // Clobber previous definitions with extreme prejudice
-#ifdef unused
-#	undef unused
+#ifdef UNUSED
+#	undef UNUSED
 #endif
 #ifdef likely
 #	undef likely
@@ -14,7 +14,7 @@
 #	undef alignment
 #endif
 
-#define unused __pragma(warning(disable:4100))
+#define UNUSED __pragma(warning(disable:4100))
 #define unlikely(x) (x)
 #define likely(x) (x)
 #define alignment(x) __declspec(align(x))

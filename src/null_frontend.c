@@ -1,10 +1,10 @@
-#include "sgherm.h"	// emu_state, unused
+#include "sgherm.h"	// emu_state, UNUSED
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
 #include "input.h"	// int
 #include "frontend.h"	// frontend
 
-bool null_init_video(emu_state *state unused)
+bool null_init_video(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -17,7 +17,7 @@ bool null_init_video(emu_state *state unused)
 	return true;
 }
 
-void null_finish_video(emu_state *state unused)
+void null_finish_video(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -28,7 +28,7 @@ void null_finish_video(emu_state *state unused)
 	}
 }
 
-bool null_init_audio(emu_state *state unused)
+bool null_init_audio(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -41,7 +41,7 @@ bool null_init_audio(emu_state *state unused)
 	return true;
 }
 
-void null_finish_audio(emu_state *state unused)
+void null_finish_audio(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -52,7 +52,7 @@ void null_finish_audio(emu_state *state unused)
 	}
 }
 
-bool null_init_input(emu_state *state unused)
+bool null_init_input(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -65,7 +65,7 @@ bool null_init_input(emu_state *state unused)
 	return true;
 }
 
-void null_finish_input(emu_state *state unused)
+void null_finish_input(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -76,7 +76,7 @@ void null_finish_input(emu_state *state unused)
 	}
 }
 
-void null_blit_canvas(emu_state *state unused)
+void null_blit_canvas(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -87,7 +87,7 @@ void null_blit_canvas(emu_state *state unused)
 	}
 }
 
-void null_output_sample(emu_state *state unused)
+void null_output_sample(emu_state *state UNUSED)
 {
 	static bool did_notice = false;
 
@@ -98,7 +98,7 @@ void null_output_sample(emu_state *state unused)
 	}
 }
 
-void null_get_key(emu_state *state unused, frontend_input_return *ret unused)
+void null_get_key(emu_state *state UNUSED, frontend_input_return *ret UNUSED)
 {
 	static bool did_notice = false;
 

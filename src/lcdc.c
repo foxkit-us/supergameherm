@@ -186,7 +186,7 @@ void lcdc_tick(emu_state *restrict state)
 	}
 }
 
-inline uint8_t lcdc_read(emu_state *restrict state unused, uint16_t reg)
+inline uint8_t lcdc_read(emu_state *restrict state UNUSED, uint16_t reg)
 {
 	error("lcdc: unknown register %04X (R)", reg);
 	return 0xFF;
@@ -207,12 +207,12 @@ inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 	return state->lcdc.vram[bank][reg - 0x8000];
 }
 
-inline uint8_t lcdc_control_read(emu_state *restrict state, uint16_t reg unused)
+inline uint8_t lcdc_control_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
 	return state->lcdc.lcd_control.reg;
 }
 
-inline uint8_t lcdc_stat_read(emu_state *restrict state, uint16_t reg unused)
+inline uint8_t lcdc_stat_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
 	return state->lcdc.stat.reg;
 }
@@ -234,12 +234,12 @@ inline uint8_t lcdc_scroll_read(emu_state *restrict state, uint16_t reg)
 	}
 }
 
-inline uint8_t lcdc_ly_read(emu_state *restrict state, uint16_t reg unused)
+inline uint8_t lcdc_ly_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
 	return state->lcdc.ly;
 }
 
-inline uint8_t lcdc_lyc_read(emu_state *restrict state, uint16_t reg unused)
+inline uint8_t lcdc_lyc_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
 	return state->lcdc.lyc;
 }
@@ -325,7 +325,7 @@ void dump_lcdc_state(emu_state *restrict state)
 	debug("LY  : %02X", state->lcdc.ly);
 }
 
-inline void lcdc_write(emu_state *restrict state unused, uint16_t reg, uint8_t data unused)
+inline void lcdc_write(emu_state *restrict state UNUSED, uint16_t reg, uint8_t data UNUSED)
 {
 	error("lcdc: unknown register %04X (W)", reg);
 }
@@ -345,12 +345,12 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	state->lcdc.vram[bank][reg - 0x8000] = data;
 }
 
-inline void lcdc_control_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
 	state->lcdc.lcd_control.reg = data;
 }
 
-inline void lcdc_stat_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+inline void lcdc_stat_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
 	state->lcdc.stat.params.lyc = ((data & 0x60) == 0x60);
 }
@@ -371,7 +371,7 @@ inline void lcdc_scroll_write(emu_state *restrict state, uint16_t reg, uint8_t d
 	}
 }
 
-inline void lcdc_ly_write(emu_state *restrict state unused, uint16_t reg unused, uint8_t data unused)
+inline void lcdc_ly_write(emu_state *restrict state UNUSED, uint16_t reg UNUSED, uint8_t data UNUSED)
 {
 #ifndef NDEBUG
 	fatal("write to LY (FF44); you can't just vsync yourself!");
@@ -380,7 +380,7 @@ inline void lcdc_ly_write(emu_state *restrict state unused, uint16_t reg unused,
 #endif
 }
 
-inline void lcdc_lyc_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+inline void lcdc_lyc_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
 	state->lcdc.lyc = data;
 }

@@ -6,10 +6,10 @@
 #include "input.h"	// input_key, defines
 #include "print.h"	// error
 #include "sgherm.h"	// emu_state
-#include "util.h"	// unused
+#include "util.h"	// UNUSED
 
 
-uint8_t joypad_read(emu_state *restrict state, uint16_t reg unused)
+uint8_t joypad_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
 	uint8_t val = (state->input.col << 4) | (state->input.row);
 
@@ -18,7 +18,7 @@ uint8_t joypad_read(emu_state *restrict state, uint16_t reg unused)
 	return val;
 }
 
-void joypad_write(emu_state *restrict state, uint16_t reg unused, uint8_t data)
+void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
 	assert(reg == 0xFF00);
 

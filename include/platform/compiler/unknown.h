@@ -1,8 +1,8 @@
 #ifndef __UNKNOWN_H__
 #define __UNKNOWN_H__
 
-#ifndef unused
-#	define unused
+#ifndef UNUSED
+#	define UNUSED
 #endif
 
 #ifndef unlikely

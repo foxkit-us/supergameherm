@@ -142,7 +142,7 @@ static inline void call_nz_imm16(emu_state *restrict state, uint8_t data[])
 	}
 }
 
-static inline void reset_common(emu_state *restrict state, uint8_t data[] unused)
+static inline void reset_common(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	uint16_t to = mem_read8(state, REG_PC(state) - 1) - 0xC7;
 
@@ -157,7 +157,7 @@ static inline void reset_common(emu_state *restrict state, uint8_t data[] unused
  * @brief RET (0xC9) - return from CALL
  * @result pop two bytes from the stack and jump to that location
  */
-static inline void ret(emu_state *restrict state, uint8_t data[] unused)
+static inline void ret(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	REG_PC(state) = mem_read16(state, REG_SP(state));
 	REG_SP(state) += 2;
@@ -169,7 +169,7 @@ static inline void ret(emu_state *restrict state, uint8_t data[] unused)
  * @brief RETNZ (0xC0) - return from CALL if Z flag not set
  * @result RET, if Z flag not set, otherwise nothing.
  */
-static inline void retnz(emu_state *restrict state, uint8_t data[] unused)
+static inline void retnz(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	if(IS_FLAG(state, FLAG_Z))
 	{
@@ -188,7 +188,7 @@ static inline void retnz(emu_state *restrict state, uint8_t data[] unused)
  * @brief RETZ (0xC8) - return from CALL if Z flag set
  * @result RET, if Z flag is set, otherwise nothing.
  */
-static inline void retz(emu_state *restrict state, uint8_t data[] unused)
+static inline void retz(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	if(IS_FLAG(state, FLAG_Z))
 	{
@@ -239,7 +239,7 @@ static inline void call_z_imm16(emu_state *restrict state, uint8_t data[])
  * @brief RETNC (0xD0) - return from CALL if C flag not set
  * @result RET, if C flag not set, otherwise nothing.
  */
-static inline void retnc(emu_state *restrict state, uint8_t data[] unused)
+static inline void retnc(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	if(IS_FLAG(state, FLAG_C))
 	{
@@ -290,7 +290,7 @@ static inline void call_nc_imm16(emu_state *restrict state, uint8_t data[])
  * @brief RETC (0xD8) - return from CALL if C flag set
  * @result RET, if C flag is set, otherwise nothing.
  */
-static inline void retc(emu_state *restrict state, uint8_t data[] unused)
+static inline void retc(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	if(IS_FLAG(state, FLAG_C))
 	{
@@ -309,7 +309,7 @@ static inline void retc(emu_state *restrict state, uint8_t data[] unused)
  * @brief RETI (0xD9) - return from CALL and enable interrupts
  * @result RET + EI
  */
-static inline void reti(emu_state *restrict state, uint8_t data[] unused)
+static inline void reti(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	// Immediate on halt
 	if(mem_read8(state, REG_PC(state)) == 0x76)
@@ -360,7 +360,7 @@ static inline void call_c_imm16(emu_state *restrict state, uint8_t data[])
  * @brief JP HL (0xE9)
  * @result pc = HL
  */
-static inline void jp_hl(emu_state *restrict state, uint8_t data[] unused)
+static inline void jp_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	REG_PC(state) = REG_HL(state);
 

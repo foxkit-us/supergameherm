@@ -2,7 +2,7 @@
 
 #include "print.h"	// error
 #include "debug.h"	// print_cycles
-#include "util.h"	// unused
+#include "util.h"	// UNUSED
 #include "sgherm.h"	// emu_state
 
 
@@ -12,7 +12,7 @@ volatile bool do_exit = false;
 
 #include <signal.h>	// sigaction
 
-static void sig_handler(int signal unused)
+static void sig_handler(int signal UNUSED)
 {
 	do_exit = true;
 }
@@ -46,7 +46,7 @@ void register_handlers(void)
 
 #elif defined(_WIN32)
 
-#undef unused	// windows.h *chokes* on this
+#undef UNUSED	// windows.h *chokes* on this
 #include <windows.h>
 
 /*!

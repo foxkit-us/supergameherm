@@ -88,7 +88,7 @@ bool libcaca_init_video(emu_state *state)
 	return true;
 }
 
-bool libcaca_init_input(emu_state *state unused)
+bool libcaca_init_input(emu_state *state UNUSED)
 {
 	// stub
 	return true;
@@ -113,7 +113,7 @@ void libcaca_finish_video(emu_state *state)
 	info("libcaca video frontend has left the building!");
 }
 
-void libcaca_finish_input(emu_state *state unused)
+void libcaca_finish_input(emu_state *state UNUSED)
 {
 	// stub
 	return;
@@ -191,6 +191,8 @@ void libcaca_get_key(emu_state *state, frontend_input_return *ret)
 
 		case CACA_KEY_ESCAPE:
 			do_exit = true;
+
+		default:
 			ret->key = 0;
 			break;
 		}

@@ -3,7 +3,7 @@
  * @result puts the system to sleep until any button is pressed
  * @note also has CGB side effect of changing speed potentially
  */
-static inline void stop(emu_state *restrict state, uint8_t data[] unused)
+static inline void stop(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	if(state->system == SYSTEM_CGB)
 	{
@@ -30,7 +30,7 @@ static inline void stop(emu_state *restrict state, uint8_t data[] unused)
  * @brief DI (0xF3) - disable interrupts
  * @result interrupts will be disabled the instruction AFTER this one
  */
-static inline void di(emu_state *restrict state, uint8_t data[] unused)
+static inline void di(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	state->interrupts.enabled = false;
 	state->interrupts.irq = 0;
@@ -42,7 +42,7 @@ static inline void di(emu_state *restrict state, uint8_t data[] unused)
  * @brief EI (0xFB) - enable interrupts
  * @result interrupts will be enabled the instruction AFTER this one
  */
-static inline void ei(emu_state *restrict state, uint8_t data[] unused)
+static inline void ei(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	// Next instruction isn't halt, so immediately set flag
 	if(mem_read8(state, REG_PC(state)) == 0x76)
@@ -61,7 +61,7 @@ static inline void ei(emu_state *restrict state, uint8_t data[] unused)
  * @brief HALT (0x76)
  * @result Put CPU to sleep until next interrupt
  */
-static inline void halt(emu_state *restrict state, uint8_t data[] unused)
+static inline void halt(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	state->halt = true;
 

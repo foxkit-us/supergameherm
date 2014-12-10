@@ -13,7 +13,7 @@ HWND hwnd;
 HDC mem;
 HBITMAP bm;
 
-bool w32_init_video(emu_state *state unused)
+bool w32_init_video(emu_state *state UNUSED)
 {
 	HDC hdc = GetDC(hwnd);
 
@@ -28,7 +28,7 @@ bool w32_init_video(emu_state *state unused)
 	return true;
 }
 
-void w32_finish_video(emu_state *state unused)
+void w32_finish_video(emu_state *state UNUSED)
 {
 	DeleteObject(bm);
 	DeleteDC(mem);

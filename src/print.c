@@ -3,7 +3,7 @@
 #include <stdio.h>	// ?fprintf
 #include <stdlib.h>	// exit
 
-#include "util.h"	// unused
+#include "util.h"	// UNUSED
 
 
 FILE *to_stdout;
@@ -61,7 +61,7 @@ void warning(const char *str, ...)
 }
 
 #ifdef NDEBUG
-void debug(const char *str unused, ...)
+void debug(const char *str UNUSED, ...)
 {
 	// Stub
 }

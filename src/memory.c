@@ -32,7 +32,7 @@ uint8_t no_hardware(emu_state *restrict state, uint16_t location)
 	return 0xFF;
 }
 
-static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location unused)
+static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location UNUSED)
 {
 	return state->lcdc.vram_bank;
 }
@@ -122,7 +122,7 @@ static inline uint8_t direct_read(emu_state *restrict state, uint16_t location)
 }
 
 /*! read from the switchable ROM bank space */
-static inline uint8_t rom_bank_read(emu_state *restrict state unused, uint16_t location)
+static inline uint8_t rom_bank_read(emu_state *restrict state UNUSED, uint16_t location)
 {
 	uint32_t addr = (state->bank - 1) * 0x4000;
 	return state->cart_data[addr + location];
@@ -230,7 +230,7 @@ void doofus_write(emu_state *restrict state, uint16_t location, uint8_t data)
 	      REG_PC(state), data, location);
 }
 
-static inline void dma_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
+static inline void dma_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
 {
 	/* TODO FIXME XXX OMG HAX */
 	/* this is 'correct' but horribly inaccurate:
@@ -248,7 +248,7 @@ static inline void dma_write(emu_state *restrict state, uint16_t location unused
 	state->dma_membar_wait = 640;
 }
 
-static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location unused, uint8_t data)
+static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
 {
 	state->lcdc.vram_bank = data;
 }
