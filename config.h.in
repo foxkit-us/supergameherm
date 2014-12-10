@@ -1,8 +1,11 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-// Have the libcaca backend
+// Have the libcaca frontend
 #cmakedefine HAVE_LIBCACA
+
+// Have the SDL2 frontend
+#cmakedefine HAVE_SDL2
 
 // System is POSIX
 #cmakedefine HAVE_POSIX

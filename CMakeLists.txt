@@ -120,8 +120,20 @@ macro(libcaca_check)
 	endif()
 endmacro()
 
+macro(sdl2_check)
+	option(SDL2_ENABLE "Enable SDL2 frontend" on)
+	find_package(SDL2)
+	if(SDL2_FOUND)
+		set(HAVE_SDL2 1)
+		set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} "src/sdl2_frontend.c")
+		include_directories(${SDL2_INCLUDE_DIR})
+		set(LIBS_ADDITIONAL ${LIBS_ADDITIONAL} ${SDL2_LIBRARY})
+	endif()
+endmacro()
+
 macro(library_checks)
 	libcaca_check()
+	sdl2_check()
 endmacro()
 
 

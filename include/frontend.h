@@ -62,6 +62,14 @@ extern const frontend_video libcaca_frontend_video;
 int libcaca_event_loop(emu_state *);
 #endif
 
+/*! SDL2 frontends */
+#ifdef HAVE_SDL2
+extern const frontend_input sdl2_frontend_input;
+extern const frontend_audio sdl2_frontend_audio;
+extern const frontend_video sdl2_frontend_video;
+int sdl2_event_loop(emu_state *);
+#endif
+
 /*! Win32 frotnend */
 #ifdef HAVE_COMPILER_MSVC	/* XXX - won't work on msys */
 extern const frontend_input w32_frontend_input;
@@ -75,6 +83,7 @@ typedef enum
 	FRONT_NULL = 0,
 	FRONT_LIBCACA = 1,
 	FRONT_WIN32 = 2,
+	FRONT_SDL2 = 3,
 } frontend_type;
 
 extern const frontend_input *frontend_set_input[];
