@@ -100,7 +100,7 @@ macro(compiler_checks)
 		# /Ob2 - force inlining of functions
 		# /GF - combine duplicate const strings into one (smaller file
 		# size, and less data cache misses)
-		set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} src/winmain.c)
+		set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} src/w32_frontend.c)
 	else()
 		message("I'm at a loss as to what compiler you have, hope it all works out.")
 		set(HAVE_COMPILER_UNKNOWN "1")

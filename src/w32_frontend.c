@@ -98,8 +98,8 @@ void TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam)
 
 void w32_get_key(emu_state *state, frontend_input_return *ret)
 {
-	#warning "Shit's broke here"
-	return (int)((uint8_t)state->front.input.data);
+	ret->key = (input_key)(state->front.input.data);
+	ret->press = true;
 }
 
 void StepEmulator(emu_state *state)
@@ -111,11 +111,14 @@ int w32_event_loop(emu_state *state)
 {
 	MSG msg;
 
-	while(!do_exit && PeekMessage(&msg, hwnd, 0, 0, TRUE) >= 0x0)
+	while(!do_exit)
 	{
 		StepEmulator(g_state);
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if(PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE) > 0x0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 
 	return 0;
