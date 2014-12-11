@@ -45,11 +45,11 @@ bool sdl2_init_video(emu_state *state)
 {
 	sdl2_video_data *video;
 
-	info("Initalising the SDL video frontend!");
+	info(state, "Initalising the SDL video frontend!");
 
 	if(SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
 	{
-		error("Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
 		return false;
 	}
 
@@ -61,7 +61,7 @@ bool sdl2_init_video(emu_state *state)
 			320, 288, SDL_WINDOW_RESIZABLE|SDL_WINDOW_SHOWN);
 	if(!(video->window))
 	{
-		error("Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
 		free(video);
 		return false;
 	}
@@ -69,7 +69,7 @@ bool sdl2_init_video(emu_state *state)
 	video->render = SDL_CreateRenderer(video->window, -1, 0);
 	if(!(video->render))
 	{
-		error("Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
 		SDL_DestroyWindow(video->window);
 		free(video);
 		return false;
@@ -84,7 +84,7 @@ bool sdl2_init_video(emu_state *state)
 			WID, LEN);
 	if(!(video->texture))
 	{
-		error("Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
 		SDL_DestroyRenderer(video->render);
 		SDL_DestroyWindow(video->window);
 		free(video);
@@ -100,11 +100,11 @@ bool sdl2_init_video(emu_state *state)
 
 bool sdl2_init_input(emu_state *state UNUSED)
 {
-	info("Initalising the SDL input frontend!");
+	info(state, "Initalising the SDL input frontend!");
 
 	if(SDL_InitSubSystem(SDL_INIT_EVENTS) != 0)
 	{
-		error("Failed to initalise input frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise input frontend: %s", SDL_GetError());
 		return false;
 	}
 
@@ -113,11 +113,11 @@ bool sdl2_init_input(emu_state *state UNUSED)
 
 bool sdl2_init_audio(emu_state *state UNUSED)
 {
-	 info("Initalising the SDL audio frontend");
+	 info(state, "Initalising the SDL audio frontend");
 
 	 if(SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
 	 {
-		 error("Failed to initalise audio frontend: %s", SDL_GetError());
+		 error(state, "Failed to initalise audio frontend: %s", SDL_GetError());
 		 return false;
 	 }
 
@@ -137,19 +137,19 @@ void sdl2_finish_video(emu_state *state)
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
-	info("SDL video frontend has left the building!");
+	info(state, "SDL video frontend has left the building!");
 }
 
 void sdl2_finish_input(emu_state *state UNUSED)
 {
-	info("SDL input frontend is outta here!");
+	info(state, "SDL input frontend is outta here!");
 
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
 void sdl2_finish_audio(emu_state *state UNUSED)
 {
-	info("SDL audio frontend finishing up");
+	info(state, "SDL audio frontend finishing up");
 
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
@@ -238,7 +238,7 @@ void sdl2_output_sample(emu_state *state UNUSED)
 int sdl2_event_loop(emu_state *state)
 {
 
-	debug("Executing sdl event loop");
+	debug(state, "Executing sdl event loop");
 
 	SDL_Init(0);
 

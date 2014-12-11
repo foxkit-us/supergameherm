@@ -5,7 +5,7 @@
 static inline void invalid(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	uint8_t opcode = mem_read8(state, REG_PC(state));
-	fatal("Invalid opcode %2X at %4X", opcode, REG_PC(state));
+	fatal(state, "Invalid opcode %2X at %4X", opcode, REG_PC(state));
 }
 
 /*!

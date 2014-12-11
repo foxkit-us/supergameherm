@@ -40,7 +40,7 @@ bool w32_init_video(emu_state *state)
 
 	if(!RegisterClassEx(&wndcl))
 	{
-		error("registering window class: %04X\n", GetLastError());
+		error(state, "registering window class: %04X\n", GetLastError());
 		return false;
 	}
 
@@ -73,7 +73,7 @@ bool w32_init_video(emu_state *state)
 void w32_finish_video(emu_state *state)
 {
 	video_state *s = (video_state *)state->front.video.data;
-	
+
 	DeleteObject(s->bm);
 	DeleteDC(s->mem);
 
