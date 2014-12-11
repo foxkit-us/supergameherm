@@ -64,7 +64,10 @@ void lcdc_tick(emu_state *restrict state)
 			uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
 			uint8_t pixel_y_offset = state->lcdc.ly % 8;
 			uint32_t val[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
-			uint16_t letter_a[8] = { 0x7C7C, 0x00C6, 0xC600, 0x00FE, 0xC6C6, 0x00C6, 0xC600, 0x0000 };
+			static const uint16_t letter_a[8] = { 0x7C7C, 0x00C6, 0xC600, 0x00FE, 0xC6C6, 0x00C6, 0xC600, 0x0000 };
+
+			// Silence GCC
+			(void)letter_a;
 
 			if (state->lcdc.lcd_control.params.bg_code_sel)
 			{
@@ -109,7 +112,7 @@ void lcdc_tick(emu_state *restrict state)
 				pixel_temp = ((*mem & 0x40) >> 5) | ((*mem & 0x4000) >> 14);
 				state->lcdc.out[state->lcdc.ly][skip + 6] = val[pixel_temp];
 				pixel_temp = ((*mem & 0x80) >> 6) | ((*mem & 0x8000) >> 15);
-				state->lcdc.out[state->lcdc.ly][skip + 7] = val[pixel_temp]; 
+				state->lcdc.out[state->lcdc.ly][skip + 7] = val[pixel_temp];
 
 				/*
 				pixel_temp = (*mem & 0x01) | (*mem & 0x100 >> 7);
