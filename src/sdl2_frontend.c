@@ -168,7 +168,7 @@ void sdl2_blit_canvas(emu_state *state)
 void sdl2_get_key(emu_state *state UNUSED, frontend_input_return *ret)
 {
 	SDL_Event ev;
-	if(SDL_PollEvent(&ev) != 0)
+	if(SDL_PollEvent(&ev) == 0)
 	{
 		ret->key = 0;
 		return;
