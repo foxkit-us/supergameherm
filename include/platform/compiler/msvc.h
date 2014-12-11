@@ -25,6 +25,8 @@
 #	define restrict
 #endif
 
+#pragma warning(disable:4201 4214)
+
 #ifndef HAVE_STDINT_H
 #	include "platform/os/stdint_msvc.h"
 #endif

@@ -37,6 +37,10 @@
 #cmakedefine HAVE_BYTESWAP_USHORT
 #cmakedefine HAVE_BYTESWAP_ULONG
 
+#ifdef HAVE_BYTESWAP_USHORT
+#	include <stdlib.h>
+#endif
+
 // System has stdbool.h
 #cmakedefine HAVE_STDBOOL_H
 
