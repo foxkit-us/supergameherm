@@ -184,7 +184,7 @@ struct lcdc_state_t
 };
 
 void init_lcdc(emu_state *restrict);
-void lcdc_tick(emu_state *);
+void lcdc_tick(emu_state *restrict);
 
 uint8_t lcdc_read(emu_state *restrict, uint16_t);
 uint8_t vram_read(emu_state *restrict, uint16_t);

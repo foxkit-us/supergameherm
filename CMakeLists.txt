@@ -76,9 +76,10 @@ macro(compiler_checks)
 		endif()
 	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		set(HAVE_COMPILER_MSVC "1")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /G5 /Gr")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /G5 /Gr /D _CRT_SECURE_NO_WARNINGS")
 		# /G5 - Enable Pentium optimisations
 		# /Gr - __fastcall as deafult
+		# /D _CRT_NO_SECURE_WARNINGS - disable whining about fopen and friends
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4
 		/Ot /Oa /Gy")
 		# /MTd - statically link to runtime library

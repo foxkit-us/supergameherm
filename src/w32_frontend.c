@@ -93,18 +93,18 @@ void w32_blit_canvas(emu_state *state)
 	ReleaseDC(s->hWnd, hdc);
 }
 
-bool w32_init_input(emu_state *state)
+bool w32_init_input(emu_state *state UNUSED)
 {
 	// nothing to init
 	return true;
 }
 
-void w32_finish_input(emu_state *state)
+void w32_finish_input(emu_state *state UNUSED)
 {
 	// nothing to deinit
 }
 
-void TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam)
+void TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam UNUSED)
 {
 	switch(wParam)
 	{
