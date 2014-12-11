@@ -184,8 +184,6 @@ struct lcdc_state_t
 };
 
 void init_lcdc(emu_state *restrict);
-uint8_t lcdc_read(emu_state *, uint16_t);
-void lcdc_write(emu_state *, uint16_t, uint8_t);
 void lcdc_tick(emu_state *);
 
 uint8_t lcdc_read(emu_state *restrict, uint16_t);
