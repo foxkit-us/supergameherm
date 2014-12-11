@@ -495,10 +495,10 @@ static inline void cp_a(emu_state *restrict state, uint8_t data[] UNUSED)
 static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	uint8_t opcode = data[0];
-	uint8_t *write_to;
-	uint8_t maybe_temp;
-	uint8_t bit_number;
-	uint8_t val;
+	uint8_t *write_to = NULL;
+	uint8_t maybe_temp = 0;
+	uint8_t bit_number = 0;
+	uint8_t val = 0;
 	cb_regs reg = (cb_regs)(opcode & 0x7);
 	cb_ops op;
 
