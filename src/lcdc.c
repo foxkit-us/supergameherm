@@ -84,7 +84,7 @@ void lcdc_tick(emu_state *restrict state)
 				{
 					tile -= 0x80;
 				}
-				mem = (uint16_t *)(state->lcdc.vram[0x0] + start + (tile * 16) + pixel_y_offset);
+				mem = (uint16_t *)(state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2));
 
 				/*pixels = interleave(*mem);
 				state->lcdc.out[skip][state->lcdc.ly] = val[(pixels & 0x3)];
@@ -466,6 +466,7 @@ void magical_mystery_cure(void)
 	bg_pal_data_read(NULL, 0);
 	sprite_pal_ind_read(NULL, 0);
 	sprite_pal_data_read(NULL, 0);
+	vram_read(NULL, 0);
 	lcdc_write(NULL, 0, 0);
 	lcdc_control_write(NULL, 0, 0);
 	lcdc_stat_write(NULL, 0, 0);
