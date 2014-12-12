@@ -171,6 +171,12 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 		switch(location >> 8)
 		{
 		case 0xFE:
+			if(location < 0xFEA0)
+			{
+				// FIXME I'm feeling lazy
+				return state->lcdc.oam_ram[location - 0xFE00];
+			}
+
 			break;
 		case 0xFF:
 			if(location < 0xFF80)
@@ -243,7 +249,7 @@ static inline void dma_write(emu_state *restrict state, uint16_t location UNUSED
 	 */
 	uint16_t start = data << 8;
 	assert(location == 0xFF46);
-	memmove(state->memory + 0xFE00, state->memory + start, 160);
+	memmove(state->lcdc.oam_ram, state->memory + start, 160);
 
 	state->dma_membar_wait = 640;
 }
@@ -416,6 +422,12 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		switch(location >> 8)
 		{
 		case 0xFE:
+			if(location < 0xFEA0)
+			{
+				// FIXME I'm feeling lazy
+				state->lcdc.oam_ram[location - 0xFE00] = data;
+			}
+
 			break;
 		case 0xFF:
 			if(location < 0xFF80)
