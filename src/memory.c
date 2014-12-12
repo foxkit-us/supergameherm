@@ -161,7 +161,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	case 0x8:
 	case 0x9:
 		// video memory - 0x8000..0x9FFF
-		return lcdc_read(state, location);
+		return vram_read(state, location);
 	case 0xA:
 	case 0xB:
 		// switchable RAM bank - 0xA000-0xBFFF
