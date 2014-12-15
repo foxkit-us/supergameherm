@@ -75,7 +75,7 @@ bool libcaca_init_video(emu_state *state)
 
 	caca_set_display_title(video->display, "SuperGameHerm");
 
-	video->dither = caca_create_dither(BPP, LEN, WID, WID*PITCH,
+	video->dither = caca_create_dither(BPP, LEN, WID, LEN*PITCH,
 			RED, GREEN, BLUE, 0);
 	if(!(video->dither))
 	{
