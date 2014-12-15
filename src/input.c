@@ -9,13 +9,59 @@
 #include "util.h"	// UNUSED
 
 
-uint8_t joypad_read(emu_state *restrict state, uint16_t reg UNUSED)
+static inline int key_to_index(input_key key)
 {
-	uint8_t val = (state->input.col << 4) | (state->input.row);
+	switch(key)
+	{
+	case INPUT_RIGHT:
+		return 0;
+	case INPUT_LEFT:
+		return 1;
+	case INPUT_UP:
+		return 2;
+	case INPUT_DOWN:
+		return 3;
+	case INPUT_A:
+		return 4;
+	case INPUT_B:
+		return 5;
+	case INPUT_SELECT:
+		return 6;
+	case INPUT_START:
+		return 7;
+	default:
+		return -1;
+	}
+}
 
-	assert(reg == 0xFF00);
+static inline int key_scan(emu_state *restrict state)
+{
+	if(!state->input.col)
+	{
+		return 0;
+	}
+
+	int val = 0xf;
+
+	for(int i = 0; i < 8; i++)
+	{
+		int input = state->input.pressed[i];
+		int lower = input & 0xf, upper = input >> 4;
+
+		if(input && (upper & state->input.col))
+		{
+			continue;
+		}
+
+		val &= ~lower;
+	}
 
 	return val;
+}
+
+uint8_t joypad_read(emu_state *restrict state, uint16_t reg UNUSED)
+{
+	return key_scan(state);
 }
 
 void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
@@ -23,16 +69,7 @@ void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 	assert(reg == 0xFF00);
 
 	state->input.col = data >> 4;
-	if(state->input.col)
-	{
-		state->input.row = 0xf & ~(state->input.key_row);
-	}
-	else
-	{
-		state->input.row = 0;
-	}
-
-	return;
+	state->input.row = key_scan(state);
 }
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
@@ -40,17 +77,14 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 	if(down)
 	{
 		state->stop = false;
-
-		state->input.key_col |= key >> 4;
-		state->input.key_row |= key & 0xf;
+		state->input.pressed[key_to_index(key)] = key;
 	}
 	else
 	{
-		state->input.key_col &= ~(key >> 4);
-		state->input.key_row &= ~(key & 0xf);
+		state->input.pressed[key_to_index(key)] = 0;
 	}
 
 	// TODO fake propagation delay and maybe switch bounce
 
-	state->input.row = 0xf & ~(state->input.key_row);
+	state->input.row = key_scan(state);
 }

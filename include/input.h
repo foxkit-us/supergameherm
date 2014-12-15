@@ -33,8 +33,7 @@ struct input_state_t
 	uint8_t col;		/*! P14 and P15 */
 	uint8_t row;		/*! P10 through P13 */
 
-	uint8_t key_col;	/*! Current col pressed */
-	uint8_t key_row;	/*! Current row pressed */
+	int pressed[8];		/*! Current keys pressed */
 };
 
 
