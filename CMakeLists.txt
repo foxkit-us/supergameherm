@@ -50,18 +50,18 @@ macro(platform_checks)
 		check_include_files(windows.h HAVE_WINDOWS)
 	endif()
 
-	clock_checks()
+	clock_check()
 
 	# Endian goop
 	test_big_endian(BIG_ENDIAN)
-	test_little_endian(LITTLE_ENDIAN)
+	if(NOT BIG_ENDIAN)
+		set(LITTLE_ENDIAN 1)
+	endif()
 	swap_check()
 
 	# MSVC needs these checks, maybe others
 	check_include_files(stdbool.h HAVE_STDBOOL_H)
 	check_include_files(stdint.h HAVE_STDINT_H)
-
-	endif()
 endmacro()
 
 macro(compiler_checks)
