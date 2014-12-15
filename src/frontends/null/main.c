@@ -1,6 +1,8 @@
 #include "config.h"	// bool
 
 #include "sgherm.h"	// *_emulator
+#include "print.h"	// to_std*
+#include "signals.h"	// register_handlers
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
@@ -33,7 +35,7 @@ int main(int argc, char *argv[])
 	}
 
 	// This never fails for the NULL frontend
-	select_frontend_all(state, FRONT_NULL);
+	select_frontend_all(state, NULL_INPUT, NULL_AUDIO, NULL_VIDEO, NULL_LOOP);
 
 	if(!(val = EVENT_LOOP(state)))
 	{

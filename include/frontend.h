@@ -76,6 +76,11 @@ extern const frontend_audio null_frontend_audio;
 extern const frontend_video null_frontend_video;
 int null_event_loop(emu_state *);
 
+#define NULL_INPUT &null_frontend_input
+#define NULL_AUDIO &null_frontend_audio
+#define NULL_VIDEO &null_frontend_video
+#define NULL_LOOP &null_event_loop
+
 /*! libcaca frontends */
 #ifdef HAVE_LIBCACA
 #	include "frontends/caca/frontend.h"
