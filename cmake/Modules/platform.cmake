@@ -40,10 +40,14 @@ endmacro()
 
 macro(clock_check)
 	if(HAVE_POSIX)
-		add_definitions(-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
+		# XXX hack to make this check work
+		set(CMAKE_REQUIRED_DEFINITIONS -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
 		check_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
 
-		if(NOT HAVE_CLOCK_GETTIME)
+		if(HAVE_CLOCK_GETTIME)
+			# Needed to see it
+			add_definitions(-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
+		else()
 			# OS X check
 			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
 		endif()
