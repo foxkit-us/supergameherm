@@ -141,22 +141,22 @@ library_checks()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
 
-set(BASE_SOURCES src/sgherm.c src/ctl_unit.c src/input.c src/lcdc.c src/memory.c
-	src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c
-	src/debug.c src/signals.c src/util.c src/frontend.c)
+add_library("sgherm-core" OBJECT src/sgherm.c src/ctl_unit.c src/input.c src/lcdc.c
+	src/memory.c src/print.c src/rom_read.c src/serio.c src/sound.c
+	src/timer.c src/debug.c src/signals.c src/util.c src/frontend.c)
 
 # Add the SDL2 backend
 if(SDL2_ENABLE)
 	file(GLOB SDL2_FRONTEND_SOURCES src/frontends/sdl2/*.c)
-	add_executable("sgherm-sdl2" ${BASE_SOURCES} ${SDL2_FRONTEND_SOURCES})
-	target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY})
+	add_executable("sgherm-sdl2" ${SDL2_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
+	target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY} )
 	target_compile_definitions("sgherm-sdl2" PRIVATE BUILD_SDL2)
 endif()
 
 # Add the caca backend
 if(LIBCACA_ENABLE)
 	file(GLOB LIBCACA_FRONTEND_SOURCES src/frontends/caca/*.c)
-	add_executable("sgherm-caca" ${BASE_SOURCES} ${LIBCACA_FRONTEND_SOURCES})
+	add_executable("sgherm-caca" ${LIBCACA_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 	target_link_libraries("sgherm-caca" ${libcaca_LIBRARY})
 	target_compile_definitions("sgherm-caca" PRIVATE BUILD_LIBCACA)
 endif()
@@ -164,10 +164,8 @@ endif()
 # Add the Win32 backend
 # XXX FIXME need a WIN32_ENABLE knob
 if(HAVE_WINDOWS)
-	add_executable("sgherm-w32" ${BASE_SOURCES})
 	file(GLOB W32_FRONTEND_SOURCES src/frontends/w32/*.c)
-
-	add_executable("sgherm-w32" ${BASE_SOURCES} ${W32_FRONTEND_SOURCES})
+	add_executable("sgherm-w32" ${W32_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		# necessary to work around 'stdbool' and related stuff
@@ -182,5 +180,5 @@ endif()
 option(NULL_ENABLE "Enable a frontendless sgherm build (testing)" off)
 if(NULL_ENABLE)
 	file(GLOB NULL_FRONTEND_SOURCES src/frontends/null/*.c)
-	add_executable("sgherm" ${BASE_SOURCES} ${NULL_FRONTEND_SOURCES})
+	add_executable("sgherm-null" ${BASE_SOURCES} ${NULL_FRONTEND_SOURCES})
 endif()

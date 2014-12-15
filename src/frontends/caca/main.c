@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(!select_frontend_all(state, FRONT_LIBCACA))
+	if(!select_frontend_all(state, LIBCACA_INPUT, LIBCACA_AUDIO,
+				LIBCACA_VIDEO, LIBCACA_LOOP))
 	{
 		fatal(state, "Could not initalise caca frontend");
 		return EXIT_FAILURE;

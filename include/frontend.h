@@ -62,11 +62,13 @@ typedef enum
 
 
 /*! Change the frontend */
-bool select_frontend_input(emu_state * restrict, const frontend_input *);
-bool select_frontend_audio(emu_state * restrict, const frontend_audio *);
-bool select_frontend_video(emu_state * restrict, const frontend_video *);
-bool select_frontend_all(emu_state * restrict, frontend_type);
-void finish_frontend(emu_state * restrict);
+bool select_frontend_input(emu_state * restrict, const frontend_input * restrict);
+bool select_frontend_audio(emu_state * restrict, const frontend_audio * restrict);
+bool select_frontend_video(emu_state * restrict, const frontend_video * restrict);
+bool select_frontend_all(emu_state * restrict, const frontend_input * restrict,
+	const frontend_audio * restrict, const frontend_video * restrict,
+	int (*)(emu_state *));
+void finish_frontend(emu_state *restrict);
 
 /*! Null frontends */
 extern const frontend_input null_frontend_input;
@@ -77,15 +79,15 @@ int null_event_loop(emu_state *);
 /*! libcaca frontends */
 #ifdef BUILD_LIBCACA
 #	include "frontends/caca/frontend.h"
-#	define CACA_INPUT &libcaca_frontend_input
-#	define CACA_AUDIO &null_frontend_audio
-#	define CACA_VIDEO &libcaca_frontend_video
-#	define CACA_LOOP &libcaca_event_loop
+#	define LIBCACA_INPUT &libcaca_frontend_input
+#	define LIBCACA_AUDIO &null_frontend_audio
+#	define LIBCACA_VIDEO &libcaca_frontend_video
+#	define LIBCACA_LOOP &libcaca_event_loop
 #else
-#	define CACA_INPUT &null_frontend_input
-#	define CACA_AUDIO &null_frontend_audio
-#	define CACA_VIDEO &null_frontend_video
-#	define CACA_LOOP &null_event_loop
+#	define LIBCACA_INPUT &null_frontend_input
+#	define LIBCACA_AUDIO &null_frontend_audio
+#	define LIBCACA_VIDEO &null_frontend_video
+#	define LIBCACA_LOOP &null_event_loop
 #endif
 
 /*! SDL2 frontends */

@@ -8,7 +8,7 @@
 #include <string.h>	// memcpy
 
 
-bool select_frontend_input(emu_state *restrict state, const frontend_input *input)
+bool select_frontend_input(emu_state *restrict state, const frontend_input *restrict input)
 {
 	if(state->front.input_set)
 	{
@@ -21,7 +21,7 @@ bool select_frontend_input(emu_state *restrict state, const frontend_input *inpu
 	return state->front.input_set;
 }
 
-bool select_frontend_audio(emu_state *restrict state, const frontend_audio *audio)
+bool select_frontend_audio(emu_state *restrict state, const frontend_audio *restrict audio)
 {
 	if(state->front.audio_set)
 	{
@@ -34,7 +34,7 @@ bool select_frontend_audio(emu_state *restrict state, const frontend_audio *audi
 	return state->front.audio_set;
 }
 
-bool select_frontend_video(emu_state *restrict state, const frontend_video *video)
+bool select_frontend_video(emu_state *restrict state, const frontend_video *restrict video)
 {
 	if(state->front.video_set)
 	{
@@ -47,41 +47,10 @@ bool select_frontend_video(emu_state *restrict state, const frontend_video *vide
 	return state->front.video_set;
 }
 
-bool select_frontend_all(emu_state *restrict state, frontend_type frontend)
+bool select_frontend_all(emu_state *restrict state, const frontend_input *restrict input,
+		const frontend_audio *restrict audio, const frontend_video *restrict video,
+		int (*event_loop)(emu_state *))
 {
-	frontend_input const *input;
-	frontend_audio const *audio;
-	frontend_video const *video;
-	int (*event_loop)(emu_state *restrict );
-
-	switch(frontend)
-	{
-	case FRONT_LIBCACA:
-		input = CACA_INPUT;
-		audio = CACA_AUDIO;
-		video = CACA_VIDEO;
-		event_loop = CACA_LOOP;
-		break;
-	case FRONT_SDL2:
-		input = SDL2_INPUT;
-		audio = SDL2_AUDIO;
-		video = SDL2_VIDEO;
-		event_loop = SDL2_LOOP;
-		break;
-	case FRONT_WIN32:
-		input = WIN32_INPUT;
-		audio = WIN32_AUDIO;
-		video = WIN32_VIDEO;
-		event_loop = WIN32_LOOP;
-		break;
-	default:
-		input = &null_frontend_input;
-		audio = &null_frontend_audio;
-		video = &null_frontend_video;
-		event_loop = &null_event_loop;
-		break;
-	}
-
 	if(!select_frontend_video(state, video))
 	{
 		return false;
