@@ -16,10 +16,10 @@
 #define BPP 32
 #define PITCH 4
 
-#define ALPHA	0xff000000
-#define BLUE	0x00ff0000
-#define GREEN	0x0000ff00
-#define RED	0x000000ff
+#define RED     0x000000ff
+#define GREEN   0x0000ff00
+#define BLUE    0x00ff0000
+#define ALPHA   0xff000000
 
 
 typedef struct libcaca_video_data_t
