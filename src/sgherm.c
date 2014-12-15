@@ -66,23 +66,11 @@ void finish_emulator(emu_state *restrict state)
 
 bool step_emulator(emu_state *restrict state)
 {
-	static uint32_t count_cur_second = 0, game_seconds = 0;
-
 	execute(state);
 	lcdc_tick(state);
 	serial_tick(state);
 	timer_tick(state);
 	sound_tick(state);
-	//clock_tick(state);
-
-	if(unlikely(++count_cur_second == state->freq))
-	{
-		count_cur_second = 0;
-		if((++game_seconds % 10) == 0)
-		{
-			debug(state, "GBC seconds: %ld", ++game_seconds);
-		}
-	}
 
 	state->cycles++;
 
