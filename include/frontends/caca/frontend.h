@@ -18,5 +18,4 @@ typedef struct libcaca_video_data_t
 	FILE *stderr_new;
 } libcaca_video_data;
 
-
 #endif /*__FRONTEND_CACA_FRONTEND_H__*/
