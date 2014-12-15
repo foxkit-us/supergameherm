@@ -9,35 +9,7 @@ include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(TestBigEndian)
 
-macro(platform_checks)
-	check_include_files(unistd.h HAVE_UNISTD_H)
-	if(HAVE_UNISTD_H)
-		check_symbol_exists(_POSIX_VERSION unistd.h HAVE_POSIX)
-	endif()
-
-	if(HAVE_POSIX)
-		check_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
-		if(NOT HAVE_CLOCK_GETTIME)
-			# OS X check
-			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
-		endif()
-
-		add_definitions(-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
-	else()
-		# Check for windows
-		check_include_files(windows.h HAVE_WINDOWS)
-	endif()
-
-	test_big_endian(BIG_ENDIAN)
-	if(NOT BIG_ENDIAN)
-		set(LITTLE_ENDIAN TRUE)
-	endif()
-
-	# MSVC stuff
-	check_include_files(stdbool.h HAVE_STDBOOL_H)
-	check_include_files(stdint.h HAVE_STDINT_H)
-
-	# Check for endianness related doodads
+macro(swap_check)
 	check_include_files(endian.h HAVE_ENDIAN_H)
 	check_include_files(sys/endian.h HAVE_SYS_ENDIAN_H)
 	if(NOT(HAVE_ENDIAN_H OR HAVE_SYS_ENDIAN_H))
@@ -50,8 +22,45 @@ macro(platform_checks)
 			check_function_exists(_byteswap_ulong
 				HAVE_BYTESWAP_ULONG)
 		endif()
-	elseif(HAVE_POSIX)
+	else()
 		add_definitions(-D_BSD_SOURCE)
+	endif()
+endmacro()
+
+macro(clock_check)
+	if(HAVE_POSIX)
+		check_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
+		if(NOT HAVE_CLOCK_GETTIME)
+			# OS X check
+			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
+		else()
+			# Need these for various clock doodads
+			# (_DEFAULT_SOURCE shuts up glibc platforms)
+			add_definitions(-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
+		endif()
+	endif()
+endmacro()
+
+macro(platform_checks)
+	check_include_files(unistd.h HAVE_UNISTD_H)
+	if(HAVE_UNISTD_H)
+		check_symbol_exists(_POSIX_VERSION unistd.h HAVE_POSIX)
+	else()
+		# Check for windows
+		check_include_files(windows.h HAVE_WINDOWS)
+	endif()
+
+	clock_checks()
+
+	# Endian goop
+	test_big_endian(BIG_ENDIAN)
+	test_little_endian(LITTLE_ENDIAN)
+	swap_check()
+
+	# MSVC needs these checks, maybe others
+	check_include_files(stdbool.h HAVE_STDBOOL_H)
+	check_include_files(stdint.h HAVE_STDINT_H)
+
 	endif()
 endmacro()
 
