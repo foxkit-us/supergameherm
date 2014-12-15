@@ -18,7 +18,7 @@ uint8_t joypad_read(emu_state *restrict state, uint16_t reg UNUSED)
 	return val;
 }
 
-void joypad_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
 	assert(reg == 0xFF00);
 
