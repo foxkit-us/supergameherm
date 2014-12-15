@@ -61,15 +61,12 @@ static inline int key_scan(emu_state *restrict state)
 
 uint8_t joypad_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
-	return key_scan(state);
+	return (state->input.col << 4) | key_scan(state);
 }
 
 void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
-	assert(reg == 0xFF00);
-
 	state->input.col = data >> 4;
-	state->input.row = key_scan(state);
 }
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
