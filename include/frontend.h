@@ -77,7 +77,7 @@ extern const frontend_video null_frontend_video;
 int null_event_loop(emu_state *);
 
 /*! libcaca frontends */
-#ifdef BUILD_LIBCACA
+#ifdef HAVE_LIBCACA
 #	include "frontends/caca/frontend.h"
 #	define LIBCACA_INPUT &libcaca_frontend_input
 #	define LIBCACA_AUDIO &null_frontend_audio
@@ -91,7 +91,7 @@ int null_event_loop(emu_state *);
 #endif
 
 /*! SDL2 frontends */
-#ifdef BUILD_SDL2
+#ifdef HAVE_SDL2
 #	include "frontends/sdl2/frontend.h"
 #	define SDL2_INPUT &sdl2_frontend_input
 #	define SDL2_AUDIO &sdl2_frontend_audio
@@ -105,7 +105,7 @@ int null_event_loop(emu_state *);
 #endif
 
 /*! Win32 frontend */
-#ifdef BUILD_WINDOWS
+#ifdef HAVE_WINDOWS
 #	include "frontends/w32/frontend.h"
 #	define WIN32_INPUT &w32_frontend_input
 #	define WIN32_AUDIO &null_frontend_audio
