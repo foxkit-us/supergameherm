@@ -16,17 +16,10 @@
 #define BPP 32
 #define PITCH 4
 
-#ifdef LITTLE_ENDIAN
 #define ALPHA	0xff000000
-#define RED	0x00ff0000
+#define BLUE	0x00ff0000
 #define GREEN	0x0000ff00
-#define BLUE	0x000000ff
-#else
-#define ALPHA	0x000000ff
-#define RED	0x0000ff00
-#define GREEN	0x00ff0000
-#define BLUE	0xff000000
-#endif
+#define RED	0x000000ff
 
 
 typedef struct libcaca_video_data_t
