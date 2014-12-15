@@ -27,7 +27,10 @@
 *.i*86
 *.x86_64
 *.hex
-sgherm
+sgherm-sdl2
+sgherm-caca
+sgherm-w32
+sgherm-null
 
 # Editor crap
 ._*
@@ -35,6 +38,10 @@ sgherm
 *.swo
 *.swp
 *.kate-swp
+
+# Log files
+stdout.log
+stderr.log
 
 # CMake
 CMakeCache.txt
