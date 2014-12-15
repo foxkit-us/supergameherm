@@ -150,7 +150,6 @@ if(SDL2_ENABLE)
 	file(GLOB SDL2_FRONTEND_SOURCES src/frontends/sdl2/*.c)
 	add_executable("sgherm-sdl2" ${SDL2_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 	target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY} )
-	target_compile_definitions("sgherm-sdl2" PRIVATE BUILD_SDL2)
 endif()
 
 # Add the caca backend
@@ -158,7 +157,6 @@ if(LIBCACA_ENABLE)
 	file(GLOB LIBCACA_FRONTEND_SOURCES src/frontends/caca/*.c)
 	add_executable("sgherm-caca" ${LIBCACA_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 	target_link_libraries("sgherm-caca" ${libcaca_LIBRARY})
-	target_compile_definitions("sgherm-caca" PRIVATE BUILD_LIBCACA)
 endif()
 
 # Add the Win32 backend
@@ -172,8 +170,6 @@ if(HAVE_WINDOWS)
 		set_source_files_properties(src/*.c PROPERTIES LANGUAGE CXX)
 		set_target_properties("sgherm-w32" PROPERTIES LINKER_LANGUAGE CXX)
 	endif()
-
-	target_compile_definitions("sgherm-w32" PRIVATE BUILD_WINDOWS)
 endif()
 
 # Add the null backend
