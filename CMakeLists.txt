@@ -141,15 +141,18 @@ library_checks()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
 
-add_library("sgherm-core" OBJECT src/sgherm.c src/ctl_unit.c src/input.c src/lcdc.c
-	src/memory.c src/print.c src/rom_read.c src/serio.c src/sound.c
-	src/timer.c src/debug.c src/signals.c src/util.c src/frontend.c)
+# Doodads for the core
+set(CORE_FILES src/sgherm.c src/ctl_unit.c src/input.c src/lcdc.c src/memory.c
+	src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c
+	src/debug.c src/signals.c src/util.c src/frontend.c)
+add_library("sgherm-core" OBJECT ${CORE_FILES})
+
 
 # Add the SDL2 backend
 if(SDL2_ENABLE)
 	file(GLOB SDL2_FRONTEND_SOURCES src/frontends/sdl2/*.c)
 	add_executable("sgherm-sdl2" ${SDL2_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
-	target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY} )
+	target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY})
 endif()
 
 # Add the caca backend
@@ -163,11 +166,12 @@ endif()
 # XXX FIXME need a WIN32_ENABLE knob
 if(HAVE_WINDOWS)
 	file(GLOB W32_FRONTEND_SOURCES src/frontends/w32/*.c)
+	file(GLOB_RECURSE ALL_SOURCES src/*.c)
 	add_executable("sgherm-w32" ${W32_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		# necessary to work around 'stdbool' and related stuff
-		set_source_files_properties(src/*.c PROPERTIES LANGUAGE CXX)
+		set_source_files_properties(ALL_SOURCES PROPERTIES LANGUAGE CXX)
 		set_target_properties("sgherm-w32" PROPERTIES LINKER_LANGUAGE CXX)
 	endif()
 endif()
