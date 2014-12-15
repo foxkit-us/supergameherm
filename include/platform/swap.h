@@ -8,6 +8,10 @@
 #	include <endian.h>	// be??toh
 #elif HAVE_SYS_ENDIAN_H
 #	include <sys/endian.h>	// see endian.h (but for BSD)
+#elif defined(__APPLE__)
+#   include <libkern/OSByteOrder.h>
+#   define be16toh(x) OSSwapBigToHostInt16(x)
+#   define le16toh(x) OSSwapLittleToHostInt16(x)
 #else
 
 // Implement a BSD-like interface as a fallback
