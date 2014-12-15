@@ -19,6 +19,9 @@
 // System has a Mach-style clock (OS X)
 #cmakedefine HAVE_MACH_CLOCK_H
 
+// System is windows
+#cmakedefine HAVE_WINDOWS
+
 // Compiler-specific checks
 #cmakedefine HAVE_COMPILER_CLANG
 #cmakedefine HAVE_COMPILER_GCC

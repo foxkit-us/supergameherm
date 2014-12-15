@@ -44,38 +44,12 @@ struct frontend_t
 	frontend_audio audio;
 	frontend_video video;
 
+	bool input_set, audio_set, video_set;
+
 	int (*event_loop)(emu_state *);		/*! Event loop function (for use with toolkits) */
 
 	void *data;				/*! Opaque data */
 };
-
-/*! Null frontends */
-extern const frontend_input null_frontend_input;
-extern const frontend_audio null_frontend_audio;
-extern const frontend_video null_frontend_video;
-int null_event_loop(emu_state *);
-
-/*! libcaca frontends */
-#ifdef HAVE_LIBCACA
-extern const frontend_input libcaca_frontend_input;
-extern const frontend_video libcaca_frontend_video;
-int libcaca_event_loop(emu_state *);
-#endif
-
-/*! SDL2 frontends */
-#ifdef HAVE_SDL2
-extern const frontend_input sdl2_frontend_input;
-extern const frontend_audio sdl2_frontend_audio;
-extern const frontend_video sdl2_frontend_video;
-int sdl2_event_loop(emu_state *);
-#endif
-
-/*! Win32 frotnend */
-#ifdef HAVE_COMPILER_MSVC	/* XXX - won't work on msys */
-extern const frontend_input w32_frontend_input;
-extern const frontend_video w32_frontend_video;
-int w32_event_loop(emu_state *);
-#endif
 
 /*! Frontend indicies */
 typedef enum
@@ -86,10 +60,61 @@ typedef enum
 	FRONT_SDL2 = 3,
 } frontend_type;
 
-extern const frontend_input *frontend_set_input[];
-extern const frontend_video *frontend_set_video[];
-extern const frontend_audio *frontend_set_audio[];
-extern const frontend_event_loop frontend_set_event_loop[];
+
+/*! Change the frontend */
+bool select_frontend_input(emu_state * restrict, const frontend_input *);
+bool select_frontend_audio(emu_state * restrict, const frontend_audio *);
+bool select_frontend_video(emu_state * restrict, const frontend_video *);
+bool select_frontend_all(emu_state * restrict, frontend_type);
+void finish_frontend(emu_state * restrict);
+
+/*! Null frontends */
+extern const frontend_input null_frontend_input;
+extern const frontend_audio null_frontend_audio;
+extern const frontend_video null_frontend_video;
+int null_event_loop(emu_state *);
+
+/*! libcaca frontends */
+#ifdef BUILD_LIBCACA
+#	include "frontends/caca/frontend.h"
+#	define CACA_INPUT &libcaca_frontend_input
+#	define CACA_AUDIO &null_frontend_audio
+#	define CACA_VIDEO &libcaca_frontend_video
+#	define CACA_LOOP &libcaca_event_loop
+#else
+#	define CACA_INPUT &null_frontend_input
+#	define CACA_AUDIO &null_frontend_audio
+#	define CACA_VIDEO &null_frontend_video
+#	define CACA_LOOP &null_event_loop
+#endif
+
+/*! SDL2 frontends */
+#ifdef BUILD_SDL2
+#	include "frontends/sdl2/frontend.h"
+#	define SDL2_INPUT &sdl2_frontend_input
+#	define SDL2_AUDIO &sdl2_frontend_audio
+#	define SDL2_VIDEO &sdl2_frontend_video
+#	define SDL2_LOOP sdl2_event_loop
+#else
+#	define SDL2_INPUT &null_frontend_input
+#	define SDL2_AUDIO &null_frontend_audio
+#	define SDL2_VIDEO &null_frontend_video
+#	define SDL2_LOOP &null_event_loop
+#endif
+
+/*! Win32 frontend */
+#ifdef BUILD_WINDOWS
+#	include "frontends/w32/frontend.h"
+#	define WIN32_INPUT &w32_frontend_input
+#	define WIN32_AUDIO &null_frontend_audio
+#	define WIN32_VIDEO &w32_frontend_video
+#	define WIN32_LOOP &w32_event_loop
+#else
+#	define WIN32_INPUT &null_frontend_input
+#	define WIN32_AUDIO &null_frontend_audio
+#	define WIN32_VIDEO &null_frontend_video
+#	define WIN32_LOOP &null_event_loop
+#endif
 
 // Helpers to call functions
 #define CALL_FRONTEND_0(state, type, fn) ((*(state->front.type.fn))(state))
@@ -102,20 +127,6 @@ extern const frontend_event_loop frontend_set_event_loop[];
 #define FRONTEND_FINISH_INPUT(state) CALL_FRONTEND_0(state, input, finish)
 #define FRONTEND_FINISH_AUDIO(state) CALL_FRONTEND_0(state, audio, finish)
 #define FRONTEND_FINISH_VIDEO(state) CALL_FRONTEND_0(state, video, finish)
-
-#define FRONTEND_INIT_ALL(state) \
-	{ \
-		FRONTEND_INIT_INPUT(state); \
-		FRONTEND_INIT_AUDIO(state); \
-		FRONTEND_INIT_VIDEO(state); \
-	}
-
-#define FRONTEND_FINISH_ALL(state) \
-	{ \
-		FRONTEND_FINISH_INPUT(state); \
-		FRONTEND_FINISH_AUDIO(state); \
-		FRONTEND_FINISH_VIDEO(state); \
-	}
 
 #define BLIT_CANVAS(state) CALL_FRONTEND_0(state, video, blit_canvas)
 #define OUTPUT_SAMPLE(state) CALL_FRONTEND_0(state, audio, output_sample)

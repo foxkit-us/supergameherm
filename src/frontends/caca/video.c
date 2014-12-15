@@ -22,17 +22,6 @@
 #define ALPHA   0xff000000
 
 
-typedef struct libcaca_video_data_t
-{
-	caca_canvas_t *canvas;
-	caca_display_t *display;
-	caca_dither_t *dither;
-
-	FILE *stdout_new;
-	FILE *stderr_new;
-} libcaca_video_data;
-
-
 bool libcaca_init_video(emu_state *state)
 {
 	libcaca_video_data *video;
@@ -81,12 +70,6 @@ bool libcaca_init_video(emu_state *state)
 	return true;
 }
 
-bool libcaca_init_input(emu_state *state UNUSED)
-{
-	// stub
-	return true;
-}
-
 void libcaca_finish_video(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
@@ -106,12 +89,6 @@ void libcaca_finish_video(emu_state *state)
 	info(state, "libcaca video frontend has left the building!");
 }
 
-void libcaca_finish_input(emu_state *state UNUSED)
-{
-	// stub
-	return;
-}
-
 void libcaca_blit_canvas(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
@@ -123,118 +100,11 @@ void libcaca_blit_canvas(emu_state *state)
 	caca_refresh_display(video->display);
 }
 
-void libcaca_get_key(emu_state *state, frontend_input_return *ret)
-{
-	libcaca_video_data *video = state->front.video.data;
-	caca_event_t ev;
-	int ev_type;
-
-	if(!caca_get_event(video->display, CACA_EVENT_KEY_PRESS |
-		CACA_EVENT_KEY_RELEASE | CACA_EVENT_QUIT, &ev, 0))
-	{
-		ret->key = 0;
-		return;
-	}
-
-	ev_type = caca_get_event_type(&ev);
-
-	if(ev_type & (CACA_EVENT_KEY_PRESS | CACA_EVENT_KEY_RELEASE))
-	{
-		ret->press = ev_type & CACA_EVENT_KEY_PRESS ? true : false;
-
-		switch(caca_get_event_key_ch(&ev))
-		{
-		case CACA_KEY_UP:
-			ret->key = INPUT_UP;
-			break;
-
-		case CACA_KEY_DOWN:
-			ret->key = INPUT_DOWN;
-			break;
-
-		case CACA_KEY_LEFT:
-			ret->key = INPUT_LEFT;
-			break;
-
-		case CACA_KEY_RIGHT:
-			ret->key = INPUT_RIGHT;
-			break;
-
-		case 'a':
-		case 'A':
-		case 'z':
-		case 'Z':
-			ret->key = INPUT_A;
-			break;
-
-		case 's':
-		case 'S':
-		case 'x':
-		case 'X':
-			ret->key = INPUT_B;
-			break;
-
-		case CACA_KEY_RETURN:
-			ret->key = INPUT_START;
-			break;
-
-		case CACA_KEY_BACKSPACE:
-			ret->key = INPUT_SELECT;
-			break;
-
-		case CACA_KEY_ESCAPE:
-			do_exit = true;
-
-		default:
-			ret->key = 0;
-			break;
-		}
-	}
-	else if(ev_type & CACA_EVENT_QUIT)
-	{
-		do_exit = true;
-		ret->key = 0;
-	}
-}
-
-int libcaca_event_loop(emu_state *state)
-{
-	debug(state, "Executing libcaca event loop");
-
-	do
-	{
-		frontend_input_return ret;
-		uint8_t mode = state->lcdc.stat.params.mode_flag;
-		uint_fast16_t clock = state->lcdc.curr_clk;
-
-		step_emulator(state);
-
-		if(unlikely(mode == 1 && clock == 1 && state->input.col))
-		{
-			GET_KEY(state, &ret);
-			if(ret.key > 0)
-			{
-				joypad_signal(state, ret.key, ret.press);
-			}
-		}
-	} while(!do_exit);
-
-	return 0;
-}
-
 
 const frontend_video libcaca_frontend_video =
 {
 	&libcaca_init_video,
 	&libcaca_finish_video,
 	&libcaca_blit_canvas,
-	NULL,
-};
-
-const frontend_input libcaca_frontend_input =
-{
-	&libcaca_init_input,
-	&libcaca_finish_input,
-	&libcaca_get_key,
 	NULL,
 };

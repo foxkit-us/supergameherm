@@ -334,15 +334,27 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		rom_path = strdup(szCmdLine);
 	}
 
-	if((g_state = init_emulator(rom_path, FRONT_WIN32, FRONT_NULL,
-		FRONT_WIN32, FRONT_WIN32)) == NULL)
+	if((g_state = init_emulator(rom_path)) == NULL)
 	{
 		return -1;
 	}
 
 	free(rom_path);
 
-	return main_common(g_state);
+	if(!select_frontend_all(state, FRONT_W32))
+	{
+		return -1;
+	}
+
+	if(!EVENT_LOOP(state))
+	{
+		fatal(state, "Emulator exited abnormally");
+		return -1;
+	}
+
+	finish_emulator(state);
+
+	return 0;
 }
 
 

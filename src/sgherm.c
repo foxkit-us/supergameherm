@@ -17,9 +17,8 @@
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
-emu_state * init_emulator(const char *rom_path, frontend_type input,
-		frontend_type audio, frontend_type video,
-		frontend_type event_loop)
+
+emu_state * init_emulator(const char *rom_path)
 {
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
@@ -36,12 +35,6 @@ emu_state * init_emulator(const char *rom_path, frontend_type input,
 	state->bank = 1;
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
-
-	memcpy(&(state->front.input), frontend_set_input[input], sizeof(frontend_input));
-	memcpy(&(state->front.audio), frontend_set_audio[audio], sizeof(frontend_audio));
-	memcpy(&(state->front.video), frontend_set_video[video], sizeof(frontend_video));
-	state->front.event_loop = frontend_set_event_loop[event_loop];
-
 
 	if(unlikely(!read_rom_data(state, rom, &header)))
 	{
@@ -94,44 +87,4 @@ bool step_emulator(emu_state *restrict state)
 	state->cycles++;
 
 	return true;
-}
-
-int main_common(emu_state *state)
-{
-	register_handlers();
-
-	FRONTEND_INIT_ALL(state)
-	int val = EVENT_LOOP(state);
-
-	FRONTEND_FINISH_ALL(state)
-	finish_emulator(state);
-
-	return val;
-}
-
-int main(int argc, char *argv[])
-{
-	emu_state *state;
-
-	to_stdout = stdout;
-	to_stderr = stderr;
-
-	fprintf(to_stdout, "Super Game Herm!\n");
-	fprintf(to_stdout, "Beta version!\n\n");
-
-	if(argc < 2)
-	{
-		fatal(NULL, "You must specify a ROM file... -.-");
-		return EXIT_FAILURE;
-	}
-
-	state = init_emulator(argv[1], FRONT_SDL2, FRONT_SDL2, FRONT_SDL2, FRONT_SDL2);
-	//state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
-	if(state == NULL)
-	{
-		fatal(NULL, "Error initalising the emulator :(");
-		return EXIT_FAILURE;
-	}
-
-	return main_common(state);
 }

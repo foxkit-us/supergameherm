@@ -129,9 +129,8 @@ struct emu_state_t
 
 #define IS_FLAG(state, flag) ((REG_F(state) & (flag)) == flag)
 
-emu_state * init_emulator(const char *, frontend_type, frontend_type, frontend_type, frontend_type);
-void finish_emulator(emu_state *restrict state);
-bool step_emulator(emu_state *restrict);
-int main_common(emu_state *state);
+emu_state * init_emulator(const char *);
+void finish_emulator(emu_state * restrict);
+bool step_emulator(emu_state * restrict);
 
 #endif /*!__SGHERM_H_*/

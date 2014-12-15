@@ -23,6 +23,9 @@ macro(platform_checks)
 		endif()
 
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700")
+	else()
+		# Check for windows
+		check_include_files(windows.h HAVE_WINDOWS)
 	endif()
 
 	test_big_endian(BIG_ENDIAN)
@@ -101,7 +104,6 @@ macro(compiler_checks)
 		# /Ob2 - force inlining of functions
 		# /GF - combine duplicate const strings into one (smaller file
 		# size, and less data cache misses)
-		set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} src/w32_frontend.c)
 	else()
 		message("I'm at a loss as to what compiler you have, hope it all works out.")
 		set(HAVE_COMPILER_UNKNOWN "1")
@@ -114,21 +116,23 @@ macro(libcaca_check)
 		find_package(libcaca)
 		if(LIBCACA_FOUND)
 			set(HAVE_LIBCACA 1)
-			set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} "src/caca_frontend.c")
-			include_directories(${libcaca_INCLUDE_DIR})
-			set(LIBS_ADDITIONAL ${LIBS_ADDITIONAL} ${libcaca_LIBRARY})
+			include_directories(${LIBCACA_INCLUDE_DIR})
 		endif()
+	else()
+		unset(LIBCACA_ENABLE)
 	endif()
 endmacro()
 
 macro(sdl2_check)
 	option(SDL2_ENABLE "Enable SDL2 frontend" on)
 	find_package(SDL2)
-	if(SDL2_FOUND)
-		set(HAVE_SDL2 1)
-		set(SOURCES_ADDITIONAL ${SOURCES_ADDITIONAL} "src/sdl2_frontend.c")
-		include_directories(${SDL2_INCLUDE_DIR})
-		set(LIBS_ADDITIONAL ${LIBS_ADDITIONAL} ${SDL2_LIBRARY})
+	if(SDL2_ENABLE)
+		if(SDL2_FOUND)
+			set(HAVE_SDL2 1)
+			include_directories(${SDL2_INCLUDE_DIR})
+		endif()
+	else()
+		unset(SDL2_ENABLE)
 	endif()
 endmacro()
 
@@ -145,13 +149,46 @@ library_checks()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
 
-add_executable("sgherm" src/main.c src/ctl_unit.c src/input.c src/lcdc.c
-	src/memory.c src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c 
-	src/debug.c src/signals.c src/util.c src/frontend.c src/null_frontend.c ${SOURCES_ADDITIONAL})
-target_link_libraries(sgherm ${LIBS_ADDITIONAL})
+set(BASE_SOURCES src/sgherm.c src/ctl_unit.c src/input.c src/lcdc.c src/memory.c
+	src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c
+	src/debug.c src/signals.c src/util.c src/frontend.c)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	# necessary to work around 'stdbool' and related stuff
-	set_source_files_properties(src/*.c PROPERTIES LANGUAGE CXX)
-	set_target_properties("sgherm" PROPERTIES LINKER_LANGUAGE CXX)
+# Add the SDL2 backend
+if(SDL2_ENABLE)
+	file(GLOB SDL2_FRONTEND_SOURCES src/frontends/sdl2/*.c)
+	add_executable("sgherm-sdl2" ${BASE_SOURCES} ${SDL2_FRONTEND_SOURCES})
+	target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY})
+	target_compile_definitions("sgherm-sdl2" PRIVATE BUILD_SDL2)
+endif()
+
+# Add the caca backend
+if(LIBCACA_ENABLE)
+	file(GLOB LIBCACA_FRONTEND_SOURCES src/frontends/caca/*.c)
+	add_executable("sgherm-caca" ${BASE_SOURCES} ${LIBCACA_FRONTEND_SOURCES})
+	target_link_libraries("sgherm-caca" ${libcaca_LIBRARY})
+	target_compile_definitions("sgherm-caca" PRIVATE BUILD_LIBCACA)
+endif()
+
+# Add the Win32 backend
+# XXX FIXME need a WIN32_ENABLE knob
+if(HAVE_WINDOWS)
+	add_executable("sgherm-w32" ${BASE_SOURCES})
+	file(GLOB W32_FRONTEND_SOURCES src/frontends/w32/*.c)
+
+	add_executable("sgherm-w32" ${BASE_SOURCES} ${W32_FRONTEND_SOURCES})
+
+	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+		# necessary to work around 'stdbool' and related stuff
+		set_source_files_properties(src/*.c PROPERTIES LANGUAGE CXX)
+		set_target_properties("sgherm-w32" PROPERTIES LINKER_LANGUAGE CXX)
+	endif()
+
+	target_compile_definitions("sgherm-w32" PRIVATE BUILD_WINDOWS)
+endif()
+
+# Add the null backend
+option(NULL_ENABLE "Enable a frontendless sgherm build (testing)" off)
+if(NULL_ENABLE)
+	file(GLOB NULL_FRONTEND_SOURCES src/frontends/null/*.c)
+	add_executable("sgherm" ${BASE_SOURCES} ${NULL_FRONTEND_SOURCES})
 endif()
