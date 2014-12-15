@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 		fatal(state, "Emulator exited abnormally");
 	}
 
+	finish_frontend(state);
 	finish_emulator(state);
 
 	return val;
