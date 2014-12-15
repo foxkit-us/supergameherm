@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	// This never fails for the NULL frontend
 	select_frontend_all(state, NULL_INPUT, NULL_AUDIO, NULL_VIDEO, NULL_LOOP);
 
-	if(!(val = EVENT_LOOP(state)))
+	if((val = EVENT_LOOP(state)))
 	{
 		fatal(state, "Emulator exited abnormally");
 	}

@@ -2,6 +2,7 @@
 
 #include "sgherm.h"	// *_emulator
 #include "print.h"	// to_stdout, to_stderr
+#include "signals.h"	// register_handlers
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
@@ -12,6 +13,8 @@ int main(int argc, char *argv[])
 {
 	emu_state *state;
 	int val;
+
+	register_handlers();
 
 	to_stdout = stdout;
 	to_stderr = stderr;
@@ -38,7 +41,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(!(val = EVENT_LOOP(state)))
+	if((val = EVENT_LOOP(state)))
 	{
 		fatal(state, "Emulator exited abnormally");
 	}

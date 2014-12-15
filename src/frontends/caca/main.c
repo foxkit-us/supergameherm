@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(!(val = EVENT_LOOP(state)))
+	if((val = EVENT_LOOP(state)))
 	{
 		fatal(state, "Emulator exited abnormally");
 	}
