@@ -39,8 +39,6 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 {
 	if(down)
 	{
-		printf("Key down\n");
-
 		state->stop = false;
 
 		state->input.key_col |= key >> 4;
@@ -48,7 +46,6 @@ void joypad_signal(emu_state *restrict state, input_key key, bool down)
 	}
 	else
 	{
-		printf("Key up\n");
 		state->input.key_col &= ~(key >> 4);
 		state->input.key_row &= ~(key & 0xf);
 	}

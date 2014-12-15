@@ -11,8 +11,8 @@
 #include <fcntl.h>
 
 
-#define LEN 144
-#define WID 160
+#define LEN 160
+#define WID 144
 #define BPP 32
 #define PITCH 4
 

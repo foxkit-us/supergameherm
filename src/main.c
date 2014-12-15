@@ -125,7 +125,8 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
+	state = init_emulator(argv[1], FRONT_SDL2, FRONT_SDL2, FRONT_SDL2, FRONT_SDL2);
+	//state = init_emulator(argv[1], FRONT_LIBCACA, FRONT_NULL, FRONT_LIBCACA, FRONT_LIBCACA);
 	if(state == NULL)
 	{
 		fatal(NULL, "Error initalising the emulator :(");

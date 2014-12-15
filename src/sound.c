@@ -99,7 +99,7 @@ uint8_t sound_read(emu_state *restrict state, uint16_t reg)
 	}
 	default:
 	{
-		error(state, "sound: unrecognised register %04X (R)", reg);
+		//error(state, "sound: unrecognised register %04X (R)", reg);
 		return 0xFF;
 	}
 	}
@@ -216,7 +216,8 @@ void sound_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		break;
 	}
 	default:
-		error(state, "sound: unrecognised register %04X (W)", reg);
+		//error(state, "sound: unrecognised register %04X (W)", reg);
+		break;
 	}
 }
 
