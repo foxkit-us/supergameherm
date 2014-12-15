@@ -22,7 +22,7 @@ macro(platform_checks)
 			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
 		endif()
 
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700")
+		add_definitions(-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
 	else()
 		# Check for windows
 		check_include_files(windows.h HAVE_WINDOWS)
