@@ -1,3 +1,7 @@
+if(POLICY CMP0054)
+	cmake_policy(SET CMP0054 NEW)
+endif()
+
 macro(libcaca_check)
 	option(LIBCACA_ENABLE "Enable libcaca frontend" on)
 	if(LIBCACA_ENABLE)
