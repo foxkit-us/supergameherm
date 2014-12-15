@@ -73,7 +73,7 @@ void lcdc_tick(emu_state *restrict state)
 			{
 				next_tile += 0x400;
 			}
-			next_tile += 32 * state->lcdc.ly;
+			next_tile += (state->lcdc.ly >> 3) << 5;
 
 			for (; curr_tile < 20; curr_tile++, next_tile++, skip += 8)
 			{
@@ -86,52 +86,22 @@ void lcdc_tick(emu_state *restrict state)
 				}
 				mem = (uint16_t *)(state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2));
 
-				/*pixels = interleave(*mem);
-				state->lcdc.out[skip][state->lcdc.ly] = val[(pixels & 0x3)];
-				state->lcdc.out[skip + 1][state->lcdc.ly] = val[(pixels & 0x300 >> 8)];
-				state->lcdc.out[skip + 2][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
-				state->lcdc.out[skip + 3][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];
-
-				pixels = interleave(*++mem);
-				state->lcdc.out[skip + 4][state->lcdc.ly] = val[(pixels & 0x3)];
-				state->lcdc.out[skip + 5][state->lcdc.ly] = val[(pixels & 0x300 >> 8)];
-				state->lcdc.out[skip + 6][state->lcdc.ly] = val[(pixels & 0x30000 >> 16)];
-				state->lcdc.out[skip + 7][state->lcdc.ly] = val[(pixels & 0x3000000 >> 24)];*/
-
 				pixel_temp = ((*mem & 0x01) << 1) | (*mem & 0x100 >> 8);
-				state->lcdc.out[state->lcdc.ly][skip] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x02)) | ((*mem & 0x200) >> 9);
-				state->lcdc.out[state->lcdc.ly][skip + 1] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x04) >> 1) | ((*mem & 0x400) >> 10);
-				state->lcdc.out[state->lcdc.ly][skip + 2] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x08) >> 2) | ((*mem & 0x800) >> 11);
-				state->lcdc.out[state->lcdc.ly][skip + 3] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x10) >> 3) | ((*mem & 0x1000) >> 12);
-				state->lcdc.out[state->lcdc.ly][skip + 4] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x20) >> 4) | ((*mem & 0x2000) >> 13);
-				state->lcdc.out[state->lcdc.ly][skip + 5] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x40) >> 5) | ((*mem & 0x4000) >> 14);
-				state->lcdc.out[state->lcdc.ly][skip + 6] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x80) >> 6) | ((*mem & 0x8000) >> 15);
 				state->lcdc.out[state->lcdc.ly][skip + 7] = val[pixel_temp];
-
-				/*
-				pixel_temp = (*mem & 0x01) | (*mem & 0x100 >> 7);
-				state->lcdc.out[skip][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x02) >> 1) | ((*mem & 0x200) >> 8);
-				state->lcdc.out[skip + 1][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x04) >> 2) | ((*mem & 0x400) >> 9);
-				state->lcdc.out[skip + 2][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x08) >> 3) | ((*mem & 0x800) >> 10);
-				state->lcdc.out[skip + 3][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x10) >> 4) | ((*mem & 0x1000) >> 11);
-				state->lcdc.out[skip + 4][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x20) >> 5) | ((*mem & 0x2000) >> 12);
-				state->lcdc.out[skip + 5][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x40) >> 6) | ((*mem & 0x4000) >> 13);
-				state->lcdc.out[skip + 6][state->lcdc.ly] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x80) >> 7) | ((*mem & 0x8000) >> 14);
-				state->lcdc.out[skip + 7][state->lcdc.ly] = val[pixel_temp]; */
+				pixel_temp = ((*mem & 0x02)) | ((*mem & 0x200) >> 9);
+				state->lcdc.out[state->lcdc.ly][skip + 6] = val[pixel_temp];
+				pixel_temp = ((*mem & 0x04) >> 1) | ((*mem & 0x400) >> 10);
+				state->lcdc.out[state->lcdc.ly][skip + 5] = val[pixel_temp];
+				pixel_temp = ((*mem & 0x08) >> 2) | ((*mem & 0x800) >> 11);
+				state->lcdc.out[state->lcdc.ly][skip + 4] = val[pixel_temp];
+				pixel_temp = ((*mem & 0x10) >> 3) | ((*mem & 0x1000) >> 12);
+				state->lcdc.out[state->lcdc.ly][skip + 3] = val[pixel_temp];
+				pixel_temp = ((*mem & 0x20) >> 4) | ((*mem & 0x2000) >> 13);
+				state->lcdc.out[state->lcdc.ly][skip + 2] = val[pixel_temp];
+				pixel_temp = ((*mem & 0x40) >> 5) | ((*mem & 0x4000) >> 14);
+				state->lcdc.out[state->lcdc.ly][skip + 1] = val[pixel_temp];
+				pixel_temp = ((*mem & 0x80) >> 6) | ((*mem & 0x8000) >> 15);
+				state->lcdc.out[state->lcdc.ly][skip] = val[pixel_temp];
 			}
 
 			state->lcdc.curr_clk = 0;
