@@ -36,7 +36,7 @@ static inline int key_to_index(input_key key)
 
 static inline int key_scan(emu_state *restrict state)
 {
-	if(!state->input.col)
+	if(!(state->input.col))
 	{
 		return 0;
 	}
@@ -48,7 +48,7 @@ static inline int key_scan(emu_state *restrict state)
 		int input = state->input.pressed[i];
 		int lower = input & 0xf, upper = input >> 4;
 
-		if(input && (upper & state->input.col))
+		if(upper & state->input.col)
 		{
 			continue;
 		}
