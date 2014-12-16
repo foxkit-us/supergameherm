@@ -38,7 +38,7 @@ Currently supported frontends (they work wherever the given frontends
 work):
 * [SDL2](https://www.libsdl.org/download-2.0.php)
 * Win32 API (slow)
-* libcaca (no sound, obviously)
+* [libcaca](http://caca.zoy.org/) (no sound, obviously)
 
 Please report to us if your platform doesn't work, or your favourite frontend
 isn't supported! If you want to write one yourself, look at the null pseudo-
