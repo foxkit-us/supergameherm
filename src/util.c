@@ -1,4 +1,5 @@
 #include "config.h"	// bool, uint[XX]_t
+#include "util.h"	// prototypes
 
 
 // Taken from the bit twiddling hacks
@@ -38,34 +39,17 @@ static const uint16_t MortonTable256[256] =
 	0x5540, 0x5541, 0x5544, 0x5545, 0x5550, 0x5551, 0x5554, 0x5555
 };
 
-/*! Take four bytes and interleave them SMID style */
-uint32_t interleave(uint32_t data)
+uint32_t interleave8(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2)
 {
-	uint16_t x = data & 0xFFFF, y = data >> 16;
+	uint16_t x = (x1 << 8) | x2;
+	uint16_t y = (y1 << 8) | y2;
+	return interleave16(x, y);
+}
 
+uint32_t interleave16(uint16_t x, uint16_t y)
+{
 	return (uint32_t)(MortonTable256[y >> 8] << 17 |
 		MortonTable256[x >> 8] << 16 |
 		MortonTable256[y & 0xFF] << 1 |
 		MortonTable256[x & 0xFF]);
-}
-
-/* Shove interleaved data into a buffer */
-void interleaved_to_buf(uint32_t z, uint8_t *buf)
-{
-	buf[15] = z & 0x00000003;
-	buf[14] = z & 0x0000000C;
-	buf[13] = z & 0x00000030;
-	buf[12] = z & 0x000000C0;
-	buf[11] = z & 0x00000300;
-	buf[10] = z & 0x00000C00;
-	buf[9]  = z & 0x00003000;
-	buf[8]  = z & 0x0000C000;
-	buf[7]  = z & 0x00030000;
-	buf[6]  = z & 0x000C0000;
-	buf[5]  = z & 0x00300000;
-	buf[4]  = z & 0x00C00000;
-	buf[3]  = z & 0x03000000;
-	buf[2]  = z & 0x0C000000;
-	buf[1]  = z & 0x30000000;
-	buf[0]  = z & 0xC0000000;
 }
