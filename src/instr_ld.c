@@ -979,8 +979,10 @@ static inline void ld_a_ff00_c(emu_state *restrict state, uint8_t data[] UNUSED)
 static inline void ld_hl_sp_imm8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t val = (int8_t)data[0];
+	uint16_t temp;
+
 	REG_HL(state) = REG_SP(state) + val;
-	uint16_t temp = REG_SP(state) ^ val ^ REG_HL(state);
+	temp = REG_SP(state) ^ val ^ REG_HL(state);
 
 	FLAGS_CLEAR(state);
 

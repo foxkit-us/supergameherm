@@ -279,7 +279,8 @@ bool execute(emu_state *restrict state)
 
 	if(op_len > 0)
 	{
-		for(int i = 0; i < op_len; i++)
+		int i = 0;
+		for(; i < op_len; i++)
 		{
 			op_data[i] = mem_read8(state, REG_PC(state)++);
 		}

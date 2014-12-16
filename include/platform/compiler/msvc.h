@@ -25,8 +25,19 @@
 #	define restrict
 #endif
 
+#if (MSC_VER <= 1500) && !defined(cplusplus)
+#	define inline __inline
+#endif
+
 #pragma warning(disable:4201 4214)
 
 #ifndef HAVE_STDINT_H
 #	include "platform/os/stdint_msvc.h"
+#endif
+
+#if !defined(HAVE_STDBOOL_H) && !defined(cplusplus)
+#	include <Windows.h>
+	typedef BOOL bool;
+#	define true TRUE
+#	define false FALSE
 #endif
