@@ -11,11 +11,14 @@ Well, most Gameboy emulators suck horribly:
 * There are very few pure C emulators that aren't crap
 * Lack of good linking support (none of them get this right)
 
+## WTF is up with the name?
+Our emulator's a herm. Deal with it.
+
 ## Who made this?
 [awilfox](http://github.com/awilfox) and [Elizafox](http://github.com/Elizafox)
 are the principal authors.
 
-You can find us on [IRC](irc://irc.interlinked.me/supergameherm). Those who act
+You can find us on IRC at irc.interlinked.me in #supergameherm. Those who act
 like they're 12 will be promptly given a boot to the head. All others are
 welcome.
 
