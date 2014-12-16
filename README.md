@@ -9,7 +9,7 @@ Well, most Gameboy emulators suck horribly:
 * They're riced in wrong/bad ways or use invalid/outdated assumptions
 * They're horrible on the inside and impossible to maintain and fix
 * There are very few pure C emulators that aren't crap
-* Lack of good linking support (very few get this right)
+* Lack of good linking support (none of them get this right)
 
 ## Who made this?
 [awilfox](http://github.com/awilfox) and [Elizafox](http://github.com/Elizafox)
