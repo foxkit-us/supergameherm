@@ -31,7 +31,8 @@ supergameherm. We aim to avoid conflicts with C++ identifiers in our code to
 ensure compatibility with MSVC.
 
 ## Does this work as a practical emulator?
-Not yet. There's no graphics or sound. We're working on it.
+Not yet. There's no sound, and only limited graphics support. We're working on
+it.
 
 ## What systems does this run on?
 It's mostly written in ANSI C99. There are some portability shims for lesser
