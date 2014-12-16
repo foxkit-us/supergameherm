@@ -341,19 +341,19 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 
 	free(rom_path);
 
-	if(!select_frontend_all(state, WIN32_INPUT, WIN32_AUDIO, WIN32_VIDEO,
+	if(!select_frontend_all(g_state, WIN32_INPUT, WIN32_AUDIO, WIN32_VIDEO,
 				WIN32_LOOP))
 	{
 		return -1;
 	}
 
-	if(!EVENT_LOOP(state))
+	if(!EVENT_LOOP(g_state))
 	{
-		fatal(state, "Emulator exited abnormally");
+		fatal(g_state, "Emulator exited abnormally");
 		return -1;
 	}
 
-	finish_emulator(state);
+	finish_emulator(g_state);
 
 	return 0;
 }
