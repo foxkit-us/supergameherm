@@ -26,9 +26,10 @@ of v-tables, RTTI, exceptions, the bloat that templates and the STL cause for
 little gain (see also: the use of complex data structures in supergameherm is
 relatively limited), and the lack of things such as restrict qualifiers.
 
-With this in mind, any C++ compiler worth anything should be able to compile
-supergameherm. We aim to avoid conflicts with C++ identifiers in our code to
-ensure compatibility with MSVC.
+With this in mind, although supergameherm is written in a subset of C11 (or a
+superset of C99, depending on your perspective), any C++ compiler worth
+anything should be able to compile supergameherm. We aim to avoid conflicts
+with C++ identifiers in our code to ensure compatibility with older MSVC.
 
 ## Does this work as a practical emulator?
 Not yet. There's no sound, and only limited graphics support. We're working on
@@ -47,8 +48,12 @@ Tested compilers include [ICC](https://software.intel.com/en-us/c-compilers),
 may or may not work, but we presently make an effort.
 
 Tested platforms include Linux/x86, Linux/amd64, Linux/ppc32, FreeBSD/amd64, 
-and Windows NT/x86. Please report to us if your platform doesn't work or has
-missing functionality!
+Windows 10/x64, and Windows NT/x86. Please report to us if your platform
+doesn't work or has missing functionality!
+
+Three frontends are supported at the moment: SDL2, libcaca, and win32.
+The code needed to support a new one is rather minimal and easy to write. Take
+a look at the null pseudo-frontend for an example.
 
 ### Technical portability notes 
 Note we rely on a union of two uint8\_t's being equivalent to a uint16\_t in
@@ -60,5 +65,3 @@ will try to make a workaround.
 We use restrict to ensure the compiler knows we obey strict-aliasing rules,
 which causes it to generate better code. A huge speedup results when the
 compiler can be promised of this.
-
-
