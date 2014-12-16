@@ -75,7 +75,7 @@ struct emu_state_t
 	bool halt;			/*! waiting for interrupt */
 	bool stop;			/*! deep sleep state (disable LCDC) */
 
-	uint_fast16_t dma_membar_wait;	/*! Clocks left on DMA membar */
+	uint_fast16_t dma_wait;	/*! Clocks left on DMA membar */
 
 	uint_fast32_t wait;		/*! number of clocks */
 

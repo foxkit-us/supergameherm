@@ -143,7 +143,7 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
  */
 uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 {
-	if(state->dma_membar_wait && location <= 0xFE80 && location >= 0xFFFE)
+	if(state->dma_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
 		// XXX check into it and see how this is done
 		fatal(state, "Prohibited read during DMA transfer");
@@ -251,7 +251,7 @@ static inline void dma_write(emu_state *restrict state, uint16_t location UNUSED
 	assert(location == 0xFF46);
 	memmove(state->lcdc.oam_ram, state->memory + start, 160);
 
-	state->dma_membar_wait = 640;
+	state->dma_wait = 640;
 }
 
 static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
@@ -352,7 +352,7 @@ static mem_write8_fn hw_reg_write[0x80] =
  */
 void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	if(state->dma_membar_wait && location <= 0xFE80 && location >= 0xFFFE)
+	if(state->dma_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
 		fatal(state, "Prohibited write during DMA transfer");
 		return;
