@@ -42,7 +42,7 @@ macro(win32_check)
 		set(HAVE_WIN32 1)
 
 		file(GLOB W32_FRONTEND_SOURCES src/frontends/w32/*.c)
-		add_executable("sgherm-w32" ${W32_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
+		add_executable("sgherm-w32" WIN32 ${W32_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 
 		if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 			# necessary to work around 'stdbool' and related stuff
