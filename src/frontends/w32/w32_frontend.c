@@ -269,8 +269,13 @@ int w32_event_loop(emu_state *state)
 
 	while(!do_exit)
 	{
-		StepEmulator(g_state);
-		if(PeekMessage(&msg, s->hWnd, 0, 0, PM_REMOVE) > 0x0)
+		DWORD tick = GetTickCount();
+		do
+		{
+			StepEmulator(g_state);
+		} while(tick == GetTickCount());
+
+		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0x0)
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -347,7 +352,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
-	if(!EVENT_LOOP(g_state))
+	if(EVENT_LOOP(g_state))
 	{
 		fatal(g_state, "Emulator exited abnormally");
 		return -1;
