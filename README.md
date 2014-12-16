@@ -9,35 +9,6 @@ We did (@awilfox and @Elizafox on GitHub).
 ## Why does it (X, Y, Z)?  Why /doesn't/ it (A, B, C)?
 Because it's still being worked on.
 
-## It crashed/segfaulted/broke my system/skinned my cat/pooed on the floor!
-Report a bug, then.
-
-Bugs that involve "you should/shouldn't do X and Y and Z" without any 
-justification will be closed without comment.
-
-## You should write this in C++!
-No, we will not write it in C++. No, C++ will not make the code go any faster,
-no matter what your CS101 professor with a degree in History told you, or what
-some person on the Internet told you.
-
-The overhead of classes is not worth the trouble, and the use of complex data
-structures in supergameherm is relatively limited - not to mention the overhead
-of v-tables, RTTI, exceptions, the bloat that templates and the STL cause for
-little gain (see also: the use of complex data structures in supergameherm is
-relatively limited), and the lack of things such as restrict qualifiers.
-
-With this in mind, although supergameherm is written in a subset of C11 (or a
-superset of C99, depending on your perspective), any C++ compiler worth
-anything should be able to compile supergameherm. We aim to avoid conflicts
-with C++ identifiers in our code to ensure compatibility with older MSVC.
-
-## Does this work as a practical emulator?
-Not yet. There's no sound, and only limited graphics support. We're working on
-it.
-
-Interestingly, we do pass all of Blargg's CPU tests. Many emulators can't
-manage to do that. :)
-
 ## What systems does this run on?
 It's mostly written in ANSI C99. There are some portability shims for lesser
 systems, but results cannot be guaranteed, and it may run slower.
@@ -65,3 +36,35 @@ will try to make a workaround.
 We use restrict to ensure the compiler knows we obey strict-aliasing rules,
 which causes it to generate better code. A huge speedup results when the
 compiler can be promised of this.
+
+## Does this work as a practical emulator?
+Not yet. There's no sound, and only limited graphics support. We're working on
+it.
+
+Interestingly, we do pass all of Blargg's CPU tests. Many emulators can't
+manage to do that. :)
+
+## How fast is it?
+It presently runs at approximately 8x Gameboy speed on Linux and FreeBSD on most modern systems (basically any i7 or newer).
+
+## It crashed/segfaulted/broke my system/skinned my cat/pooed on the floor!
+Then report an issue! But first, read [this http://www.chiark.greenend.org.uk/~sgtatham/bugs.html].
+
+Bugs that involve "you should/shouldn't do X and Y and Z" without any 
+justification will be closed without comment.
+
+## You should write this in C++!
+No, we will not write it in C++. No, C++ will not make the code go any faster,
+no matter what your CS101 professor with a degree in History told you, or what
+some person on the Internet told you.
+
+The overhead of classes is not worth the trouble, and the use of complex data
+structures in supergameherm is relatively limited - not to mention the overhead
+of v-tables, RTTI, exceptions, the bloat that templates and the STL cause for
+little gain (see also: the use of complex data structures in supergameherm is
+relatively limited), and the lack of things such as restrict qualifiers.
+
+With this in mind, although supergameherm is written in a subset of C11 (or a
+superset of C99, depending on your perspective), any C++ compiler worth
+anything should be able to compile supergameherm. We aim to avoid conflicts
+with C++ identifiers in our code to ensure compatibility with older MSVC.
