@@ -48,7 +48,7 @@ manage to do that. :)
 It presently runs at approximately 8x Gameboy speed on Linux and FreeBSD on most modern systems (basically any i7 or newer).
 
 ## It crashed/segfaulted/broke my system/skinned my cat/pooed on the floor!
-Then report an issue! But first, read [this http://www.chiark.greenend.org.uk/~sgtatham/bugs.html].
+Then report an issue! But first, read [this](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html).
 
 Bugs that involve "you should/shouldn't do X and Y and Z" without any 
 justification will be closed without comment.
