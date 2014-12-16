@@ -7,7 +7,7 @@ macro(libcaca_check)
 	if(LIBCACA_ENABLE)
 		find_package(libcaca REQUIRED)
 		set(HAVE_LIBCACA 1)
-		include_directories(${LIBCACA_INCLUDE_DIR})
+		include_directories(${libcaca_INCLUDE_DIR})
 		
 		file(GLOB LIBCACA_FRONTEND_SOURCES src/frontends/caca/*.c)
 		add_executable("sgherm-caca" ${LIBCACA_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
