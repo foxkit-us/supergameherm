@@ -32,12 +32,17 @@ bool libcaca_init_video(emu_state *state)
 	state->front.video.data = (void *)video;
 
 	// Redirect stdout and stderr
-	video->stdout_new = fopen("stdout.log", "w");
-	video->stderr_new = fopen("stderr.log", "w");
-
-	if(!(video->stdout_new && video->stderr_new))
+	if(!(video->stdout_new = fopen("stdout.log", "w")))
 	{
 		perror("fopen");
+		free(video);
+		return false;
+	}
+
+	if(!(video->stderr_new = fopen("stderr.log", "w")))
+	{
+		perror("fopen");
+		fclose(video->stdout_new);
 		free(video);
 		return false;
 	}
