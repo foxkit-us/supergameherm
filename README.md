@@ -3,11 +3,21 @@
 ## What is this?
 A GB emulator that aims to not suck so bad.
 
+## What do you mean "not suck so bad"?
+Well, most Gameboy emulators suck horribly:
+* Most have terrible compatibility (there are exceptions of course)
+* They're riced in wrong/bad ways or use invalid/outdated assumptions
+* They're horrible on the inside and impossible to maintain and fix
+* There are very few pure C emulators that aren't crap
+* Lack of good linking support (very few get this right)
+
 ## Who made this?
 [awilfox](http://github.com/awilfox) and [Elizafox](http://github.com/Elizafox)
 are the principal authors.
 
-You can find us on [IRC](irc://irc.interlinked.me/supergameherm).
+You can find us on [IRC](irc://irc.interlinked.me/supergameherm). Those who act
+like they're 12 will be promptly given a boot to the head. All others are
+welcome.
 
 ## What is it written in?
 It's written in a subset of C11 (alternatively, a superset of C99).
@@ -17,9 +27,6 @@ sensible compilers have supported these as extensions for many years
 now, so it should not be any trouble. Systems where they do not work
 are probably too slow to run SuperGameHerm, anyway.
 
-## Why does it (X, Y, Z)?  Why /doesn't/ it (A, B, C)?
-Because it's still being worked on.
-
 ## What systems does this run on?
 Compilers we have tested SuperGameHerm with (others may or may not work,
 your mileage may vary):
@@ -28,8 +35,8 @@ your mileage may vary):
 * [MSVC](http://www.visualstudio.com/downloads/download-visual-studio-vs)
 
 Platforms we have tested SuperGameHerm with:
-* Linux (x86, amd64, and PowerPC)
-* FreeBSD (i386 and amd64)
+* Linux ~3.13 kernel (x86, amd64, and PowerPC)
+* FreeBSD 10 (i386 and amd64)
 * Windows NT 4 (x86, but we've seen snails run faster)
 * Windows 10 (x64, kinda slow)
 * NetBSD 6 (i386)
@@ -78,15 +85,19 @@ it.
 Interestingly, we do pass all of Blargg's CPU tests. Many emulators can't
 manage to do that. :)
 
+## Why does it (X, Y, Z)?  Why /doesn't/ it (A, B, C)?
+Because it's still being worked on.
+
+Bugs that involve "you should/shouldn't do X and Y and Z" without any 
+justification will be closed without comment.
+
 ## How fast is it?
-It presently runs at approximately 8x Gameboy speed on Linux and FreeBSD
-on most modern systems (basically any i7 or newer).
+It presently runs at approximately 8x Gameboy speed on Linux and FreeBSD on
+most modern systems (basically any i7 or newer).
 
 We are aiming for native speed on at least a Pentium III or newer. Use a
 different emulator if you care about older machines.
 
 ## It crashed/segfaulted/broke my system/skinned my cat/pooed on the floor!
-Then report an issue! But first, read [this](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html).
-
-Bugs that involve "you should/shouldn't do X and Y and Z" without any 
-justification will be closed without comment.
+Then report an issue! But first, read 
+[this](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html).
