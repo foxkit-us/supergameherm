@@ -239,14 +239,14 @@ bool execute(emu_state *restrict state)
 		return true;
 	}
 
-	if(unlikely(state->dma_membar_wait))
+	if(unlikely(state->dma_wait))
 	{
-		state->dma_membar_wait--;
+		state->dma_wait--;
 
 		// Double speed
 		if(state->freq == CPU_FREQ_CGB)
 		{
-			state->dma_membar_wait--;
+			state->dma_wait--;
 		}
 	}
 
