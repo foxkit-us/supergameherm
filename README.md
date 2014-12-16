@@ -34,6 +34,9 @@ ensure compatibility with MSVC.
 Not yet. There's no sound, and only limited graphics support. We're working on
 it.
 
+Interestingly, we do pass all of Blargg's CPU tests. Many emulators can't
+manage to do that. :)
+
 ## What systems does this run on?
 It's mostly written in ANSI C99. There are some portability shims for lesser
 systems, but results cannot be guaranteed, and it may run slower.
