@@ -15,6 +15,8 @@
 #define LCDC_WINTILE_MAP_HI	0x40
 #define LCDC_ENABLE		0x80
 
+uint32_t dmg_palette[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
+
 void init_lcdc(emu_state *restrict state)
 {
 	state->lcdc.lcd_control.params.enable = true;
@@ -60,48 +62,34 @@ void lcdc_tick(emu_state *restrict state)
 		if(state->lcdc.curr_clk >= 204)
 		{
 			uint16_t next_tile = 0x1800;
-			uint8_t skip = 0, curr_tile = 0;
+			uint8_t x = 0, curr_tile = 0;
 			uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
 			uint8_t pixel_y_offset = state->lcdc.ly % 8;
-			uint32_t val[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
-			static const uint16_t letter_a[8] = { 0x7C7C, 0x00C6, 0xC600, 0x00FE, 0xC6C6, 0x00C6, 0xC600, 0x0000 };
-
-			// Silence GCC
-			(void)letter_a;
 
 			if (state->lcdc.lcd_control.params.bg_code_sel)
 			{
 				next_tile += 0x400;
 			}
-			next_tile += (state->lcdc.ly >> 3) << 5;
+			next_tile += ((state->lcdc.ly >> 3) + (state->lcdc.scroll_y >> 3)) << 5;
+			pixel_y_offset += (state->lcdc.scroll_y % 8);
 
-			for (; curr_tile < 20; curr_tile++, next_tile++, skip += 8)
+			for (; curr_tile < 20; curr_tile++, next_tile++, x += 8)
 			{
 				uint8_t tile = state->lcdc.vram[0x0][next_tile];
-				uint8_t pixel_temp;
-				uint16_t *mem;
+				int tx = 8;
+				uint32_t pixel_temp;
+				uint8_t *mem;
 				if (!state->lcdc.lcd_control.params.bg_char_sel)
 				{
 					tile -= 0x80;
 				}
-				mem = (uint16_t *)(state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2));
+				mem = state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2);
+				pixel_temp = interleave8(0, *mem, 0, *mem+1);
 
-				pixel_temp = ((*mem & 0x01) << 1) | (*mem & 0x100 >> 8);
-				state->lcdc.out[state->lcdc.ly][skip + 7] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x02)) | ((*mem & 0x200) >> 9);
-				state->lcdc.out[state->lcdc.ly][skip + 6] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x04) >> 1) | ((*mem & 0x400) >> 10);
-				state->lcdc.out[state->lcdc.ly][skip + 5] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x08) >> 2) | ((*mem & 0x800) >> 11);
-				state->lcdc.out[state->lcdc.ly][skip + 4] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x10) >> 3) | ((*mem & 0x1000) >> 12);
-				state->lcdc.out[state->lcdc.ly][skip + 3] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x20) >> 4) | ((*mem & 0x2000) >> 13);
-				state->lcdc.out[state->lcdc.ly][skip + 2] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x40) >> 5) | ((*mem & 0x4000) >> 14);
-				state->lcdc.out[state->lcdc.ly][skip + 1] = val[pixel_temp];
-				pixel_temp = ((*mem & 0x80) >> 6) | ((*mem & 0x8000) >> 15);
-				state->lcdc.out[state->lcdc.ly][skip] = val[pixel_temp];
+				for(; tx > 0; tx--, pixel_temp >>= 2)
+				{
+					state->lcdc.out[state->lcdc.ly][x + tx] = dmg_palette[pixel_temp & 0x02];
+				}
 			}
 
 			state->lcdc.curr_clk = 0;
