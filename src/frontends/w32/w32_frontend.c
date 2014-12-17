@@ -27,6 +27,11 @@ typedef struct video_state
 	HBITMAP vramBM;
 } video_state;
 
+void CALLBACK KillAfter30(HWND hWnd UNUSED, UINT iMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
+{
+	do_exit = true;
+}
+
 bool w32_init_video(emu_state *state)
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -79,6 +84,8 @@ bool w32_init_video(emu_state *state)
 
 	ShowWindow(s->hWnd, SW_NORMAL);
 	UpdateWindow(s->hWnd);
+
+	SetTimer(s->hWnd, 0, 30000, KillAfter30);
 
 	hdc = GetDC(s->hWnd);
 
@@ -328,9 +335,8 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 {
 	char *rom_path;
 
-	AllocConsole();
-	to_stdout = freopen("CONOUT$", "w", stdout);
-	to_stderr = freopen("CONOUT$", "w", stderr);
+	to_stdout = freopen("stdout.log", "a", stdout);
+	to_stderr = freopen("stderr.log", "a", stderr);
 
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
