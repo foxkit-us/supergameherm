@@ -379,6 +379,21 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		case CART_MBC3_TIMER_RAM_BATT:
 			state->bank = data & 0x7F;
 			return;
+		case CART_MBC5:
+		case CART_MBC5_RAM:
+		case CART_MBC5_RAM_BATT:
+		case CART_MBC5_RUMBLE:
+		case CART_MBC5_RUMBLE_SRAM:
+		case CART_MBC5_RUMBLE_SRAM_BATT:
+			if((location >> 12) == 0x2)
+			{
+				state->bank = data;
+			}
+			else
+			{
+				state->bank |= data & 0x1 << 8;
+			}
+			return;
 		default:
 			fatal(state, "banks for this cart (type %04X [%s]) aren't done yet sorry :(",
 					state->cart_data[OFF_CART_TYPE],
