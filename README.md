@@ -61,10 +61,10 @@ technically undefined behaviour in C++. This technique is used in the CPU core
 and the LCD controller. This should be okay on all of the tested compilers and
 systems. If it breaks on your platform, let us know.
 
-Some unaligned data accesses may happen in the code. If you get a bus error or
-similar, you've run into this problem. Let us know and we'll try to fix it. All
-should be well on x86, amd64, and ARM though; these platforms don't care about
-alignment as much.
+Some unaligned data accesses may happen in the code (we've tried to weed out
+most of the problems). If you get a bus error or similar, you've run into this
+problem. Let us know and we'll try to fix it. Note that all should be well on
+x86, amd64, PowerPC, and ARM; these platforms don't care about alignment as much.
 
 We use restrict to ensure the compiler knows we don't alias certain pointers,
 which causes it to generate better code. A huge speedup is possible when the
