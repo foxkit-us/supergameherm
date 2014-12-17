@@ -79,6 +79,7 @@ void lcdc_tick(emu_state *restrict state)
 				uint8_t tile = state->lcdc.vram[0x0][next_tile];
 				uint32_t pixel_temp;
 				uint8_t *mem;
+				int tx = 8;
 
 				if (!state->lcdc.lcd_control.params.bg_char_sel)
 				{
@@ -88,7 +89,7 @@ void lcdc_tick(emu_state *restrict state)
 				mem = state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2);
 				pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
-				for(int tx = 8; tx > 0; tx--, pixel_temp >>= 2)
+				for(; tx > 0; tx--, pixel_temp >>= 2)
 				{
 					row[x + tx] = dmg_palette[pixel_temp & 0x02];
 				}
