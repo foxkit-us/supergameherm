@@ -55,11 +55,16 @@ isn't supported! If you want to write one yourself, look at the null pseudo-
 frontend.
 
 ### Technical portability notes 
-Note we rely on a union of two uint8\_t's being equivalent to a uint16\_t in
-size without padding. This is used for registers to avoid the need to do a
-write-back of every register on every execution cycle. This should be okay on
-all of the tested compilers and systems, but if it breaks, let us know and we
-will try to make a workaround.
+Note we rely on union padding assumptions (e.g., two uint8_t's equal a
+uint16_t with no padding, period) that hold up with standard C, but are
+technically undefined behaviour in C++. This technique is used in the CPU core
+and the LCD controller. This should be okay on all of the tested compilers and
+systems. If it breaks on your platform, let us know.
+
+Some unaligned data accesses may happen in the code. If you get a bus error or
+similar, you've run into this problem. Let us know and we'll try to fix it. All
+should be well on x86, amd64, and ARM though; these platforms don't care about
+alignment as much.
 
 We use restrict to ensure the compiler knows we don't alias certain pointers,
 which causes it to generate better code. A huge speedup is possible when the
