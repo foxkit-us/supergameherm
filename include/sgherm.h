@@ -79,7 +79,7 @@ struct emu_state_t
 
 	uint_fast32_t wait;		/*! number of clocks */
 
-	uint_fast8_t bank;		/*! current ROM bank */
+	uint_fast16_t bank;		/*! current ROM bank */
 	uint_fast8_t ram_bank;		/*! current RAM bank */
 
 	uint_fast32_t cycles;		/*! Present cycle count */
