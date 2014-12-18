@@ -10,6 +10,9 @@
 #ifdef HAVE_CLOCK_GETTIME
 #	undef HAVE_CLOCK_GETTIME
 #endif
+#ifdef HAVE_NANOSLEEP
+#	undef HAVE_NANOSLEEP
+#endif
 
 #include <SDL.h>	// SDL
 #include <stdbool.h>	// bool

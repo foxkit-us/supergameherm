@@ -51,6 +51,8 @@ macro(clock_check)
 			# OS X check
 			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
 		endif()
+
+		check_symbol_exists(nanosleep time.h HAVE_NANOSLEEP)
 	endif()
 endmacro()
 

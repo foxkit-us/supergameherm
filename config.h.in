@@ -19,6 +19,9 @@
 // System has a Mach-style clock (OS X)
 #cmakedefine HAVE_MACH_CLOCK_H
 
+// System has nanosleep
+#cmakedefine HAVE_NANOSLEEP
+
 // System is windows
 #cmakedefine HAVE_WINDOWS
 
