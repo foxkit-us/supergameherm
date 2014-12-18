@@ -36,7 +36,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
 	uint8_t pixel_y_offset = state->lcdc.ly % 8;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
-	int tx;
+	int tx = 8;
 
 	if (state->lcdc.lcd_control.params.bg_code_sel)
 	{
@@ -44,6 +44,8 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	}
 	next_tile += ((state->lcdc.ly >> 3) + (state->lcdc.scroll_y >> 3)) << 5;
 	pixel_y_offset += (state->lcdc.scroll_y % 8);
+	tx -= state->lcdc.scroll_x % 8;
+	next_tile += (state->lcdc.scroll_x >> 3);
 
 	for (; curr_tile < 20; curr_tile++, next_tile++, x += 8)
 	{
@@ -59,10 +61,11 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		mem = state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2);
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
-		for(tx = 8; tx > 0; tx--, pixel_temp >>= 2)
+		for(; tx > 0; tx--, pixel_temp >>= 2)
 		{
 			row[x + tx] = dmg_palette[pixel_temp & 0x02];
 		}
+		tx = 8;
 	}
 }
 
