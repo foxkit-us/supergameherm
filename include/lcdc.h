@@ -47,6 +47,24 @@ struct cps_t
 #endif
 };
 
+typedef union
+{
+	uint8_t reg;
+	struct {
+#ifdef LITTLE_ENDIAN
+		unsigned int dot3 : 2;
+		unsigned int dot2 : 2;
+		unsigned int dot1 : 2;
+		unsigned int dot0 : 2;
+#else
+		unsigned int dot0 : 2;
+		unsigned int dot1 : 2;
+		unsigned int dot2 : 2;
+		unsigned int dot3 : 2;
+#endif
+	};
+} dmg_pal_t;
+
 struct lcdc_state_t
 {
 	uint_fast16_t curr_clk;		/*! current clock */
@@ -58,7 +76,7 @@ struct lcdc_state_t
 	union
 	{
 		oam oam_store[40];		/*! OAM */
-		uint8_t oam_ram[40];
+		uint8_t oam_ram[160];
 	};
 
 	/*! LCD control register */
@@ -184,6 +202,9 @@ struct lcdc_state_t
 	uint_fast8_t ly;	/*! Present line being transferred (144-153 = V-Blank) */
 	uint_fast8_t lyc;	/*! LY comparison (set stat.lyc_state when == ly) */
 
+	dmg_pal_t bg_pal;	/*! Background palette */
+	dmg_pal_t obj_pal[2];	/*! OAM palettes */
+
 	uint32_t out[144][160];	/*! Simulated LCD screen buffer */
 };
 
@@ -197,6 +218,8 @@ uint8_t lcdc_stat_read(emu_state *restrict, uint16_t);
 uint8_t lcdc_scroll_read(emu_state *restrict, uint16_t);
 uint8_t lcdc_ly_read(emu_state *restrict, uint16_t);
 uint8_t lcdc_lyc_read(emu_state *restrict, uint16_t);
+uint8_t lcdc_bgp_read(emu_state *restrict, uint16_t);
+uint8_t lcdc_objp_read(emu_state *restrict, uint16_t);
 uint8_t lcdc_window_read(emu_state *restrict, uint16_t);
 uint8_t bg_pal_ind_read(emu_state *restrict, uint16_t);
 uint8_t bg_pal_data_read(emu_state *restrict, uint16_t);
@@ -210,6 +233,8 @@ void lcdc_stat_write(emu_state *restrict, uint16_t, uint8_t);
 void lcdc_scroll_write(emu_state *restrict, uint16_t, uint8_t);
 void lcdc_ly_write(emu_state *restrict, uint16_t, uint8_t);
 void lcdc_lyc_write(emu_state *restrict, uint16_t, uint8_t);
+void lcdc_bgp_write(emu_state *restrict, uint16_t, uint8_t);
+void lcdc_objp_write(emu_state *restrict, uint16_t, uint8_t);
 void lcdc_window_write(emu_state *restrict, uint16_t, uint8_t);
 void bg_pal_ind_write(emu_state *restrict, uint16_t, uint8_t);
 void bg_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
