@@ -76,6 +76,7 @@ bool step_emulator(emu_state *restrict state)
 
 	state->cycles++;
 
+#ifdef THROTTLE_VBLANK
 	// Wait for vblank
 	if(unlikely(state->lcdc.stat.params.mode_flag == 1 &&
 		state->lcdc.curr_clk == 0))
@@ -90,6 +91,7 @@ bool step_emulator(emu_state *restrict state)
 			sleep_nsec(NSEC_PER_VBLANK - wait);
 		}
 	}
+#endif
 
 	return true;
 }
