@@ -5,6 +5,9 @@
 #include "util.h"	// likely/unlikely
 #include "sgherm.h"	// emu_state
 
+#include <assert.h>
+#include <stdlib.h>	// abs
+
 
 #define LCDC_BGWINDOW_SHOW	0x01
 #define LCDC_OBJ_DISPLAY	0x02
@@ -103,7 +106,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
 			int actual_x = (obj.flags.hflip) ? abs(tx - 8) : tx;
-			//if((pixel_temp & 0x02) == 0) continue; // invisible.
+
+			assert(obj.x + actual_x < 144);
+			assert(obj.x + actual_x > 0);
+
+			if((pixel_temp & 0x02) == 0) continue; // invisible.
 			if(!obj.flags.priority && row[obj.x + actual_x] != dmg_palette[0]) continue; // hidden
 			row[obj.x + actual_x] = dmg_palette[pixel_temp & 0x02] + 100;
 		}
