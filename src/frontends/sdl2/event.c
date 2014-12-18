@@ -35,7 +35,7 @@ int sdl2_event_loop(emu_state *state)
 		if(unlikely(mode == 1 && clock == 1 && state->input.col))
 		{
 			GET_KEY(state, &ret);
-			if(ret.key > 0)
+			if(ret.key != INPUT_NONE)
 			{
 				joypad_signal(state, ret.key, ret.press);
 			}

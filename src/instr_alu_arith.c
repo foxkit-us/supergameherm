@@ -56,13 +56,13 @@ static inline void dec_r8(emu_state *restrict state, uint8_t *reg)
 		FLAG_UNSET(state, FLAG_H);
 	}
 
-	if(!(--(*reg)))
+	if(--(*reg))
 	{
-		FLAG_SET(state, FLAG_Z);
+		FLAG_UNSET(state, FLAG_Z);
 	}
 	else
 	{
-		FLAG_UNSET(state, FLAG_Z);
+		FLAG_SET(state, FLAG_Z);
 	}
 
 	state->wait = 4;
