@@ -84,6 +84,7 @@ struct emu_state_t
 
 	uint_fast32_t cycles;		/*! Present cycle count */
 	uint64_t start_time;		/*! Time started */
+	uint64_t last_vblank_time;		/*! Last time since a million cycles */
 
 	system_types system;		/*! Present emulation mode */
 	cpu_freq freq;			/*! CPU frequency */

@@ -16,7 +16,11 @@ static inline void sleep_nsec(uint64_t nsec)
 	ts.tv_sec = nsec / NSEC_SEC;
 	ts.tv_nsec = nsec % NSEC_SEC;
 
+#ifndef HAVE_CLOCK_GETTIME
 	if(nanosleep(&ts, &ret))
+#else
+	if(clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ret))
+#endif
 	{
 		switch(errno)
 		{
@@ -40,6 +44,5 @@ static inline void sleep_nsec(uint64_t nsec)
 		}
 	}
 }
-
 
 #endif /*__SLEEP_POSIX_H__*/

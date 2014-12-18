@@ -1,5 +1,6 @@
 #include "config.h"	// bool
 
+#include "sgherm.h"	// emu_state, constants
 #include "ctl_unit.h"	// init_ctl, execute
 #include "debug.h"	// print_cycles
 #include "frontend.h"	// null_frontend_*
@@ -7,7 +8,6 @@
 #include "print.h"	// fatal, error, debug
 #include "rom_read.h"	// offsets
 #include "serio.h"	// serial_tick
-#include "sgherm.h"	// emu_state, constants
 #include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
 #include "timer.h"	// get_clock
@@ -17,6 +17,8 @@
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
+// This is probably wrong but it seems to be smooth enough
+#define NSEC_PER_VBLANK 16680567L
 
 emu_state * init_emulator(const char *rom_path)
 {
@@ -73,6 +75,21 @@ bool step_emulator(emu_state *restrict state)
 	sound_tick(state);
 
 	state->cycles++;
+
+	// Wait for vblank
+	if(unlikely(state->lcdc.stat.params.mode_flag == 1 &&
+		state->lcdc.curr_clk == 0))
+	{
+		uint64_t t = get_time();
+		uint64_t wait = t - state->last_vblank_time;
+
+		state->last_vblank_time = t;
+
+		if(wait < NSEC_PER_VBLANK)
+		{
+			sleep_nsec(NSEC_PER_VBLANK - wait);
+		}
+	}
 
 	return true;
 }

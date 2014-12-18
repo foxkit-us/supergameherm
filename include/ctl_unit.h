@@ -55,7 +55,6 @@ typedef enum
 	CB_REG_A
 } cb_regs;
 
-
 typedef enum
 {
 	CB_OP_RLC = 0,
