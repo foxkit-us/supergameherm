@@ -44,7 +44,7 @@ static inline int key_scan(emu_state *restrict state)
 		return 0;
 	}
 
-	for(; i < 8; i++)
+	for(i = 0; i < 8; i++)
 	{
 		int input = state->input.pressed[i];
 		int lower = input & 0xf, upper = input >> 4;
@@ -72,14 +72,18 @@ void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
 {
+	int k = key_to_index(key);
+
+	assert(k >= 0);
+
 	if(down)
 	{
 		state->stop = false;
-		state->input.pressed[key_to_index(key)] = key;
+		state->input.pressed[k] = key;
 	}
 	else
 	{
-		state->input.pressed[key_to_index(key)] = 0;
+		state->input.pressed[k] = 0;
 	}
 
 	// TODO fake propagation delay and maybe switch bounce
