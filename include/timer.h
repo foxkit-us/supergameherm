@@ -9,12 +9,12 @@
 
 struct timer_state_t
 {
-	uint8_t div;			/*! DIV register */
-	uint8_t tima;			/*! TIMA register */
-	uint8_t rounds;			/*! TMA register */
-	uint16_t ticks_per_tima;	/*! ticks per TIMA++ */
-	uint8_t curr_clk;		/*! ticks passed */
-	bool enabled;			/*! timer armed */
+	uint8_t div;			//! DIV register
+	uint8_t tima;			//! TIMA register
+	uint8_t rounds;			//! TMA register
+	uint16_t ticks_per_tima;	//! ticks per TIMA++
+	uint8_t curr_clk;		//! ticks passed
+	bool enabled;			//! timer armed
 };
 
 typedef enum

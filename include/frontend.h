@@ -13,29 +13,29 @@ struct frontend_input_return_t
 
 struct frontend_input_t
 {
-	bool (*init)(emu_state *);		/*! Initalise the keyboard input */
-	void (*finish)(emu_state *);		/*! Deinitalise the keyboard input */
-	void (*get_key)(emu_state *, frontend_input_return *);		/*! Get a key */
+	bool (*init)(emu_state *);		//! Initalise the keyboard input
+	void (*finish)(emu_state *);		//! Deinitalise the keyboard input
+	void (*get_key)(emu_state *, frontend_input_return *);		//! Get a key
 
-	void *data;				/*! Opaque data */
+	void *data;				//! Opaque data
 };
 
 struct frontend_audio_t
 {
-	bool (*init)(emu_state *);		/*! Initalise the audio output */
-	void (*finish)(emu_state *);		/*! Deinitalise the audio output */
-	void (*output_sample)(emu_state *);	/*! Output an audio sample */
+	bool (*init)(emu_state *);		//! Initalise the audio output
+	void (*finish)(emu_state *);		//! Deinitalise the audio output
+	void (*output_sample)(emu_state *);	//! Output an audio sample
 
-	void *data;				/*! Opaque data */
+	void *data;				//! Opaque data
 };
 
 struct frontend_video_t
 {
-	bool (*init)(emu_state *);		/*! Initalise the video output */
-	void (*finish)(emu_state *);		/*! Deinitalise the video output */
-	void (*blit_canvas)(emu_state *);	/*! Blit the canvas */
+	bool (*init)(emu_state *);		//! Initalise the video output
+	void (*finish)(emu_state *);		//! Deinitalise the video output
+	void (*blit_canvas)(emu_state *);	//! Blit the canvas
 
-	void *data;				/*! Opaque data */
+	void *data;				//! Opaque data
 };
 
 struct frontend_t
@@ -46,12 +46,12 @@ struct frontend_t
 
 	bool input_set, audio_set, video_set;
 
-	int (*event_loop)(emu_state *);		/*! Event loop function (for use with toolkits) */
+	int (*event_loop)(emu_state *);		//! Event loop function (for use with toolkits)
 
-	void *data;				/*! Opaque data */
+	void *data;				//! Opaque data
 };
 
-/*! Frontend indicies */
+//! Frontend indicies
 typedef enum
 {
 	FRONT_NULL = 0,
@@ -61,7 +61,7 @@ typedef enum
 } frontend_type;
 
 
-/*! Change the frontend */
+//! Change the frontend
 bool select_frontend_input(emu_state * restrict, const frontend_input * restrict);
 bool select_frontend_audio(emu_state * restrict, const frontend_audio * restrict);
 bool select_frontend_video(emu_state * restrict, const frontend_video * restrict);
@@ -70,7 +70,7 @@ bool select_frontend_all(emu_state * restrict, const frontend_input * restrict,
 	int (*)(emu_state *));
 void finish_frontend(emu_state *restrict);
 
-/*! Null frontends */
+//! Null frontends
 extern const frontend_input null_frontend_input;
 extern const frontend_audio null_frontend_audio;
 extern const frontend_video null_frontend_video;
@@ -81,7 +81,7 @@ int null_event_loop(emu_state *);
 #define NULL_VIDEO &null_frontend_video
 #define NULL_LOOP &null_event_loop
 
-/*! libcaca frontends */
+//! libcaca frontends
 #ifdef HAVE_LIBCACA
 #	include "frontends/caca/frontend.h"
 #	define LIBCACA_INPUT &libcaca_frontend_input
@@ -95,7 +95,7 @@ int null_event_loop(emu_state *);
 #	define LIBCACA_LOOP &null_event_loop
 #endif
 
-/*! SDL2 frontends */
+//! SDL2 frontends
 #ifdef HAVE_SDL2
 #	include "frontends/sdl2/frontend.h"
 #	define SDL2_INPUT &sdl2_frontend_input
@@ -109,7 +109,7 @@ int null_event_loop(emu_state *);
 #	define SDL2_LOOP &null_event_loop
 #endif
 
-/*! Win32 frontend */
+//! Win32 frontend
 #ifdef HAVE_WINDOWS
 #	include "frontends/w32/frontend.h"
 #	define WIN32_INPUT &w32_frontend_input

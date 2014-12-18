@@ -8,7 +8,7 @@
 
 typedef enum
 {
-	/*! A list of constants, mostly used for documentation purposes. */
+	//! A list of constants, mostly used for documentation purposes.
 	// TODO GBC constants
 
 	// restart and interrupt vectors

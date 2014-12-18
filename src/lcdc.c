@@ -91,13 +91,13 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		if(pixel_y_offset > 16)
 		{
-			/* out of display */
+			// out of display
 			continue;
 		}
 
 		if(!obj.flags.priority)
 		{
-			/* TODO XXX not implemented yet */
+			// TODO XXX not implemented yet
 			continue;
 		}
 
@@ -106,7 +106,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
-			if((pixel_temp & 0x02) == 0) continue;	/* invisible. */
+			if((pixel_temp & 0x02) == 0) continue;	// invisible.
 			row[obj.x + tx] = dmg_palette[pixel_temp & 0x02];
 		}
 	}
@@ -125,7 +125,7 @@ void lcdc_tick(emu_state *restrict state)
 	switch(state->lcdc.stat.params.mode_flag)
 	{
 	case 2:
-		/* first mode - reading OAM for h scan line */
+		// first mode - reading OAM for h scan line
 		if(state->lcdc.curr_clk >= 80)
 		{
 			state->lcdc.curr_clk = 0;
@@ -133,7 +133,7 @@ void lcdc_tick(emu_state *restrict state)
 		}
 		break;
 	case 3:
-		/* second mode - reading VRAM for h scan line */
+		// second mode - reading VRAM for h scan line
 		if(state->lcdc.curr_clk >= 172)
 		{
 			state->lcdc.curr_clk = 0;
@@ -141,7 +141,7 @@ void lcdc_tick(emu_state *restrict state)
 		}
 		break;
 	case 0:
-		/* third mode - h-blank */
+		// third mode - h-blank
 		if(state->lcdc.curr_clk >= 204)
 		{
 			switch(state->system)
@@ -163,18 +163,18 @@ void lcdc_tick(emu_state *restrict state)
 			state->lcdc.curr_clk = 0;
 			if((++state->lcdc.ly) == 144)
 			{
-				/* going to v-blank */
+				// going to v-blank
 				state->lcdc.stat.params.mode_flag = 1;
 			}
 			else
 			{
-				/* start another scan line */
+				// start another scan line
 				state->lcdc.stat.params.mode_flag = 2;
 			}
 		}
 		break;
 	case 1:
-		/* v-blank */
+		// v-blank
 		if(state->lcdc.ly == 144 &&
 		   state->lcdc.curr_clk == 1)
 		{

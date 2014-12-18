@@ -47,10 +47,10 @@ void warning(emu_state *state, const char *str, ...);
  */
 void debug(emu_state *state, const char *str, ...);
 
-/*! Where stdout goes with these functions */
+//! Where stdout goes with these functions
 extern FILE *to_stdout;
 
-/*! Where stderr goes with these functions */
+//! Where stderr goes with these functions
 extern FILE *to_stderr;
 
 #endif /*!__PRINT_H_*/

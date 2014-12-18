@@ -13,9 +13,9 @@ uint8_t serial_read(emu_state *restrict state, uint16_t reg)
 {
 	switch(reg)
 	{
-	case 0xFF01:	/* SB - data to read */
+	case 0xFF01:	// SB - data to read
 		return state->ser.in;
-	case 0xFF02:	/* SC - serial control */
+	case 0xFF02:	// SC - serial control
 	{
 		uint8_t res = 0;
 		if(state->ser.enabled) res |= 0x80;
@@ -39,12 +39,12 @@ void serial_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	switch(reg)
 	{
-	case 0xFF01:	/* SB - data to write */
+	case 0xFF01:	// SB - data to write
 		fprintf(to_stdout, "%c", data);
 		state->ser.cur_bit = 7;
 		state->ser.out = data;
 		break;
-	case 0xFF02:	/* SC - serial control */
+	case 0xFF02:	// SC - serial control
 		state->ser.enabled = (data && 0x80 == 0x80);
 		state->ser.use_internal = (data && 0x01 == 0x01);
 		break;
@@ -63,11 +63,11 @@ void serial_tick(emu_state *restrict state)
 {
 	uint16_t ticks;
 
-	/* we aren't active; we don't care */
+	// we aren't active; we don't care
 	if(!state->ser.enabled) return;
 
 	state->ser.curr_clk++;
-	/* XXX TODO FIXME this does NOT support external clocks */
+	// XXX TODO FIXME this does NOT support external clocks
 	if(state->ser.use_internal)
 	{
 		ticks = 512;

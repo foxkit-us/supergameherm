@@ -42,10 +42,10 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	bool no_err = false;
 	size_t i;
 
-	/* Initalise */
+	// Initalise
 	*header = NULL;
 
-	/* Get the full ROM size */
+	// Get the full ROM size
 	if(unlikely(fseek(rom, 0, SEEK_END)))
 	{
 		perror("seeking");
@@ -94,7 +94,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 	if ((*header)->cgb_title.compat & 0x80)
 	{
-		/* Game boy color[sic] */
+		// Game boy color[sic]
 		strncpy(title, (*header)->cgb_title.title,
 			sizeof((*header)->cgb_title.title));
 		strncpy(publisher, (*header)->cgb_title.publisher,
@@ -106,7 +106,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	}
 	else if ((*header)->sgb_title.sgb & 0x03)
 	{
-		/* Super game boy */
+		// Super game boy
 		strncpy(title, (*header)->sgb_title.title,
 			sizeof((*header)->sgb_title.title));
 
@@ -116,7 +116,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	}
 	else
 	{
-		/* Really old cart predating the SGB */
+		// Really old cart predating the SGB
 		strncpy(title, (*header)->dmg_title, sizeof((*header)->dmg_title));
 
 		state->system = SYSTEM_DMG;

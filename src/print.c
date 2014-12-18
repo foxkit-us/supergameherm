@@ -22,7 +22,7 @@ void fatal(emu_state *state UNUSED, const char *str, ...)
 	va_end(argp);
 
 	exit(EXIT_FAILURE);
-	/* NOTREACHED */
+	// NOTREACHED
 }
 
 void error(emu_state *state UNUSED, const char *str, ...)

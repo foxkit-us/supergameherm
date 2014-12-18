@@ -39,13 +39,13 @@ uint8_t timer_read(emu_state *restrict state, uint16_t reg)
 		{
 		case 1024:
 			break;
-			/* fall through on purpose; it's fun! */
+			// fall through on purpose; it's fun!
 		case 128:
-			res++;		/* 16.384KHz = 3 */
+			res++;		// 16.384KHz = 3
 		case 64:
-			res++;		/* 65.536KHz = 2 */
+			res++;		// 65.536KHz = 2
 		case 16:
-			res++;		/* 262.14KHz = 1 */
+			res++;		// 262.14KHz = 1
 		}
 
 		return res;
@@ -64,7 +64,7 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	 * DIV - any write to this immediately resets to 0.
 	 */
 	case 0xFF04:
-		/* nope, data is ignored.  reset to 0. */
+		// nope, data is ignored.  reset to 0.
 		state->timer.div = 0;
 		return;
 	/*
@@ -100,13 +100,13 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 
 void timer_tick(emu_state *restrict state)
 {
-	/* DIV increases even if the timer is disabled */
+	// DIV increases even if the timer is disabled
 	if(++state->timer.curr_clk % 128 == 0)
 	{
 		state->timer.div++;
 	}
 
-	/* but nothing else does. */
+	// but nothing else does.
 	if(!state->timer.enabled)
 	{
 		return;
@@ -114,7 +114,7 @@ void timer_tick(emu_state *restrict state)
 
 	if(state->timer.curr_clk % state->timer.ticks_per_tima == 0)
 	{
-		if(++state->timer.tima == 0)	/* overflow! */
+		if(++state->timer.tima == 0)	// overflow!
 		{
 			state->timer.rounds++;
 			signal_interrupt(state, INT_TIMER);

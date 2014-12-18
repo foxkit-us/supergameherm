@@ -12,7 +12,7 @@
 #endif
 
 
-/*! Swap the msn and lsn of an 8-bit number */
+//! Swap the msn and lsn of an 8-bit number
 static inline uint8_t swap_8(uint8_t number)
 {
 	const uint8_t swap_table[0x100] =
@@ -48,7 +48,7 @@ static inline uint8_t swap_8(uint8_t number)
 	return swap_table[number];
 }
 
-/*! Swap the msb and lsb of a 16-bit number */
+//! Swap the msb and lsb of a 16-bit number
 static inline uint16_t swap_16(uint16_t number)
 {
 #ifdef BIG_ENDIAN
@@ -58,25 +58,25 @@ static inline uint16_t swap_16(uint16_t number)
 #endif /*BIG_ENDIAN*/
 }
 
-/*! Do a right-rotate, 8-bit style */
+//! Do a right-rotate, 8-bit style
 static inline uint8_t rotr_8(uint8_t number)
 {
 	return (number >> 1) | (number << 7);
 }
 
-/*! Do a left-rotate, 8-bit style */
+//! Do a left-rotate, 8-bit style
 static inline uint8_t rotl_8(uint8_t number)
 {
 	return (number << 1) | (number >> 7);
 }
 
-/*! Do a right-rotate, 16-bit style */
+//! Do a right-rotate, 16-bit style
 static inline uint16_t rotr_16(uint16_t number)
 {
 	return (number >> 1) | (number << 15);
 }
 
-/*! Do a left-rotate, 16-bit style */
+//! Do a left-rotate, 16-bit style
 static inline uint16_t rotl_16(uint16_t number)
 {
 	return (number << 1) | (number >> 15);

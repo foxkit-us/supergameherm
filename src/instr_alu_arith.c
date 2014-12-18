@@ -853,7 +853,7 @@ static inline void sbc_a(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief ADD n (0xC6)
  * @result A += immediate (n)
  */
-static inline void add_imm8(emu_state *restrict state, uint8_t data[])
+static inline void add_d8(emu_state *restrict state, uint8_t data[])
 {
 	add_common(state, data[0]);
 
@@ -865,7 +865,7 @@ static inline void add_imm8(emu_state *restrict state, uint8_t data[])
  * @brief ADC n (0xCE)
  * @result A += immediate (n) (+1 if C flag set)
  */
-static inline void adc_imm8(emu_state *restrict state, uint8_t data[])
+static inline void adc_d8(emu_state *restrict state, uint8_t data[])
 {
 	adc_common(state, data[0]);
 
@@ -877,7 +877,7 @@ static inline void adc_imm8(emu_state *restrict state, uint8_t data[])
  * @brief SUB n (0xD6)
  * @result A -= n; Z if A = 0, H if no borrow from bit 4, C if no borrow
  */
-static inline void sub_imm8(emu_state *restrict state, uint8_t data[])
+static inline void sub_d8(emu_state *restrict state, uint8_t data[])
 {
 	sub_common(state, data[0]);
 
@@ -889,7 +889,7 @@ static inline void sub_imm8(emu_state *restrict state, uint8_t data[])
  * @brief SBC n (0xDE)
  * @result A -= n (+1 if C flag set)
  */
-static inline void sbc_imm8(emu_state *restrict state, uint8_t data[])
+static inline void sbc_d8(emu_state *restrict state, uint8_t data[])
 {
 	sbc_common(state, data[0]);
 
@@ -901,7 +901,7 @@ static inline void sbc_imm8(emu_state *restrict state, uint8_t data[])
  * @brief ADD SP,n (0xE8)
  * @result SP += n
  */
-static inline void add_sp_imm8(emu_state *restrict state, uint8_t data[])
+static inline void add_sp_d8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t val = (int8_t)data[0];
 	uint16_t temp = REG_SP(state) + val;

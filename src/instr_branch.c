@@ -2,7 +2,7 @@
  * @brief JR n (0x18)
  * @result add n to pc
  */
-static inline void jr_imm8(emu_state *restrict state, uint8_t data[])
+static inline void jr_r8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t to_add = data[0];
 
@@ -15,7 +15,7 @@ static inline void jr_imm8(emu_state *restrict state, uint8_t data[])
  * @brief JR NZ,n (0x20)
  * @result add n to pc if Z (zero) flag clear
  */
-static inline void jr_nz_imm8(emu_state *restrict state, uint8_t data[])
+static inline void jr_nz_r8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t to_add = data[0];
 
@@ -33,7 +33,7 @@ static inline void jr_nz_imm8(emu_state *restrict state, uint8_t data[])
  * @brief JR Z,n (0x28)
  * @result add n to pc if Z (zero) flag set
  */
-static inline void jr_z_imm8(emu_state *restrict state, uint8_t data[])
+static inline void jr_z_r8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t to_add = data[0];
 
@@ -51,7 +51,7 @@ static inline void jr_z_imm8(emu_state *restrict state, uint8_t data[])
  * @brief JR NC,n (0x30)
  * @result add n to pc if C (carry) flag clear
  */
-static inline void jr_nc_imm8(emu_state *restrict state, uint8_t data[])
+static inline void jr_nc_r8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t to_add = data[0];
 
@@ -69,7 +69,7 @@ static inline void jr_nc_imm8(emu_state *restrict state, uint8_t data[])
  * @brief JR C,n (0x38)
  * @result add n to pc if C (carry) flag set
  */
-static inline void jr_c_imm8(emu_state *restrict state, uint8_t data[])
+static inline void jr_c_r8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t to_add = data[0];
 
@@ -87,7 +87,7 @@ static inline void jr_c_imm8(emu_state *restrict state, uint8_t data[])
  * @brief JP NZ,nn (0xC2)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if Z flag is not set
  */
-static inline void jp_nz_imm16(emu_state *restrict state, uint8_t data[])
+static inline void jp_nz_d16(emu_state *restrict state, uint8_t data[])
 {
 	state->wait = 12;
 
@@ -103,7 +103,7 @@ static inline void jp_nz_imm16(emu_state *restrict state, uint8_t data[])
  * @brief JP nn (0xC3)
  * @result pc is set to 16-bit immediate value (LSB, MSB)
  */
-static inline void jp_imm16(emu_state *restrict state, uint8_t data[])
+static inline void jp_d16(emu_state *restrict state, uint8_t data[])
 {
 	REG_PC(state) = (data[1]<<8)|data[0];
 
@@ -114,7 +114,7 @@ static inline void jp_imm16(emu_state *restrict state, uint8_t data[])
  * @brief CALL nn (0xCD)
  * @result next pc stored in stack; jump to nn
  */
-static inline void call_imm16(emu_state *restrict state, uint8_t data[])
+static inline void call_d16(emu_state *restrict state, uint8_t data[])
 {
 	uint16_t value = (data[1]<<8)|data[0];
 
@@ -130,7 +130,7 @@ static inline void call_imm16(emu_state *restrict state, uint8_t data[])
  * @brief CALL NZ,nn (0xC4)
  * @result CALL nn if Z flag is not set
  */
-static inline void call_nz_imm16(emu_state *restrict state, uint8_t data[])
+static inline void call_nz_d16(emu_state *restrict state, uint8_t data[])
 {
 	if(IS_FLAG(state, FLAG_Z))
 	{
@@ -138,11 +138,11 @@ static inline void call_nz_imm16(emu_state *restrict state, uint8_t data[])
 	}
 	else
 	{
-		call_imm16(state, data);
+		call_d16(state, data);
 	}
 }
 
-static inline void reset_common(emu_state *restrict state, uint8_t data[] UNUSED)
+static inline void rst(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	uint16_t to = mem_read8(state, REG_PC(state) - 1) - 0xC7;
 
@@ -207,7 +207,7 @@ static inline void retz(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief JP Z,nn (0xCA)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if Z flag is set
  */
-static inline void jp_z_imm16(emu_state *restrict state, uint8_t data[])
+static inline void jp_z_d16(emu_state *restrict state, uint8_t data[])
 {
 	state->wait = 12;
 
@@ -223,11 +223,11 @@ static inline void jp_z_imm16(emu_state *restrict state, uint8_t data[])
  * @brief CALL Z,nn (0xCC)
  * @result CALL nn if Z flag is set
  */
-static inline void call_z_imm16(emu_state *restrict state, uint8_t data[])
+static inline void call_z_d16(emu_state *restrict state, uint8_t data[])
 {
 	if(IS_FLAG(state, FLAG_Z))
 	{
-		call_imm16(state, data);
+		call_d16(state, data);
 	}
 	else
 	{
@@ -258,7 +258,7 @@ static inline void retnc(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief JP NC,nn (0xD2)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if C flag is not set
  */
-static inline void jp_nc_imm16(emu_state *restrict state, uint8_t data[])
+static inline void jp_nc_d16(emu_state *restrict state, uint8_t data[])
 {
 	state->wait = 12;
 
@@ -274,7 +274,7 @@ static inline void jp_nc_imm16(emu_state *restrict state, uint8_t data[])
  * @brief CALL NC,nn (0xD4)
  * @result CALL nn if C flag is not set
  */
-static inline void call_nc_imm16(emu_state *restrict state, uint8_t data[])
+static inline void call_nc_d16(emu_state *restrict state, uint8_t data[])
 {
 	if(IS_FLAG(state, FLAG_C))
 	{
@@ -282,7 +282,7 @@ static inline void call_nc_imm16(emu_state *restrict state, uint8_t data[])
 	}
 	else
 	{
-		call_imm16(state, data);
+		call_d16(state, data);
 	}
 }
 
@@ -328,7 +328,7 @@ static inline void reti(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief JP C,nn (0xDA)
  * @result pc is set to 16-bit immediate value (LSB, MSB) if C flag is set
  */
-static inline void jp_c_imm16(emu_state *restrict state, uint8_t data[])
+static inline void jp_c_d16(emu_state *restrict state, uint8_t data[])
 {
 	state->wait = 12;
 
@@ -344,11 +344,11 @@ static inline void jp_c_imm16(emu_state *restrict state, uint8_t data[])
  * @brief CALL C,nn (0xDC)
  * @result CALL nn if C flag is set
  */
-static inline void call_c_imm16(emu_state *restrict state, uint8_t data[])
+static inline void call_c_d16(emu_state *restrict state, uint8_t data[])
 {
 	if(IS_FLAG(state, FLAG_C))
 	{
-		call_imm16(state, data);
+		call_d16(state, data);
 	}
 	else
 	{

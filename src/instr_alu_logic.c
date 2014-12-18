@@ -686,15 +686,15 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] UNUSED)
 
 		break;
 	case CB_OP_RES:
-		/* reset bit <bit_number> of register <reg> */
+		// reset bit <bit_number> of register <reg>
 		*write_to &= ~val;
 		break;
 	case CB_OP_SET:
-		/* set bit <bit_number> of register <reg> */
+		// set bit <bit_number> of register <reg>
 		*write_to |= val;
 		break;
 	case CB_OP_SWAP:
-		/* swap higher and lower nibble of register <reg> */
+		// swap higher and lower nibble of register <reg>
 		FLAGS_CLEAR(state);
 
 		*write_to = swap_8(*write_to);
@@ -704,7 +704,7 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] UNUSED)
 		}
 		break;
 	case CB_OP_BIT:
-		/* test bit <bit_number> of register <reg> */
+		// test bit <bit_number> of register <reg>
 		if((*write_to & val) != val)
 		{
 			FLAG_SET(state, FLAG_Z);
@@ -730,7 +730,7 @@ static inline void cb_dispatch(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief AND n (0xE6)
  * @result A &= n
  */
-static inline void and_imm8(emu_state *restrict state, uint8_t data[])
+static inline void and_d8(emu_state *restrict state, uint8_t data[])
 {
 	uint8_t n = data[0];
 	and_common(state, n);
@@ -743,7 +743,7 @@ static inline void and_imm8(emu_state *restrict state, uint8_t data[])
  * @brief XOR n (0xEE)
  * @result A ^= n
  */
-static inline void xor_imm8(emu_state *restrict state, uint8_t data[])
+static inline void xor_d8(emu_state *restrict state, uint8_t data[])
 {
 	uint8_t n = data[0];
 	xor_common(state, n);
@@ -756,7 +756,7 @@ static inline void xor_imm8(emu_state *restrict state, uint8_t data[])
  * @brief OR n (0xF6)
  * @result A |= n
  */
-static inline void or_imm8(emu_state *restrict state, uint8_t data[])
+static inline void or_d8(emu_state *restrict state, uint8_t data[])
 {
 	uint8_t n = data[0];
 	or_common(state, n);
@@ -769,7 +769,7 @@ static inline void or_imm8(emu_state *restrict state, uint8_t data[])
  * @brief CP n (0xFE) - compare A with 8-bit immediate value
  * @result flags register modified based on result
  */
-static inline void cp_imm8(emu_state *restrict state, uint8_t data[])
+static inline void cp_d8(emu_state *restrict state, uint8_t data[])
 {
 	cp_common(state, data[0]);
 

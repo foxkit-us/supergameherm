@@ -30,10 +30,10 @@ typedef enum
 
 struct input_state_t
 {
-	uint8_t col;		/*! P14 and P15 */
-	uint8_t row;		/*! P10 through P13 */
+	uint8_t col;		//! P14 and P15
+	uint8_t row;		//! P10 through P13
 
-	int pressed[8];		/*! Current keys pressed */
+	int pressed[8];		//! Current keys pressed
 };
 
 

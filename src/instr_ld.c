@@ -2,7 +2,7 @@
  * @brief LD BC,nn (0x01)
  * @result BC = nn
  */
-static inline void ld_bc_imm16(emu_state *restrict state, uint8_t data[])
+static inline void ld_bc_d16(emu_state *restrict state, uint8_t data[])
 {
 	REG_BC(state) = (data[1]<<8)|data[0];
 
@@ -24,7 +24,7 @@ static inline void ld_bc_a(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD B,n (0x06)
  * @result B = n
  */
-static inline void ld_b_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_b_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_B(state) = data[0];
 
@@ -35,7 +35,7 @@ static inline void ld_b_imm8(emu_state *restrict state, uint8_t data[])
  * @brief LD (nn),SP (0x08)
  * @result contents of memory at nn = SP
  */
-static inline void ld_imm16_sp(emu_state *restrict state, uint8_t data[])
+static inline void ld_d16_sp(emu_state *restrict state, uint8_t data[])
 {
 	uint16_t addr = (data[1]<<8)|data[0];
 
@@ -59,7 +59,7 @@ static inline void ld_a_bc(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD C,n (0x0E)
  * @result C = n
  */
-static inline void ld_c_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_c_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_C(state) = data[0];
 
@@ -70,7 +70,7 @@ static inline void ld_c_imm8(emu_state *restrict state, uint8_t data[])
  * @brief LD DE,nn (0x11)
  * @result DE = nn
  */
-static inline void ld_de_imm16(emu_state *restrict state, uint8_t data[])
+static inline void ld_de_d16(emu_state *restrict state, uint8_t data[])
 {
 	REG_DE(state) = (data[1]<<8)|data[0];
 
@@ -92,7 +92,7 @@ static inline void ld_de_a(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD D,n (0x16)
  * @result D = n
  */
-static inline void ld_d_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_d_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_D(state) = data[0];
 
@@ -114,7 +114,7 @@ static inline void ld_a_de(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD E,n (0x1E)
  * @result E = n
  */
-static inline void ld_e_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_e_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_E(state) = data[0];
 
@@ -125,7 +125,7 @@ static inline void ld_e_imm8(emu_state *restrict state, uint8_t data[])
  * @brief LD HL,nn (0x21)
  * @result HL = nn
  */
-static inline void ld_hl_imm16(emu_state *restrict state, uint8_t data[])
+static inline void ld_hl_d16(emu_state *restrict state, uint8_t data[])
 {
 	REG_HL(state) = (data[1]<<8)|data[0];
 
@@ -147,7 +147,7 @@ static inline void ldi_hl_a(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD H,n (0x26)
  * @result H = n
  */
-static inline void ld_h_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_h_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_H(state) = data[0];
 
@@ -169,7 +169,7 @@ static inline void ldi_a_hl(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD L,n (0x2E)
  * @result L = n
  */
-static inline void ld_l_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_l_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_L(state) = data[0];
 
@@ -180,7 +180,7 @@ static inline void ld_l_imm8(emu_state *restrict state, uint8_t data[])
  * @brief LD SP,nn (0x31)
  * @result SP = nn
  */
-static inline void ld_sp_imm16(emu_state *restrict state, uint8_t data[])
+static inline void ld_sp_d16(emu_state *restrict state, uint8_t data[])
 {
 	REG_SP(state) = (data[1]<<8)|data[0];
 
@@ -202,7 +202,7 @@ static inline void ldd_hl_a(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD (HL),n (0x36)
  * @result contents of memory at HL = n
  */
-static inline void ld_hl_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_hl_d8(emu_state *restrict state, uint8_t data[])
 {
 	uint8_t n = data[0];
 	mem_write8(state, REG_HL(state), n);
@@ -225,7 +225,7 @@ static inline void ldd_a_hl(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD A,n (0x3E)
  * @result A = n
  */
-static inline void ld_a_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_a_d8(emu_state *restrict state, uint8_t data[])
 {
 	REG_A(state) = data[0];
 
@@ -915,7 +915,7 @@ static inline void ld_a_a(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LDH n,A (0xE0) - write A to 0xff00+n
  * @result the I/O register n will contain the value of A
  */
-static inline void ldh_imm8_a(emu_state *restrict state, uint8_t data[])
+static inline void ldh_d8_a(emu_state *restrict state, uint8_t data[])
 {
 	uint16_t write = data[0];
 	write += 0xFF00;
@@ -953,7 +953,7 @@ static inline void ld_d16_a(emu_state *restrict state, uint8_t data[])
  * @brief LDH A,nn (0xF0) - read 0xff00+n to A
  * @result A will contain the value of the I/O register n
  */
-static inline void ldh_a_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ldh_a_d8(emu_state *restrict state, uint8_t data[])
 {
 	uint8_t loc = data[0];
 	REG_A(state) = mem_read8(state, 0xFF00 + loc);
@@ -976,7 +976,7 @@ static inline void ld_a_ff00_c(emu_state *restrict state, uint8_t data[] UNUSED)
  * @brief LD HL,SP+n (0xF8) - add n to SP giving HL
  * @result HL = SP + n
  */
-static inline void ld_hl_sp_imm8(emu_state *restrict state, uint8_t data[])
+static inline void ld_hl_sp_d8(emu_state *restrict state, uint8_t data[])
 {
 	int8_t val = (int8_t)data[0];
 	uint16_t temp;

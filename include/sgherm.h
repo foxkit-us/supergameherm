@@ -29,10 +29,10 @@ typedef enum
 
 struct registers_t
 {
-	/*! The 8/16 bit registers */
+	//! The 8/16 bit registers
 	union
 	{
-		/*! 16-bit registers */
+		//! 16-bit registers
 		struct __16
 		{
 			uint16_t af;
@@ -40,7 +40,7 @@ struct registers_t
 			uint16_t de;
 			uint16_t hl;
 		} _16;
-		/*! 8-bit registers shadowing the 16-bit */
+		//! 8-bit registers shadowing the 16-bit
 		struct __8
 		{
 #ifdef BIG_ENDIAN
@@ -57,37 +57,37 @@ struct registers_t
 		} _8;
 	} gp;
 
-	uint16_t pc;		/*! Program counter */
-	uint16_t sp;		/*! Stack pointer */
+	uint16_t pc;		//! Program counter
+	uint16_t sp;		//! Stack pointer
 };
 
-/*! The main emulation state structure */
+//! The main emulation state structure
 struct emu_state_t
 {
-	uint8_t memory[MEM_SIZE];	/*! RAM */
-	uint8_t *cart_data;		/*! Cartridge data */
+	uint8_t memory[MEM_SIZE];	//! RAM
+	uint8_t *cart_data;		//! Cartridge data
 
-	/*! Cartridge RAM */
+	//! Cartridge RAM
 	uint8_t cart_ram[0xF][0x2000];
 
-	register_state registers;	/*! Registers */
+	register_state registers;	//! Registers
 
-	bool halt;			/*! waiting for interrupt */
-	bool stop;			/*! deep sleep state (disable LCDC) */
+	bool halt;			//! waiting for interrupt
+	bool stop;			//! deep sleep state (disable LCDC)
 
-	uint_fast16_t dma_wait;	/*! Clocks left on DMA membar */
+	uint_fast16_t dma_wait;	//! Clocks left on DMA membar
 
-	uint_fast32_t wait;		/*! number of clocks */
+	uint_fast32_t wait;		//! number of clocks
 
-	uint_fast16_t bank;		/*! current ROM bank */
-	uint_fast8_t ram_bank;		/*! current RAM bank */
+	uint_fast16_t bank;		//! current ROM bank
+	uint_fast8_t ram_bank;		//! current RAM bank
 
-	uint_fast32_t cycles;		/*! Present cycle count */
-	uint64_t start_time;		/*! Time started */
-	uint64_t last_vblank_time;		/*! Last time since a million cycles */
+	uint_fast32_t cycles;		//! Present cycle count
+	uint64_t start_time;		//! Time started
+	uint64_t last_vblank_time;		//! Last time since a million cycles
 
-	system_types system;		/*! Present emulation mode */
-	cpu_freq freq;			/*! CPU frequency */
+	system_types system;		//! Present emulation mode
+	cpu_freq freq;			//! CPU frequency
 
 	interrupt_state interrupts;
 

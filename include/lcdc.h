@@ -9,23 +9,23 @@ struct oam_t
 {
 	uint8_t y;
 	uint8_t x;
-	uint8_t chr;	/*! CHR code */
+	uint8_t chr;	//! CHR code
 	struct
 	{
 #ifdef LITTLE_ENDIAN
-		bool priority:1;		/*! Priority to obj/bg */
-		bool vflip:1;			/*! Vertical flip flag */
-		bool hflip:1;			/*! Horizontal flip */
-		unsigned int pal_dmg:1;		/*! Palette selection (DMG only) */
-		unsigned int char_bank:1;	/*! Character bank (CGB only) */
-		unsigned int pal_cgb:3;		/*! Palette selection CGB only) */
+		bool priority:1;		//! Priority to obj/bg
+		bool vflip:1;			//! Vertical flip flag
+		bool hflip:1;			//! Horizontal flip
+		unsigned int pal_dmg:1;		//! Palette selection (DMG only)
+		unsigned int char_bank:1;	//! Character bank (CGB only)
+		unsigned int pal_cgb:3;		//! Palette selection CGB only)
 #else
-		unsigned int pal_cgb:3;		/*! Palette selection CGB only) */
-		unsigned int char_bank:1;	/*! Character bank (CGB only) */
-		unsigned int pal_dmg:1;		/*! Palette selection (DMG only) */
-		bool hflip:1;			/*! Horizontal flip */
-		bool vflip:1;			/*! Vertical flip flag */
-		bool priority:1;		/*! Priority to obj/bg */
+		unsigned int pal_cgb:3;		//! Palette selection CGB only)
+		unsigned int char_bank:1;	//! Character bank (CGB only)
+		unsigned int pal_dmg:1;		//! Palette selection (DMG only)
+		bool hflip:1;			//! Horizontal flip
+		bool vflip:1;			//! Vertical flip flag
+		bool priority:1;		//! Priority to obj/bg
 #endif
 	} flags;
 };
@@ -33,17 +33,17 @@ struct oam_t
 struct cps_t
 {
 #ifdef LITTLE_ENDIAN
-	bool pal_sel:1;			/*! Palette changes on next write */
-	unsigned int notused:1;		/*! Not used */
-	unsigned int pal_num:3;		/*! Select palette number */
-	unsigned int pal_data_num:2;	/*! Select palette data number */
-	bool hl:1;			/*! Specify H/L */
+	bool pal_sel:1;			//! Palette changes on next write
+	unsigned int notused:1;		//! Not used
+	unsigned int pal_num:3;		//! Select palette number
+	unsigned int pal_data_num:2;	//! Select palette data number
+	bool hl:1;			//! Specify H/L
 #else
-	bool hl:1;			/*! Specify H/L */
-	unsigned int pal_data_num:2;	/*! Select palette data number */
-	unsigned int pal_num:3;		/*! Select palette number */
-	unsigned int notused:1;		/*! Not used */
-	bool pal_sel:1;			/*! Palette changes on next write */
+	bool hl:1;			//! Specify H/L
+	unsigned int pal_data_num:2;	//! Select palette data number
+	unsigned int pal_num:3;		//! Select palette number
+	unsigned int notused:1;		//! Not used
+	bool pal_sel:1;			//! Palette changes on next write
 #endif
 };
 
@@ -67,42 +67,42 @@ typedef union
 
 struct lcdc_state_t
 {
-	uint_fast16_t curr_clk;		/*! current clock */
-	uint_fast8_t curr_h_blk;	/*! last H block to be written */
+	uint_fast16_t curr_clk;		//! current clock
+	uint_fast8_t curr_h_blk;	//! last H block to be written
 
-	uint_fast8_t vram_bank;		/*! Present VRAM bank */
-	uint8_t vram[0x2][0x2000];	/*! VRAM banks (DMG only uses 1) */
+	uint_fast8_t vram_bank;		//! Present VRAM bank
+	uint8_t vram[0x2][0x2000];	//! VRAM banks (DMG only uses 1)
 
 	union
 	{
-		oam oam_store[40];		/*! OAM */
+		oam oam_store[40];		//! OAM
 		uint8_t oam_ram[160];
 	};
 
-	/*! LCD control register */
+	//! LCD control register
 	union
 	{
 		uint8_t reg;
 		struct
 		{
 #ifdef LITTLE_ENDIAN
-			bool dmg_bg:1;		/*! BG is on or off (DMG only) */
-			bool obj:1;		/*! OBJ's are off or on */
-			bool obj_block_size:1;	/*! Size of OBJ's are 8x8 or 8x16 */
-			bool bg_code_sel:1;	/*! BG code data at 9800-9BFF or 9C00-9FFF */
-			bool bg_char_sel:1;	/*! BG character data at 8800-97FF or 8000-8FFF */
-			bool win:1;		/*! Windowing on */
-			bool win_code_sel:1;	/*! Active window at 9800-9BFF or 9C00-9FFF */
-			bool enable:1;		/*! LCD enabled */
+			bool dmg_bg:1;		//! BG is on or off (DMG only)
+			bool obj:1;		//! OBJ's are off or on
+			bool obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
+			bool bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
+			bool bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
+			bool win:1;		//! Windowing on
+			bool win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
+			bool enable:1;		//! LCD enabled
 #else
-			bool enable:1;		/*! LCD enabled */
-			bool win_code_sel:1;	/*! Active window at 9800-9BFF or 9C00-9FFF */
-			bool win:1;		/*! Windowing on */
-			bool bg_char_sel:1;	/*! BG character data at 8800-97FF or 8000-8FFF */
-			bool bg_code_sel:1;	/*! BG code data at 9800-9BFF or 9C00-9FFF */
-			bool obj_block_size:1;	/*! Size of OBJ's are 8x8 or 8x16 */
-			bool obj:1;		/*! OBJ's are off or on */
-			bool dmg_bg:1;		/*! BG is on or off (DMG only) */
+			bool enable:1;		//! LCD enabled
+			bool win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
+			bool win:1;		//! Windowing on
+			bool bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
+			bool bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
+			bool obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
+			bool obj:1;		//! OBJ's are off or on
+			bool dmg_bg:1;		//! BG is on or off (DMG only)
 #endif
 		} params;
 	} lcd_control;
@@ -121,19 +121,19 @@ struct lcdc_state_t
 			 */
 			unsigned int mode_flag:2;
 
-			bool lyc_state:1;	/*! LYC matches LY */
-			bool mode_00:1;		/*! int on mode 00 selection */
-			bool mode_01:1;		/*! int on mode 01 selection */
-			bool mode_10:1;		/*! int on mode 10 selection */
-			bool lyc:1;		/*! int on LY matching selection */
-			unsigned int notused:1;	/*! Upper bit padding */
+			bool lyc_state:1;	//! LYC matches LY
+			bool mode_00:1;		//! int on mode 00 selection
+			bool mode_01:1;		//! int on mode 01 selection
+			bool mode_10:1;		//! int on mode 10 selection
+			bool lyc:1;		//! int on LY matching selection
+			unsigned int notused:1;	//! Upper bit padding
 #else
-			unsigned int notused:1;	/*! Upper bit padding */
-			bool lyc:1;		/*! int on LY matching selection */
-			bool mode_10:1;		/*! int on mode 10 selection */
-			bool mode_01:1;		/*! int on mode 01 selection */
-			bool mode_00:1;		/*! int on mode 00 selection */
-			bool lyc_state:1;	/*! LYC matches LY */
+			unsigned int notused:1;	//! Upper bit padding
+			bool lyc:1;		//! int on LY matching selection
+			bool mode_10:1;		//! int on mode 10 selection
+			bool mode_01:1;		//! int on mode 01 selection
+			bool mode_00:1;		//! int on mode 00 selection
+			bool lyc_state:1;	//! LYC matches LY
 
 			/*! Mode flag
 			 * Mode 00: enable CPU access to VRAM
@@ -148,17 +148,17 @@ struct lcdc_state_t
 
 	union
 	{
-		/*! CGB only (FIXME palette RAM) */
+		//! CGB only (FIXME palette RAM)
 		struct
 		{
 			cps bcps;
-			uint8_t bcpd;	/*! BG data write */
+			uint8_t bcpd;	//! BG data write
 
 			cps ocps;
-			uint8_t ocpd;	/*! OBJ data write */
+			uint8_t ocpd;	//! OBJ data write
 		};
 
-		/*! DMG only */
+		//! DMG only
 		struct
 		{
 			struct
@@ -193,19 +193,19 @@ struct lcdc_state_t
 		};
 	};
 
-	uint_fast8_t scroll_y;	/*! Y position in scrolling map */
-	uint_fast8_t scroll_x;	/*! X position in scrolling map */
+	uint_fast8_t scroll_y;	//! Y position in scrolling map
+	uint_fast8_t scroll_x;	//! X position in scrolling map
 
-	uint_fast8_t window_y;	/*! Window Y coordinate (0 <= windowy <= 143) */
-	uint_fast8_t window_x;	/*! Window X coordinate (7 <= windowx <= 166) */
+	uint_fast8_t window_y;	//! Window Y coordinate (0 <= windowy <= 143)
+	uint_fast8_t window_x;	//! Window X coordinate (7 <= windowx <= 166)
 
-	uint_fast8_t ly;	/*! Present line being transferred (144-153 = V-Blank) */
-	uint_fast8_t lyc;	/*! LY comparison (set stat.lyc_state when == ly) */
+	uint_fast8_t ly;	//! Present line being transferred (144-153 = V-Blank)
+	uint_fast8_t lyc;	//! LY comparison (set stat.lyc_state when == ly)
 
-	dmg_pal_t bg_pal;	/*! Background palette */
-	dmg_pal_t obj_pal[2];	/*! OAM palettes */
+	dmg_pal_t bg_pal;	//! Background palette
+	dmg_pal_t obj_pal[2];	//! OAM palettes
 
-	uint32_t out[144][160];	/*! Simulated LCD screen buffer */
+	uint32_t out[144][160];	//! Simulated LCD screen buffer
 };
 
 void init_lcdc(emu_state *restrict);

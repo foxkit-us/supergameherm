@@ -80,11 +80,11 @@ void register_handlers(void)
 	SetConsoleCtrlHandler(ctrl_event_handler, TRUE);
 }
 
-#else /* !HAVE_POSIX, !_WIN32 */
+#else // !HAVE_POSIX, !_WIN32
 
 void register_handlers(void)
 {
 	// TODO maybe some windows signal handling?
 }
 
-#endif /* HAVE_POSIX */
+#endif // HAVE_POSIX

@@ -6,13 +6,13 @@
 #include "memory.h"	// mem_write8
 
 
-/*! Zero Flag */
+//! Zero Flag
 #define FLAG_Z 0x80
-/*! Subtract Flag */
+//! Subtract Flag
 #define FLAG_N 0x40
-/*! Half-Carry Flag */
+//! Half-Carry Flag
 #define FLAG_H 0x20
-/*! Carry Flag */
+//! Carry Flag
 #define FLAG_C 0x10
 
 // Interrupt flags
@@ -35,12 +35,12 @@ typedef enum
 
 struct interrupt_state_t
 {
-	uint8_t enable_ctr;	/*! Enable counter */
-	bool enabled;		/*! Interrupts enabled */
-	uint8_t mask;		/*! Interrupt mask */
-	uint8_t pending;	/*! Pending interrupts */
+	uint8_t enable_ctr;	//! Enable counter
+	bool enabled;		//! Interrupts enabled
+	uint8_t mask;		//! Interrupt mask
+	uint8_t pending;	//! Pending interrupts
 
-	uint8_t irq;		/*! Current interrupts waiting */
+	uint8_t irq;		//! Current interrupts waiting
 };
 
 typedef enum
