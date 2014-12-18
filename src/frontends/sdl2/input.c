@@ -100,6 +100,10 @@ void sdl2_get_key(emu_state *state UNUSED, frontend_input_return *ret)
 		ret->key = 0;
 		do_exit = true;
 	}
+	else
+	{
+		ret->key = 0;
+	}
 }
 
 
