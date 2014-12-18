@@ -66,6 +66,49 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	}
 }
 
+static inline void dmg_oam_render(emu_state *restrict state)
+{
+	uint8_t curr_tile = 0;
+	uint8_t pixel_y_offset;
+	uint32_t *row = state->lcdc.out[state->lcdc.ly];
+	int tx;
+
+	if(!state->lcdc.lcd_control.params.obj)
+	{
+		return;
+	}
+
+	for(; curr_tile < 40; curr_tile++)
+	{
+		uint8_t *mem;
+		uint32_t pixel_temp;
+		oam obj = state->lcdc.oam_store[curr_tile];
+
+		pixel_y_offset = obj.y - state->lcdc.ly;
+
+		if(pixel_y_offset > 16)
+		{
+			/* out of display */
+			continue;
+		}
+
+		if(!obj.flags.priority)
+		{
+			/* TODO XXX not implemented yet */
+			continue;
+		}
+
+		mem = state->lcdc.vram[0x0] + (obj.chr * 16) + (pixel_y_offset * 2);
+		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
+
+		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
+		{
+			if(pixel_temp & 0x02 == 0) continue;	/* invisible. */
+			row[obj.x + tx] = dmg_palette[pixel_temp & 0x02];
+		}
+	}
+}
+
 void lcdc_tick(emu_state *restrict state)
 {
 	if(unlikely(state->stop) ||
@@ -106,6 +149,7 @@ void lcdc_tick(emu_state *restrict state)
 			case SYSTEM_SGB:
 			case SYSTEM_SGB2:
 				dmg_bg_render(state);
+				dmg_oam_render(state);
 				break;
 			case SYSTEM_CGB:
 			default:
@@ -225,6 +269,16 @@ inline uint8_t lcdc_ly_read(emu_state *restrict state, uint16_t reg UNUSED)
 inline uint8_t lcdc_lyc_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
 	return state->lcdc.lyc;
+}
+
+inline uint8_t lcdc_bgp_read(emu_state *restrict state, uint16_t reg UNUSED)
+{
+	return state->lcdc.bg_pal.reg;
+}
+
+inline uint8_t lcdc_objp_read(emu_state *restrict state, uint16_t reg)
+{
+	return state->lcdc.obj_pal[reg - 0xFF48].reg;
 }
 
 inline uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)
@@ -368,6 +422,16 @@ inline void lcdc_lyc_write(emu_state *restrict state, uint16_t reg UNUSED, uint8
 	state->lcdc.lyc = data;
 }
 
+inline void lcdc_bgp_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
+{
+	state->lcdc.bg_pal.reg = data;
+}
+
+inline void lcdc_objp_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	state->lcdc.obj_pal[reg - 0xFF48].reg = data;
+}
+
 inline void lcdc_window_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
 	if(reg == 0xFF4A)
@@ -440,6 +504,8 @@ void magical_mystery_cure(void)
 	lcdc_scroll_read(NULL, 0);
 	lcdc_ly_read(NULL, 0);
 	lcdc_lyc_read(NULL, 0);
+	lcdc_bgp_read(NULL, 0);
+	lcdc_objp_read(NULL, 0);
 	lcdc_window_read(NULL, 0);
 	bg_pal_ind_read(NULL, 0);
 	bg_pal_data_read(NULL, 0);
@@ -452,6 +518,8 @@ void magical_mystery_cure(void)
 	lcdc_scroll_write(NULL, 0, 0);
 	lcdc_ly_write(NULL, 0, 0);
 	lcdc_lyc_write(NULL, 0, 0);
+	lcdc_bgp_write(NULL, 0, 0);
+	lcdc_objp_write(NULL, 0, 0);
 	lcdc_window_write(NULL, 0, 0);
 	vram_write(NULL, 0, 0);
 }

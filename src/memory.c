@@ -88,7 +88,8 @@ static mem_read_fn hw_reg_read[0x80] =
 	no_hardware, /* 46 - DMA - DMA transfer and control */
 
 	/* 47..4B - more graphics stuff */
-	lcdc_read, lcdc_read, lcdc_read, lcdc_window_read, lcdc_window_read,
+	lcdc_bgp_read, lcdc_objp_read, lcdc_objp_read,
+	lcdc_window_read, lcdc_window_read,
 
 	/* 4C..4E - NO HARDWARE */
 	no_hardware, no_hardware, no_hardware,
@@ -247,9 +248,13 @@ static inline void dma_write(emu_state *restrict state, uint16_t location UNUSED
 	 * The above may not be true anymore, but I'm not sure I implemented
 	 * this correctly. --Elizabeth
 	 */
-	uint16_t start = data << 8;
+	uint16_t addr = data << 8;
+	uint8_t curr = 0;
 	assert(location == 0xFF46);
-	memmove(state->lcdc.oam_ram, state->memory + start, 160);
+	for (; curr < 160; curr++, addr++)
+	{
+		state->lcdc.oam_ram[curr] = mem_read8(state, addr);
+	}
 
 	state->dma_wait = 640;
 }
@@ -315,7 +320,8 @@ static mem_write8_fn hw_reg_write[0x80] =
 	dma_write, /* 46 - DMA */
 
 	/* 47..4B - more video */
-	lcdc_write, lcdc_write, lcdc_write, lcdc_window_write, lcdc_window_write,
+	lcdc_bgp_write, lcdc_objp_write, lcdc_objp_write,
+	lcdc_window_write, lcdc_window_write,
 
 	/* 4C..4E - NO HARDWARE */
 	doofus_write, doofus_write, doofus_write,
