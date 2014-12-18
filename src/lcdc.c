@@ -89,25 +89,23 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		pixel_y_offset = obj.y - state->lcdc.ly;
 
-		if(pixel_y_offset > 16)
+		if(pixel_y_offset > 15)
 		{
 			// out of display
 			continue;
 		}
 
-		if(!obj.flags.priority)
-		{
-			// TODO XXX not implemented yet
-			continue;
-		}
+		if(obj.flags.vflip) pixel_y_offset = abs(pixel_y_offset - 15);
 
 		mem = state->lcdc.vram[0x0] + (obj.chr * 16) + (pixel_y_offset * 2);
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
 		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
-			if((pixel_temp & 0x02) == 0) continue;	// invisible.
-			row[obj.x + tx] = dmg_palette[pixel_temp & 0x02];
+			int actual_x = (obj.flags.hflip) ? abs(tx - 8) : tx;
+			//if((pixel_temp & 0x02) == 0) continue; // invisible.
+			if(!obj.flags.priority && row[obj.x + actual_x] != dmg_palette[0]) continue; // hidden
+			row[obj.x + actual_x] = dmg_palette[pixel_temp & 0x02] + 100;
 		}
 	}
 }
