@@ -106,7 +106,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
-			if(pixel_temp & 0x02 == 0) continue;	/* invisible. */
+			if((pixel_temp & 0x02) == 0) continue;	/* invisible. */
 			row[obj.x + tx] = dmg_palette[pixel_temp & 0x02];
 		}
 	}
