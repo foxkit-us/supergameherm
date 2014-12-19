@@ -53,9 +53,14 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		next_tile += 1 << 5;
 	}
 
+	if(state->lcdc.ly + state->lcdc.scroll_y > 255)
+	{
+		next_tile -= 256 << 5;
+	}
+
 	x -= (pixel_x_offset ^ 8);
 
-	for (; curr_tile < 21; curr_tile++, next_tile++, x += 8)
+	for (; curr_tile < 36, x < 159; curr_tile++, next_tile++, x += 8)
 	{
 		uint8_t tile = state->lcdc.vram[0x0][next_tile];
 		uint32_t pixel_temp;
@@ -72,7 +77,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 		for(tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
-			if((x + tx) > 143) continue;	// off screen
+			if((x + tx) > 159) continue;	// off screen
 			if((x + tx) < 0) continue;	// off screen
 			state->lcdc.out[state->lcdc.ly][x + tx] = dmg_palette[pixel_temp & 0x02];
 		}
@@ -84,6 +89,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	uint8_t curr_tile = 0;
 	uint8_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
+	uint8_t y_len = (state->lcdc.lcd_control.params.obj_block_size) ? 16 : 8;
 	int tx;
 
 	if(!state->lcdc.lcd_control.params.obj)
@@ -99,15 +105,15 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		pixel_y_offset = obj.y - state->lcdc.ly;
 
-		if(pixel_y_offset > 15)
+		if(pixel_y_offset > (y_len - 1))
 		{
 			// out of display
 			continue;
 		}
 
-		if(obj.flags.vflip) pixel_y_offset = 15 - pixel_y_offset;
+		if(!obj.flags.vflip) pixel_y_offset = y_len - 1 - pixel_y_offset;
 
-		mem = state->lcdc.vram[0x0] + (obj.chr * 16) + (pixel_y_offset * 2);
+		mem = state->lcdc.vram[0x0] + (obj.chr * (y_len * 2)) + (pixel_y_offset * 2);
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
 		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
@@ -116,7 +122,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 			if((pixel_temp & 0x02) == 0) continue; // invisible.
 
-			actual_x = (obj.flags.hflip) ? 8 - tx : tx;
+			actual_x = (!obj.flags.hflip) ? 8 - tx : tx;
 			actual_x += obj.x;
 			if(actual_x > 144) actual_x -= 144;
 
