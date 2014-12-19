@@ -35,29 +35,32 @@ void init_lcdc(emu_state *restrict state)
 static inline void dmg_bg_render(emu_state *restrict state)
 {
 	uint16_t next_tile = 0x1800;
-	uint8_t x = 0, curr_tile = 0;
+	int16_t x = 0, curr_tile = 0;
+	uint8_t pixel_y_offset = ((state->lcdc.scroll_y % 8) + (state->lcdc.ly % 8)) % 8;
+	uint8_t pixel_x_offset = (state->lcdc.scroll_x % 8);
 	uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
-	uint8_t pixel_y_offset = (state->lcdc.ly + state->lcdc.scroll_y) % 8;
-	int tx = 8;
 
 	if (state->lcdc.lcd_control.params.bg_code_sel)
 	{
 		next_tile += 0x400;
 	}
-	next_tile += ((state->lcdc.ly >> 3) + (state->lcdc.scroll_y >> 3)) << 5;
-	if(pixel_y_offset > 7)
-	{
-		pixel_y_offset -= 8;
-	}
-	tx -= state->lcdc.scroll_x % 8;
-	next_tile += (state->lcdc.scroll_x >> 3);
 	
+	next_tile += ((state->lcdc.ly >> 3) + (state->lcdc.scroll_y >> 3)) << 5;
+	next_tile += (state->lcdc.scroll_x >> 3);
+
+	if(pixel_y_offset < (state->lcdc.scroll_y % 8))
+	{
+		next_tile += 1 << 5;
+	}
+
+	x -= (pixel_x_offset ^ 8);
+
 	for (; curr_tile < 21; curr_tile++, next_tile++, x += 8)
 	{
 		uint8_t tile = state->lcdc.vram[0x0][next_tile];
 		uint32_t pixel_temp;
+		uint8_t tx;
 		uint8_t *mem;
-		uint8_t diff = 8 - tx;
 
 		if (!state->lcdc.lcd_control.params.bg_char_sel)
 		{
@@ -67,15 +70,12 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		mem = state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2);
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
-		x -= diff;
-		
-		for(tx = 8; tx > diff; tx--, pixel_temp >>= 2)
+		for(tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
 			if((x + tx) > 143) continue;	// off screen
 			if((x + tx) < 0) continue;	// off screen
 			state->lcdc.out[state->lcdc.ly][x + tx] = dmg_palette[pixel_temp & 0x02];
 		}
-		tx = 8;
 	}
 }
 
