@@ -98,7 +98,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			continue;
 		}
 
-		if(obj.flags.vflip) pixel_y_offset = abs(15 - pixel_y_offset);
+		if(obj.flags.vflip) pixel_y_offset = 15 - pixel_y_offset;
 
 		mem = state->lcdc.vram[0x0] + (obj.chr * 16) + (pixel_y_offset * 2);
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
@@ -109,7 +109,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 			if((pixel_temp & 0x02) == 0) continue; // invisible.
 
-			actual_x = (obj.flags.hflip) ? abs(8 - tx) : tx;
+			actual_x = (obj.flags.hflip) ? 8 - tx : tx;
 			actual_x += obj.x;
 			if(actual_x > 144) actual_x -= 144;
 
