@@ -65,18 +65,18 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	next_tile += (state->lcdc.scroll_x >> 3);
 
 	/* if the current Y offset is less than the value added by SCY, we need to read
-	 * the next tile than we think we do, because it means we've already passed the
+	 * the next line than we think we do, because it means we've already passed the
 	 * Y=7 boundary of the last tile. */
 	if(pixel_y_offset < (state->lcdc.scroll_y % 8))
 	{
-		next_tile += 1 << 5;
+		next_tile += 32;
 	}
 
 	/* if LY + SCY > 255, we need to wrap back around to the beginning of the tile
 	 * map so that we start reading like LY = 0 again */
 	if(state->lcdc.ly + state->lcdc.scroll_y > 255)
 	{
-		next_tile -= 256 << 5;
+		next_tile -= 8192;
 	}
 
 	/* if SCX is not on a tile boundary, we need to back the initial X up to where
@@ -116,8 +116,8 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 		for(tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
-			if((x + tx) > 159) continue;	// off screen
-			if((x + tx) < 0) continue;	// off screen
+			if ((x + tx) > 159) continue;	// off screen
+			if ((x + tx) < 0) continue;	// off screen
 			state->lcdc.out[state->lcdc.ly][x + tx] = dmg_palette[pixel_temp & 0x02];
 		}
 	}
