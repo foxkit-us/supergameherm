@@ -22,7 +22,7 @@
 #define LEN 144
 #define WID 160
 #define BPP 32
-#define PITCH 4
+#define PITCH sizeof(uint32_t) * WID
 
 #define RED	0x000000ff
 #define GREEN	0x0000ff00
@@ -46,7 +46,7 @@ bool sdl2_init_video(emu_state *state)
 
 	if(SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
 	{
-		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend during video init: %s", SDL_GetError());
 		return false;
 	}
 
@@ -55,10 +55,10 @@ bool sdl2_init_video(emu_state *state)
 
 	video->window = SDL_CreateWindow("SuperGameHerm",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			320, 288, SDL_WINDOW_RESIZABLE|SDL_WINDOW_SHOWN);
+			WID*2, LEN*2, SDL_WINDOW_RESIZABLE|SDL_WINDOW_SHOWN);
 	if(!(video->window))
 	{
-		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend during window creation: %s", SDL_GetError());
 		free(video);
 		return false;
 	}
@@ -66,7 +66,7 @@ bool sdl2_init_video(emu_state *state)
 	video->render = SDL_CreateRenderer(video->window, -1, 0);
 	if(!(video->render))
 	{
-		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend during render creation: %s", SDL_GetError());
 		SDL_DestroyWindow(video->window);
 		free(video);
 		return false;
@@ -81,7 +81,7 @@ bool sdl2_init_video(emu_state *state)
 			WID, LEN);
 	if(!(video->texture))
 	{
-		error(state, "Failed to initalise video frontend: %s", SDL_GetError());
+		error(state, "Failed to initalise video frontend during texture creation: %s", SDL_GetError());
 		SDL_DestroyRenderer(video->render);
 		SDL_DestroyWindow(video->window);
 		free(video);
@@ -116,7 +116,7 @@ void sdl2_blit_canvas(emu_state *state)
 	sdl2_video_data *video = state->front.video.data;
 
 	SDL_UpdateTexture(video->texture, NULL, state->lcdc.out,
-			WID * sizeof(uint32_t));
+			PITCH);
 
 	SDL_RenderCopy(video->render, video->texture, NULL, NULL);
 	SDL_RenderPresent(video->render);
