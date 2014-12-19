@@ -98,21 +98,24 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			continue;
 		}
 
-		if(obj.flags.vflip) pixel_y_offset = abs(pixel_y_offset - 15);
+		if(obj.flags.vflip) pixel_y_offset = abs(15 - pixel_y_offset);
 
 		mem = state->lcdc.vram[0x0] + (obj.chr * 16) + (pixel_y_offset * 2);
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
 		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
 		{
-			int actual_x = (obj.flags.hflip) ? abs(tx - 8) : tx;
-
-			assert(obj.x + actual_x < 144);
-			assert(obj.x + actual_x > 0);
+			uint8_t actual_x;
 
 			if((pixel_temp & 0x02) == 0) continue; // invisible.
-			if(!obj.flags.priority && row[obj.x + actual_x] != dmg_palette[0]) continue; // hidden
-			row[obj.x + actual_x] = dmg_palette[pixel_temp & 0x02] + 100;
+
+			actual_x = (obj.flags.hflip) ? abs(8 - tx) : tx;
+			actual_x += obj.x;
+			if(actual_x > 144) actual_x -= 144;
+
+			if(!obj.flags.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
+
+			row[actual_x] = dmg_palette[pixel_temp & 0x02] + 100;
 		}
 	}
 }
