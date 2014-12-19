@@ -34,45 +34,84 @@ void init_lcdc(emu_state *restrict state)
 
 static inline void dmg_bg_render(emu_state *restrict state)
 {
+	/* the tile map begins at 0x1800 into VRAM if the background code selection
+	 * bit is 0, or 0x1C00 if the bit is 1. */
 	uint16_t next_tile = 0x1800;
-	int16_t x = 0, curr_tile = 0;
+	/* initially set x to 0.  it may be set differently later on, depending on
+	 * the value of scroll_x. */
+	int16_t x = 0;
+	/* the Y offset of the tiles we are drawing.  determine this as follows:
+	 * scroll_y % 8 is the offset added by the SCY register.
+	 * ly % 8 is the offset added by the current Y position on the screen. 
+	 * we % 8 this value because we compensate for values greater than 8 later. */
 	uint8_t pixel_y_offset = ((state->lcdc.scroll_y % 8) + (state->lcdc.ly % 8)) % 8;
+	/* the X offset of the first tile caused by the value of the SCX register.
+	 * this is used to set the initial value of X later. */
 	uint8_t pixel_x_offset = (state->lcdc.scroll_x % 8);
+	/* the location in VRAM where tile data begins, based on the current setting of
+	 * the LCDC register (FF40). */
 	uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
 
+	/* if this bit of the LCDC register, we need to look for the tile map at a later
+	 * point in VRAM. */
 	if (state->lcdc.lcd_control.params.bg_code_sel)
 	{
 		next_tile += 0x400;
 	}
 	
+	/* determine the offet in the tile map that we need to read from using the values
+	 * of the LY, SCY, and SCX registers. */
 	next_tile += ((state->lcdc.ly >> 3) + (state->lcdc.scroll_y >> 3)) << 5;
 	next_tile += (state->lcdc.scroll_x >> 3);
 
+	/* if the current Y offset is less than the value added by SCY, we need to read
+	 * the next tile than we think we do, because it means we've already passed the
+	 * Y=7 boundary of the last tile. */
 	if(pixel_y_offset < (state->lcdc.scroll_y % 8))
 	{
 		next_tile += 1 << 5;
 	}
 
+	/* if LY + SCY > 255, we need to wrap back around to the beginning of the tile
+	 * map so that we start reading like LY = 0 again */
 	if(state->lcdc.ly + state->lcdc.scroll_y > 255)
 	{
 		next_tile -= 256 << 5;
 	}
 
+	/* if SCX is not on a tile boundary, we need to back the initial X up to where
+	 * the first pixel of the first tile would be if it was visible. */
 	x -= (pixel_x_offset ^ 8);
 
-	for (; curr_tile < 36, x < 159; curr_tile++, next_tile++, x += 8)
+	/* loop over tiles */
+	for (; x < 159; next_tile++, x += 8)
 	{
+		/* get the current tile from the map. */
 		uint8_t tile = state->lcdc.vram[0x0][next_tile];
+		/* holds the raw data of the pixels that we get from the VRAM that we
+		 * then blit to out. */
 		uint32_t pixel_temp;
+		/* the current X position of the tile.  set to 8 initially because 
+		 * interleaving makes the bits come out backwards or some crap idk */
 		uint8_t tx;
+		/* the pointer to VRAM where the data for this tile lives, calculated
+		 * below */
 		uint8_t *mem;
 
+		/* if this bit of the LCDC register is set, the tile math needs to be
+		 * signed.  fake it using this hack (it works okay) */
 		if (!state->lcdc.lcd_control.params.bg_char_sel)
 		{
 			tile -= 0x80;
 		}
 
+		/* calculate the offset in VRAM of the tile.  take the start value calculated
+		 * earlier, then add the position of the current tile (every tile is 16 bytes
+		 * in size - 2 bytes per Y, 8 Y per tile), then add the Y offset (2 bytes per
+		 * Y again) */
 		mem = state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2);
+		/* the DMG uses planar pixels and we don't, so we interleave the values we
+		 * retrieve so that we can use them. */
 		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
 
 		for(tx = 8; tx > 0; tx--, pixel_temp >>= 2)
