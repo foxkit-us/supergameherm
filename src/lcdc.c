@@ -51,7 +51,14 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	for(x = 0; x < 159; x++, sx++)
 	{
 		const uint8_t tile_index = (sy / 8) * 16 + (sx / 8);
-		const int16_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+		uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+
+		if(!state->lcdc.lcd_control.params.bg_char_sel)
+		{
+			tile -= 0x80;
+		}
+
+		// Position in memory
 		uint8_t *mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + (pixel_y_offset * 2);
 		uint8_t pixel_temp = interleave8(0, *mem, 0, *(mem+1)) >> ((x % 8) * 2);
 
