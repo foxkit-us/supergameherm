@@ -27,35 +27,22 @@ typedef enum
 // 8-bit address space
 #define MEM_SIZE	0x10000
 
+// Define a pair of 8-bit regs with appropriate endianness
+#ifdef LITTLE_ENDIAN
+#	define SUBREG(r1, r2) struct { uint8_t r2, r1; }
+#else
+#	define SUBREG(r1, r2) struct { uint8_t r1, r2; }
+#endif
+
+// Define a 16-bit register and its two 8-bit regs.
+#define REGDEF(r1, r2) union { uint16_t r1##r2; SUBREG(r1, r2); }
+
 struct registers_t
 {
-	//! The 8/16 bit registers
-	union
-	{
-		//! 16-bit registers
-		struct __16
-		{
-			uint16_t af;
-			uint16_t bc;
-			uint16_t de;
-			uint16_t hl;
-		} _16;
-		//! 8-bit registers shadowing the 16-bit
-		struct __8
-		{
-#ifdef BIG_ENDIAN
-			uint8_t a, f;
-			uint8_t b, c;
-			uint8_t d, e;
-			uint8_t h, l;
-#else
-			uint8_t f, a;
-			uint8_t c, b;
-			uint8_t e, d;
-			uint8_t l, h;
-#endif
-		} _8;
-	} gp;
+	REGDEF(a, f);
+	REGDEF(b, c);
+	REGDEF(d, e);
+	REGDEF(h, l);
 
 	uint16_t pc;		//! Program counter
 	uint16_t sp;		//! Stack pointer
@@ -103,24 +90,21 @@ struct emu_state_t
 
 
 // Register accesses
-#define REG_16(state, reg) ((state)->registers.gp._16.reg)
-#define REG_8(state, reg) ((state)->registers.gp._8.reg)
-
-#define REG_AF(state) REG_16(state, af)
-#define REG_BC(state) REG_16(state, bc)
-#define REG_DE(state) REG_16(state, de)
-#define REG_HL(state) REG_16(state, hl)
+#define REG_AF(state) ((state)->registers.af)
+#define REG_BC(state) ((state)->registers.bc)
+#define REG_DE(state) ((state)->registers.de)
+#define REG_HL(state) ((state)->registers.hl)
 #define REG_PC(state) ((state)->registers.pc)
 #define REG_SP(state) ((state)->registers.sp)
 
-#define REG_A(state) REG_8(state, a)
-#define REG_F(state) REG_8(state, f)
-#define REG_B(state) REG_8(state, b)
-#define REG_C(state) REG_8(state, c)
-#define REG_D(state) REG_8(state, d)
-#define REG_E(state) REG_8(state, e)
-#define REG_H(state) REG_8(state, h)
-#define REG_L(state) REG_8(state, l)
+#define REG_A(state) ((state)->registers.a)
+#define REG_F(state) ((state)->registers.f)
+#define REG_B(state) ((state)->registers.b)
+#define REG_C(state) ((state)->registers.c)
+#define REG_D(state) ((state)->registers.d)
+#define REG_E(state) ((state)->registers.e)
+#define REG_H(state) ((state)->registers.h)
+#define REG_L(state) ((state)->registers.l)
 
 #define FLAG_SET(state, flag) (REG_F(state) |= (flag))
 #define FLAG_UNSET(state, flag) (REG_F(state) &= ~(flag))
