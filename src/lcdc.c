@@ -381,8 +381,8 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	{
 		// Game freak write shitty code and write to VRAM anyway.
 		// Pokémon RGB break if we fatal here.
+		// Pass it through anyway otherwise things look "wrong"
 		warning(state, "write to VRAM while not in h/v-blank");
-		return;
 	}
 
 	state->lcdc.vram[bank][reg - 0x8000] = data;
