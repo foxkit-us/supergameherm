@@ -106,11 +106,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 			actual_x = (!obj.flags.hflip) ? 8 - tx : tx;
 			actual_x += obj.x;
-			if(actual_x > 144) actual_x -= 144;
+			if(actual_x > 160) actual_x -= 160;
 
 			if(!obj.flags.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
 
-			row[actual_x] = dmg_palette[pixel_temp & 0x02] + 100;
+			row[actual_x] = dmg_palette[pixel_temp & 0x03] + 100;
 		}
 	}
 }
