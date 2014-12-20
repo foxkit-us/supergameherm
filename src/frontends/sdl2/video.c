@@ -55,7 +55,7 @@ bool sdl2_init_video(emu_state *state)
 
 	video->window = SDL_CreateWindow("SuperGameHerm",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			WID*2, LEN*2, SDL_WINDOW_RESIZABLE|SDL_WINDOW_SHOWN);
+			WID*2, LEN*2, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if(!(video->window))
 	{
 		error(state, "Failed to initalise video frontend during window creation: %s", SDL_GetError());
