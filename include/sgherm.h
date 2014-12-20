@@ -39,10 +39,10 @@ typedef enum
 
 struct registers_t
 {
-	REGDEF(a, f);
-	REGDEF(b, c);
-	REGDEF(d, e);
-	REGDEF(h, l);
+	REGDEF(a, f);		//! AF (A and Flags)
+	REGDEF(b, c);		//! BC (B and C) registers
+	REGDEF(d, e);		//! DE (D and E) registers
+	REGDEF(h, l);		//! HL (H and L) registers
 
 	uint16_t pc;		//! Program counter
 	uint16_t sp;		//! Stack pointer
