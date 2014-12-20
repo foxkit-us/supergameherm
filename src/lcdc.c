@@ -18,7 +18,7 @@
 #define LCDC_WINTILE_MAP_HI	0x40
 #define LCDC_ENABLE		0x80
 
-uint32_t dmg_palette[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
+uint32_t dmg_palette[4] = { 0x00FFFFFF, 0x00AAAAAA, 0x00777777, 0x00000000 };
 
 void init_lcdc(emu_state *restrict state)
 {
@@ -48,9 +48,9 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		tile_map_start += 0x400;
 	}
 
-	for(x = 0; x < 159; x++, sx++)
+	for(x = 0; x < 160; x++, sx++)
 	{
-		const uint8_t tile_index = (sy / 8) * 16 + (sx / 8);
+		const uint16_t tile_index = (sy / 8) * 32 + (sx / 8);
 		uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
 
 		if(!state->lcdc.lcd_control.params.bg_char_sel)
@@ -60,7 +60,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 		// Position in memory
 		uint8_t *mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + (pixel_y_offset * 2);
-		uint8_t pixel_temp = interleave8(0, *mem, 0, *(mem+1)) >> ((x % 8) * 2);
+		uint8_t pixel_temp = interleave8(0, *mem, 0, *(mem+1)) >> (14 - ((x % 8) * 2));
 
 		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel_temp & 0x3];
 	}
