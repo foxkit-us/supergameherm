@@ -41,7 +41,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 	// Pixel offsets
 	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
-	uint8_t pixel_y_offset = (sy % 8) * 2;
+	uint8_t pixel_y_offset = (sy & 7) * 2;
 
 	uint16_t pixel_temp = 0;
 
@@ -52,7 +52,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 	for(x = 0; x < 160; x++, sx++)
 	{
-		if(x == 0 || (sx & 7) == 0)
+		if(!((sx & 7) && x))
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
