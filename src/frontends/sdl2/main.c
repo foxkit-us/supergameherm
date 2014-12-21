@@ -4,12 +4,13 @@
 #include "print.h"	// to_stdout, to_stderr
 #include "signals.h"	// register_handlers
 
+#include <SDL.h>	// main
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
 
-int SDL_main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	emu_state *state;
 	int val;
