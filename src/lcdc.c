@@ -35,13 +35,15 @@ void init_lcdc(emu_state *restrict state)
 static inline void dmg_bg_render(emu_state *restrict state)
 {
 	// Compute positions in the "virtual" map of tiles
-	const uint8_t sy = state->lcdc.ly + state->lcdc.scroll_y;
+	const uint8_t sy = state->lcdc.ly + state->lcdc.scroll_y, s_sy = sy / 8;
 	uint8_t x, sx = state->lcdc.scroll_x;
-	uint16_t tile_map_start = 0x1800;
+	uint16_t tile_map_start = 0x1800; // Initial offset
 
 	// Pixel offsets
 	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
-	uint8_t pixel_y_offset = sy % 8;
+	uint8_t pixel_y_offset = (sy % 8) * 2;
+
+	uint16_t pixel_temp = 0;
 
 	if(state->lcdc.lcd_control.bg_code_sel)
 	{
@@ -50,19 +52,33 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 	for(x = 0; x < 160; x++, sx++)
 	{
-		const uint16_t tile_index = (sy / 8) * 32 + (sx / 8);
-		uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
-
-		if(!state->lcdc.lcd_control.bg_char_sel)
+		if(x == 0 || (sx & 7) == 0)
 		{
-			tile -= 0x80;
+			const uint16_t tile_index = s_sy * 32 + (sx / 8);
+			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+
+			if(!state->lcdc.lcd_control.bg_char_sel)
+			{
+				tile -= 0x80;
+			}
+
+			// Position in memory
+			uint8_t *mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + pixel_y_offset;
+
+			// Interleave bits and reverse
+			uint16_t s = 15, t;
+			t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
+
+			for(t >>= 1; t; t >>= 1, s--)
+			{
+				pixel_temp <<= 1;
+				pixel_temp |= t & 1;
+			}
+			pixel_temp <<= s;
 		}
 
-		// Position in memory
-		uint8_t *mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + (pixel_y_offset * 2);
-		uint32_t pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) >> (14 - ((sx % 8) * 2));
-
 		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel_temp & 0x3];
+		pixel_temp >>= 2;
 	}
 }
 
