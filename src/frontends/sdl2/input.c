@@ -1,21 +1,8 @@
-#include "sgherm.h"	// emu_state,
+#include "sgherm.h"	// emu_state
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
 #include "frontend.h"	// frontend
-
-// SDL 2 whines. *sigh*
-#ifdef HAVE_STDINT_H
-#	undef HAVE_STDINT_H
-#endif
-#ifdef HAVE_CLOCK_GETTIME
-#	undef HAVE_CLOCK_GETTIME
-#endif
-#ifdef HAVE_NANOSLEEP
-#	undef HAVE_NANOSLEEP
-#endif
-
-#include <SDL.h>	// SDL
-#include <stdbool.h>	// bool
+#include "frontends/sdl2/sdl_inc.h"	// SDL
 
 
 bool sdl2_init_input(emu_state *state UNUSED)

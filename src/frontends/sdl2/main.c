@@ -1,8 +1,7 @@
-#include "config.h"	// bool
-
 #include "sgherm.h"	// *_emulator
 #include "print.h"	// to_stdout, to_stderr
 #include "signals.h"	// register_handlers
+#include "frontends/sdl2/sdl_inc.h"	// SDL
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit

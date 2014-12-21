@@ -2,23 +2,12 @@
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
 #include "frontend.h"	// frontend
+#include "frontends/sdl2/sdl_inc.h"	// SDL
 
-// SDL 2 whines. *sigh*
-#ifdef HAVE_STDINT_H
-#	undef HAVE_STDINT_H
-#endif
-#ifdef HAVE_CLOCK_GETTIME
-#	undef HAVE_CLOCK_GETTIME
-#endif
-#ifdef HAVE_NANOSLEEP
-#	undef HAVE_NANOSLEEP
-#endif
-
-#include <SDL.h>	// SDL
-#include <stdbool.h>	// bool
 #include <stdlib.h>	// calloc
 
 
+// Magic numbers
 #define LEN 144
 #define WID 160
 #define BPP 32
