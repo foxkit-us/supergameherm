@@ -18,15 +18,15 @@
 #define LCDC_WINTILE_MAP_HI	0x40
 #define LCDC_ENABLE		0x80
 
-uint32_t dmg_palette[4] = { 0x009CBD0F, 0x008CAD0F, 0x00306230, 0x000F380F };
+uint32_t dmg_palette[4] = { 0x00FFFFFF, 0x00AAAAAA, 0x00777777, 0x00000000 };
 
 void init_lcdc(emu_state *restrict state)
 {
-	state->lcdc.lcd_control.params.enable = true;
-	state->lcdc.lcd_control.params.bg_char_sel = true;
-	state->lcdc.lcd_control.params.dmg_bg = true;
+	state->lcdc.lcd_control.enable = true;
+	state->lcdc.lcd_control.bg_char_sel = true;
+	state->lcdc.lcd_control.dmg_bg = true;
 
-	state->lcdc.stat.params.mode_flag = 2;
+	state->lcdc.stat.mode_flag = 2;
 
 	state->lcdc.ly = 0;
 	state->lcdc.lyc = 0;
@@ -34,92 +34,51 @@ void init_lcdc(emu_state *restrict state)
 
 static inline void dmg_bg_render(emu_state *restrict state)
 {
-	/* the tile map begins at 0x1800 into VRAM if the background code selection
-	 * bit is 0, or 0x1C00 if the bit is 1. */
-	uint16_t next_tile = 0x1800;
-	/* initially set x to 0.  it may be set differently later on, depending on
-	 * the value of scroll_x. */
-	int16_t x = 0;
-	/* the Y offset of the tiles we are drawing.  determine this as follows:
-	 * scroll_y % 8 is the offset added by the SCY register.
-	 * ly % 8 is the offset added by the current Y position on the screen. 
-	 * we % 8 this value because we compensate for values greater than 8 later. */
-	uint8_t pixel_y_offset = ((state->lcdc.scroll_y % 8) + (state->lcdc.ly % 8)) % 8;
-	/* the X offset of the first tile caused by the value of the SCX register.
-	 * this is used to set the initial value of X later. */
-	uint8_t pixel_x_offset = (state->lcdc.scroll_x % 8);
-	/* the location in VRAM where tile data begins, based on the current setting of
-	 * the LCDC register (FF40). */
-	uint16_t start = (state->lcdc.lcd_control.params.bg_char_sel) ? 0x0 : 0x800;
+	// Compute positions in the "virtual" map of tiles
+	const uint8_t sy = state->lcdc.ly + state->lcdc.scroll_y, s_sy = sy / 8;
+	uint8_t x, sx = state->lcdc.scroll_x;
+	uint16_t tile_map_start = 0x1800; // Initial offset
 
-	/* if this bit of the LCDC register, we need to look for the tile map at a later
-	 * point in VRAM. */
-	if (state->lcdc.lcd_control.params.bg_code_sel)
-	{
-		next_tile += 0x400;
-	}
-	
-	/* determine the offet in the tile map that we need to read from using the values
-	 * of the LY, SCY, and SCX registers. */
-	next_tile += ((state->lcdc.ly >> 3) + (state->lcdc.scroll_y >> 3)) << 5;
-	next_tile += (state->lcdc.scroll_x >> 3);
+	// Pixel offsets
+	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
+	uint8_t pixel_y_offset = (sy & 7) * 2;
 
-	/* if the current Y offset is less than the value added by SCY, we need to read
-	 * the next line than we think we do, because it means we've already passed the
-	 * Y=7 boundary of the last tile. */
-	if(pixel_y_offset < (state->lcdc.scroll_y % 8))
+	uint16_t pixel_temp = 0;
+
+	if(state->lcdc.lcd_control.bg_code_sel)
 	{
-		next_tile += 32;
+		tile_map_start += 0x400;
 	}
 
-	/* if LY + SCY > 255, we need to wrap back around to the beginning of the tile
-	 * map so that we start reading like LY = 0 again */
-	if(state->lcdc.ly + state->lcdc.scroll_y > 255)
+	for(x = 0; x < 160; x++, sx++)
 	{
-		next_tile -= 8192;
-	}
-
-	/* if SCX is not on a tile boundary, we need to back the initial X up to where
-	 * the first pixel of the first tile would be if it was visible. */
-	x -= (pixel_x_offset ^ 8);
-
-	/* loop over tiles */
-	for (; x < 159; next_tile++, x += 8)
-	{
-		/* get the current tile from the map. */
-		uint8_t tile = state->lcdc.vram[0x0][next_tile];
-		/* holds the raw data of the pixels that we get from the VRAM that we
-		 * then blit to out. */
-		uint32_t pixel_temp;
-		/* the current X position of the tile.  set to 8 initially because 
-		 * interleaving makes the bits come out backwards or some crap idk */
-		uint8_t tx;
-		/* the pointer to VRAM where the data for this tile lives, calculated
-		 * below */
-		uint8_t *mem;
-
-		/* if this bit of the LCDC register is set, the tile math needs to be
-		 * signed.  fake it using this hack (it works okay) */
-		if (!state->lcdc.lcd_control.params.bg_char_sel)
+		if(!((sx & 7) && x))
 		{
-			tile -= 0x80;
+			const uint16_t tile_index = s_sy * 32 + (sx / 8);
+			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+
+			if(!state->lcdc.lcd_control.bg_char_sel)
+			{
+				tile -= 0x80;
+			}
+
+			// Position in memory
+			uint8_t *mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + pixel_y_offset;
+
+			// Interleave bits and reverse
+			uint16_t s = 15, t;
+			t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
+
+			for(t >>= 1; t; t >>= 1, s--)
+			{
+				pixel_temp <<= 1;
+				pixel_temp |= t & 1;
+			}
+			pixel_temp <<= s;
 		}
 
-		/* calculate the offset in VRAM of the tile.  take the start value calculated
-		 * earlier, then add the position of the current tile (every tile is 16 bytes
-		 * in size - 2 bytes per Y, 8 Y per tile), then add the Y offset (2 bytes per
-		 * Y again) */
-		mem = state->lcdc.vram[0x0] + start + (tile * 16) + (pixel_y_offset * 2);
-		/* the DMG uses planar pixels and we don't, so we interleave the values we
-		 * retrieve so that we can use them. */
-		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
-
-		for(tx = 8; tx > 0; tx--, pixel_temp >>= 2)
-		{
-			if ((x + tx) > 159) continue;	// off screen
-			if ((x + tx) < 0) continue;	// off screen
-			state->lcdc.out[state->lcdc.ly][x + tx] = dmg_palette[pixel_temp & 0x02];
-		}
+		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel_temp & 0x3];
+		pixel_temp >>= 2;
 	}
 }
 
@@ -128,10 +87,10 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	uint8_t curr_tile = 0;
 	uint8_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
-	uint8_t y_len = (state->lcdc.lcd_control.params.obj_block_size) ? 16 : 8;
+	uint8_t y_len = (state->lcdc.lcd_control.obj_block_size) ? 16 : 8;
 	int tx;
 
-	if(!state->lcdc.lcd_control.params.obj)
+	if(!state->lcdc.lcd_control.obj)
 	{
 		return;
 	}
@@ -163,11 +122,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 			actual_x = (!obj.flags.hflip) ? 8 - tx : tx;
 			actual_x += obj.x;
-			if(actual_x > 144) actual_x -= 144;
+			if(actual_x > 160) actual_x -= 160;
 
 			if(!obj.flags.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
 
-			row[actual_x] = dmg_palette[pixel_temp & 0x02] + 100;
+			row[actual_x] = dmg_palette[pixel_temp & 0x03] + 100;
 		}
 	}
 }
@@ -175,21 +134,21 @@ static inline void dmg_oam_render(emu_state *restrict state)
 void lcdc_tick(emu_state *restrict state)
 {
 	if(unlikely(state->stop) ||
-	   unlikely(!state->lcdc.lcd_control.params.enable))
+	   unlikely(!state->lcdc.lcd_control.enable))
 	{
 		return;
 	}
 
 	state->lcdc.curr_clk++;
 
-	switch(state->lcdc.stat.params.mode_flag)
+	switch(state->lcdc.stat.mode_flag)
 	{
 	case 2:
 		// first mode - reading OAM for h scan line
 		if(state->lcdc.curr_clk >= 80)
 		{
 			state->lcdc.curr_clk = 0;
-			state->lcdc.stat.params.mode_flag = 3;
+			state->lcdc.stat.mode_flag = 3;
 		}
 		break;
 	case 3:
@@ -197,7 +156,7 @@ void lcdc_tick(emu_state *restrict state)
 		if(state->lcdc.curr_clk >= 172)
 		{
 			state->lcdc.curr_clk = 0;
-			state->lcdc.stat.params.mode_flag = 0;
+			state->lcdc.stat.mode_flag = 0;
 		}
 		break;
 	case 0:
@@ -224,12 +183,12 @@ void lcdc_tick(emu_state *restrict state)
 			if((++state->lcdc.ly) == 144)
 			{
 				// going to v-blank
-				state->lcdc.stat.params.mode_flag = 1;
+				state->lcdc.stat.mode_flag = 1;
 			}
 			else
 			{
 				// start another scan line
-				state->lcdc.stat.params.mode_flag = 2;
+				state->lcdc.stat.mode_flag = 2;
 			}
 		}
 		break;
@@ -254,7 +213,7 @@ void lcdc_tick(emu_state *restrict state)
 		{
 			state->lcdc.curr_clk = 0;
 			state->lcdc.ly = 0;
-			state->lcdc.stat.params.mode_flag = 2;
+			state->lcdc.stat.mode_flag = 2;
 		}
 
 		break;
@@ -264,15 +223,15 @@ void lcdc_tick(emu_state *restrict state)
 
 	if(state->lcdc.ly == state->lcdc.lyc)
 	{
-		state->lcdc.stat.params.lyc_state = true;
-		if(state->lcdc.stat.params.lyc)
+		state->lcdc.stat.lyc_state = true;
+		if(state->lcdc.stat.lyc)
 		{
 			signal_interrupt(state, INT_LCD_STAT);
 		}
 	}
 	else
 	{
-		state->lcdc.stat.params.lyc_state = false;
+		state->lcdc.stat.lyc_state = false;
 	}
 }
 
@@ -284,7 +243,7 @@ inline uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 {
-	uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
+	uint8_t curr_mode = state->lcdc.stat.mode_flag;
 	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
@@ -410,17 +369,17 @@ void dump_lcdc_state(emu_state *restrict state)
 	debug(state, "---LCDC---");
 	debug(state, "CTRL: %02X (%s %s %s %s %s %s %s %s)",
 	      state->lcdc.lcd_control.reg,
-	      (state->lcdc.lcd_control.params.dmg_bg) ? "BG" : "bg",
-	      (state->lcdc.lcd_control.params.obj) ? "OBJ" : "obj",
-	      (state->lcdc.lcd_control.params.obj_block_size) ? "8x16" : "8x8",
-	      (state->lcdc.lcd_control.params.bg_code_sel) ? "9C" : "98",
-	      (state->lcdc.lcd_control.params.bg_char_sel) ? "sign" : "SIGN",
-	      (state->lcdc.lcd_control.params.win) ? "WIN" : "win",
-	      (state->lcdc.lcd_control.params.win_code_sel) ? "9C" : "98",
-	      (state->lcdc.lcd_control.params.enable) ? "E" : "e"
+	      (state->lcdc.lcd_control.dmg_bg) ? "BG" : "bg",
+	      (state->lcdc.lcd_control.obj) ? "OBJ" : "obj",
+	      (state->lcdc.lcd_control.obj_block_size) ? "8x16" : "8x8",
+	      (state->lcdc.lcd_control.bg_code_sel) ? "9C" : "98",
+	      (state->lcdc.lcd_control.bg_char_sel) ? "sign" : "SIGN",
+	      (state->lcdc.lcd_control.win) ? "WIN" : "win",
+	      (state->lcdc.lcd_control.win_code_sel) ? "9C" : "98",
+	      (state->lcdc.lcd_control.enable) ? "E" : "e"
 	);
 	debug(state, "STAT: %02X (MODE=%d)",
-	      state->lcdc.stat.reg, state->lcdc.stat.params.mode_flag);
+	      state->lcdc.stat.reg, state->lcdc.stat.mode_flag);
 	debug(state, "ICLK: %02X", state->lcdc.curr_clk);
 	debug(state, "LY  : %02X", state->lcdc.ly);
 }
@@ -432,14 +391,14 @@ inline void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data UNU
 
 inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
-	uint8_t curr_mode = state->lcdc.stat.params.mode_flag;
+	uint8_t curr_mode = state->lcdc.stat.mode_flag;
 	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
 		// Game freak write shitty code and write to VRAM anyway.
 		// Pokémon RGB break if we fatal here.
+		// Pass it through anyway otherwise things look "wrong"
 		warning(state, "write to VRAM while not in h/v-blank");
-		return;
 	}
 
 	state->lcdc.vram[bank][reg - 0x8000] = data;
@@ -452,7 +411,7 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 
 inline void lcdc_stat_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
-	state->lcdc.stat.params.lyc = ((data & 0x60) == 0x60);
+	state->lcdc.stat.lyc = ((data & 0x60) == 0x60);
 }
 
 inline void lcdc_scroll_write(emu_state *restrict state, uint16_t reg, uint8_t data)

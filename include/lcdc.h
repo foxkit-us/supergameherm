@@ -104,7 +104,7 @@ struct lcdc_state_t
 			bool obj:1;		//! OBJ's are off or on
 			bool dmg_bg:1;		//! BG is on or off (DMG only)
 #endif
-		} params;
+		};
 	} lcd_control;
 
 	union
@@ -143,7 +143,7 @@ struct lcdc_state_t
 			 */
 			unsigned int mode_flag:2;
 #endif
-		} params;
+		};
 	} stat;
 
 	union
