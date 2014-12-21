@@ -56,6 +56,8 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+			uint16_t s = 15, t;
+			uint8_t *mem;
 
 			if(!state->lcdc.lcd_control.bg_char_sel)
 			{
@@ -63,10 +65,9 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			}
 
 			// Position in memory
-			uint8_t *mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + pixel_y_offset;
+			mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + pixel_y_offset;
 
 			// Interleave bits and reverse
-			uint16_t s = 15, t;
 			t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
 			for(t >>= 1; t; t >>= 1, s--)
@@ -122,7 +123,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 			actual_x = (!obj.flags.hflip) ? 8 - tx : tx;
 			actual_x += obj.x;
-			if(actual_x > 160) actual_x -= 160;
+			if(actual_x > 160) continue; // off screen
 
 			if(!obj.flags.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
 
