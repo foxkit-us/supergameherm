@@ -15,7 +15,9 @@
 #endif
 
 #include <SDL.h>	// SDL
-#include <stdbool.h>	// bool
+#ifdef HAVE_STDBOOL_H
+#	include <stdbool.h>	// bool
+#endif
 
 bool sdl2_init_audio(emu_state *state UNUSED)
 {

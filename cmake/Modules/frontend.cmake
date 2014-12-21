@@ -26,7 +26,7 @@ macro(sdl2_check)
 		include_directories(${SDL2_INCLUDE_DIR})
 		
 		file(GLOB SDL2_FRONTEND_SOURCES src/frontends/sdl2/*.c)
-		add_executable("sgherm-sdl2" ${SDL2_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
+		add_executable("sgherm-sdl2" WIN32 ${SDL2_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 		target_link_libraries("sgherm-sdl2" ${SDL2_LIBRARY})
 
 		set(HAVE_FRONTEND on)

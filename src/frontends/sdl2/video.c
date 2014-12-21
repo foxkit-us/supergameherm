@@ -15,7 +15,9 @@
 #endif
 
 #include <SDL.h>	// SDL
-#include <stdbool.h>	// bool
+#ifdef HAVE_STDBOOL_H
+#	include <stdbool.h>	// bool
+#endif
 #include <stdlib.h>	// calloc
 
 

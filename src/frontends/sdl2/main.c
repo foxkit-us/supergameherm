@@ -9,7 +9,7 @@
 #include <string.h>	// memset
 
 
-int main(int argc, char *argv[])
+int SDL_main(int argc, char *argv[])
 {
 	emu_state *state;
 	int val;
