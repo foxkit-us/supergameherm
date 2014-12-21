@@ -13,7 +13,7 @@ int libcaca_event_loop(emu_state *state)
 	do
 	{
 		frontend_input_return ret;
-		uint8_t mode = state->lcdc.stat.params.mode_flag;
+		uint8_t mode = state->lcdc.stat.mode_flag;
 		uint_fast16_t clock = state->lcdc.curr_clk;
 
 		step_emulator(state);
