@@ -107,6 +107,24 @@ static inline void add_to_hl(emu_state *restrict state, uint16_t to_add)
 }
 
 /*!
+ * @brief RLCA (0x07)
+ * @result A is rotated left; C = old bit 7
+ */
+static inline void rlca(emu_state *restrict state, uint8_t data[] UNUSED)
+{
+	FLAGS_CLEAR(state);
+
+	REG_A(state) = rotl_8(REG_A(state));
+
+	if(REG_A(state) & 0x01)
+	{
+		FLAG_SET(state, FLAG_C);
+	}
+
+	state->wait = 4;
+}
+
+/*!
  * @brief ADD HL,BC (0x09)
  * @result HL += BC; N flag reset, H if carry from bit 11, C if overflow
  */
@@ -142,6 +160,24 @@ static inline void inc_c(emu_state *restrict state, uint8_t data[] UNUSED)
 static inline void dec_c(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	dec_r8(state, &REG_C(state));
+}
+
+/*!
+ * @brief RRCA (0x0F)
+ * @result A is rotated right; C = old bit 0
+ */
+static inline void rrca(emu_state *restrict state, uint8_t data[] UNUSED)
+{
+	FLAGS_CLEAR(state);
+
+	REG_A(state) = rotr_8(REG_A(state));
+
+	if(REG_A(state) & 0x80)
+	{
+		FLAG_SET(state, FLAG_C);
+	}
+
+	state->wait = 4;
 }
 
 /*!
@@ -209,6 +245,48 @@ static inline void inc_e(emu_state *restrict state, uint8_t data[] UNUSED)
 static inline void dec_e(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	dec_r8(state, &REG_E(state));
+}
+
+/*!
+ * @brief RLA (0x17)
+ * @result A is rotated left through the carry flag
+ */
+static inline void rla(emu_state *restrict state, uint8_t data[] UNUSED)
+{
+	uint8_t carry = (IS_FLAG(state, FLAG_C) != 0);
+
+	FLAGS_CLEAR(state);
+
+	if(REG_A(state) & 0x80)
+	{
+		FLAG_SET(state, FLAG_C);
+	}
+
+	REG_A(state) <<= 1;
+	REG_A(state) |= carry;
+
+	state->wait = 4;
+}
+
+/*!
+ * @brief RRA (0x1F)
+ * @result A is rotated right through the carry flag
+ */
+static inline void rra(emu_state *restrict state, uint8_t data[] UNUSED)
+{
+	uint8_t carry = ((IS_FLAG(state, FLAG_C) != 0) << 7);
+
+	FLAGS_CLEAR(state);
+
+	if(REG_A(state) & 0x01)
+	{
+		FLAG_SET(state, FLAG_C);
+	}
+
+	REG_A(state) >>= 1;
+	REG_A(state) |= carry;
+
+	state->wait = 4;
 }
 
 /*!
