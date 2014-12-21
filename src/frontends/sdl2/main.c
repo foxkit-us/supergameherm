@@ -4,6 +4,17 @@
 #include "print.h"	// to_stdout, to_stderr
 #include "signals.h"	// register_handlers
 
+// SDL 2 whines. *sigh*
+#ifdef HAVE_STDINT_H
+#	undef HAVE_STDINT_H
+#endif
+#ifdef HAVE_CLOCK_GETTIME
+#	undef HAVE_CLOCK_GETTIME
+#endif
+#ifdef HAVE_NANOSLEEP
+#	undef HAVE_NANOSLEEP
+#endif
+
 #include <SDL.h>	// main
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
