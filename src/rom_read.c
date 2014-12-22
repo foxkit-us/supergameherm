@@ -2,7 +2,8 @@
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// malloc
-#include <string.h>	// memcmp
+#include <string.h>	// memcmp, strerror
+#include <errno.h>	// errno
 
 #include "sgherm.h"	// emu_state
 #include "print.h"	// fatal, error, debug
@@ -38,8 +39,8 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	long size_in_bytes, actual_size;
 	int8_t checksum = 0;
 	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
-	const offsets begin = OFF_GRAPHIC_BEGIN;
-	bool no_err = false;
+	const cart_offsets begin = OFF_GRAPHIC_BEGIN;
+	bool err = true;
 	size_t i;
 
 	// Initalise
@@ -48,7 +49,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	// Get the full ROM size
 	if(unlikely(fseek(rom, 0, SEEK_END)))
 	{
-		perror("seeking");
+		error(state, "Could not get size of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -66,13 +67,13 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 	if(unlikely(fseek(rom, 0, SEEK_SET)))
 	{
-		perror("seeking");
+		error(state, "Could not seek to end of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
 	if(unlikely(fread(state->cart_data, actual_size, 1, rom) != 1))
 	{
-		perror("Could not read ROM");
+		error(state, "Could not read ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -126,7 +127,9 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 	debug(state, "loading cart %s", title);
 	if(*publisher)
+	{
 		debug(state, "publisher %s", publisher);
+	}
 	debug(state, "type: %s", friendly_cart_names[(*header)->cart_type]);
 
 	debug(state, "Header size is %d\n", (*header)->rom_size);
@@ -140,7 +143,9 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	}
 
 	for(i = 0x134; i <= 0x14d; ++i)
+	{
 		checksum += state->cart_data[i] + 1;
+	}
 
 	if(checksum != 1)
 	{
@@ -159,12 +164,17 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	// FIXME For now we're targeting DMG, not CGB.
 	state->system = SYSTEM_DMG;
 
-	no_err = true;
-close_rom:
-	if(likely(no_err))
-		memcpy(state->memory, state->cart_data, 0x7fff);
-	else
-		free(state->cart_data);
+	if(!mbc_select(state))
+	{
+		goto close_rom;
+	}
 
-	return (no_err);
+	err = false;
+close_rom:
+	if(err)
+	{
+		free(state->cart_data);
+	}
+
+	return !err;
 }

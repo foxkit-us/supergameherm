@@ -19,6 +19,8 @@ typedef struct ser_state_t ser_state;
 typedef struct registers_t register_state;
 typedef struct snd_state_t snd_state;
 typedef struct timer_state_t timer_state;
+typedef struct mbc_state_t mbc_state;
+typedef struct mbc_func_t mbc_func;
 
 // Depends on emu_state *sigh*
 typedef int (*frontend_event_loop)(emu_state *);

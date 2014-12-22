@@ -2,16 +2,14 @@
 
 #include "sgherm.h"	// emu_state, constants
 #include "ctl_unit.h"	// init_ctl, execute
-#include "debug.h"	// print_cycles
-#include "frontend.h"	// null_frontend_*
 #include "lcdc.h"	// lcdc_tick
-#include "print.h"	// fatal, error, debug
-#include "rom_read.h"	// offsets
-#include "serio.h"	// serial_tick
-#include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
-#include "timer.h"	// get_clock
+#include "timer.h"	// timer_tick
+#include "serio.h"	// serial_tick
+#include "debug.h"	// print_cycles
+#include "print.h"	// fatal, error, debug
 #include "util_time.h"	// get_time
+#include "mbc.h"	// MBC_FINISH
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
@@ -29,23 +27,24 @@ emu_state * init_emulator(const char *rom_path)
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
 	{
-		perror("fopen");
+		error(state, "Can't open ROM: %s", strerror(errno));
 		free(state);
 		return NULL;
 	}
 
 	state->interrupts.enabled = true;
-	state->bank = 1;
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
 
 	if(unlikely(!read_rom_data(state, rom, &header)))
 	{
-		fatal(state, "can't read ROM data (ROM is corrupt)?");
+		error(state, "can't read ROM data (ROM is corrupt)?");
 		free(state);
 		fclose(rom);
 		return NULL;
 	}
+
+	fclose(rom);
 
 	// Initalise state
 	init_ctl(state);
@@ -54,8 +53,6 @@ emu_state * init_emulator(const char *rom_path)
 	// Start the clock
 	state->start_time = get_time();
 
-	fclose(rom);
-
 	return state;
 }
 
@@ -63,6 +60,7 @@ void finish_emulator(emu_state *restrict state)
 {
 	print_cycles(state);
 
+	MBC_FINISH(state);
 	free(state->cart_data);
 	free(state);
 }

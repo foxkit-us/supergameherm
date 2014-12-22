@@ -315,7 +315,7 @@ void dump_all_state(emu_state *restrict state)
 	debug(state, "pc=%04X\tsp=%04X\tbk=%04X",
 		REG_PC(state),
 		REG_SP(state),
-		state->bank);
+		state->mbc.rom_bank);
 	debug(state, "af=%04X\tbc=%04X\tde=%04X\thl=%04X",
 		REG_AF(state),
 		REG_BC(state),

@@ -10,6 +10,7 @@
 #include "serio.h"	// ser
 #include "sound.h"	// snd
 #include "input.h"	// input
+#include "mbc.h"	// mbc
 #include "ctl_unit.h"	// interrupts
 #include "frontend.h"	// frontend
 
@@ -54,24 +55,22 @@ struct emu_state_t
 	uint8_t memory[MEM_SIZE];	//! RAM
 	uint8_t *cart_data;		//! Cartridge data
 
-	//! Cartridge RAM
-	uint8_t cart_ram[0xF][0x2000];
+	mbc_state mbc;
 
 	register_state registers;	//! Registers
 
 	bool halt;			//! waiting for interrupt
 	bool stop;			//! deep sleep state (disable LCDC)
 
-	uint_fast16_t dma_wait;	//! Clocks left on DMA membar
+	uint_fast16_t dma_wait;		//! Clocks left on DMA membar
 
 	uint_fast32_t wait;		//! number of clocks
 
-	uint_fast16_t bank;		//! current ROM bank
 	uint_fast8_t ram_bank;		//! current RAM bank
 
 	uint_fast32_t cycles;		//! Present cycle count
 	uint64_t start_time;		//! Time started
-	uint64_t last_vblank_time;		//! Last time since a million cycles
+	uint64_t last_vblank_time;	//! Last time since a million cycles
 
 	system_types system;		//! Present emulation mode
 	cpu_freq freq;			//! CPU frequency

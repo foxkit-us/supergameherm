@@ -8,7 +8,6 @@
 #include "lcdc.h"	// lcdc_read
 #include "memory.h"	// Constants and what have you
 #include "print.h"	// fatal
-#include "rom_read.h"	// OFF_CART_TYPE
 #include "serio.h"	// serial_*
 #include "sound.h"	// sound_*
 #include "timer.h"	// timer_*
@@ -28,7 +27,6 @@ typedef uint8_t (*mem_read_fn)(emu_state *restrict, uint16_t);
 uint8_t no_hardware(emu_state *restrict state UNUSED, uint16_t location)
 {
 	warning(state, "no device present at %04X (emulator bug? incompatible GB?)", location);
-	warning(state, "(a real GB spews 0xFF)");
 	return 0xFF;
 }
 
@@ -122,19 +120,6 @@ static inline uint8_t direct_read(emu_state *restrict state, uint16_t location)
 	return state->memory[location];
 }
 
-//! read from the switchable ROM bank space
-static inline uint8_t rom_bank_read(emu_state *restrict state UNUSED, uint16_t location)
-{
-	uint32_t addr = (state->bank - 1) * 0x4000;
-	return state->cart_data[addr + location];
-}
-
-//! read from the switchable RAM bank space
-static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location)
-{
-	return state->cart_ram[state->ram_bank][location - 0xA000];
-}
-
 /*!
  * @brief	Read a byte (8 bits) out of memory.
  * @param	state		The emulator state to use when reading.
@@ -146,27 +131,30 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 {
 	if(state->dma_wait && location <= 0xFE80 && location >= 0xFFFE)
 	{
-		// XXX check into it and see how this is done
+		// XXX check into it and see how this is handled on real hardware
 		fatal(state, "Prohibited read during DMA transfer");
-		return 0;
+		return 0xFF;
 	}
 
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
+	case 0x2:
+	case 0x3:
 	case 0x4:
 	case 0x5:
 	case 0x6:
 	case 0x7:
-		// switchable bank - 0x4000..0x7FFF
-		return rom_bank_read(state, location);
+		// switchable ROM bank - 0x4000..0x7FFF (depends on MBC)
+	case 0xA:
+	case 0xB:
+		// switchable RAM bank - 0xA000-0xBFFF (depends on MBC)
+		return MBC_READ(state, location);
 	case 0x8:
 	case 0x9:
 		// video memory - 0x8000..0x9FFF
 		return vram_read(state, location);
-	case 0xA:
-	case 0xB:
-		// switchable RAM bank - 0xA000-0xBFFF
-		return ram_bank_read(state, location);
 	case 0xE:
 	case 0xF:
 		switch(location >> 8)
@@ -194,9 +182,18 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 			// who knows? the SHADOW knows! - 0xE000..0xFDFF
 			location -= 0x2000;
 		}
-	default:
-		return direct_read(state, location);
 	}
+
+#ifndef NDEBUG
+	if((location < 0xC000 || location > 0xCFFF) &&
+		(location < 0xD000 || location > 0xDFFF) &&
+		(location < 0xFF80 || location > 0xFFFE))
+	{
+		warning(state, "Memory read outside of real RAM at %04X",
+			location);
+	}
+#endif
+	return direct_read(state, location);
 }
 
 /*!
@@ -366,77 +363,24 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
 	case 0x2:
 	case 0x3:
-		switch(state->cart_data[OFF_CART_TYPE])
-		{
-		case CART_ROM_ONLY:
-			warning(state, "invalid memory write at %04X (%02X) (a real GB ignores this)",
-			      location, data);
-		case CART_MBC1:
-		case CART_MBC1_RAM:
-		case CART_MBC1_RAM_BATT:
-			state->bank = data & 0x1F;
-			return;
-		case CART_MBC3:
-		case CART_MBC3_RAM:
-		case CART_MBC3_RAM_BATT:
-		case CART_MBC3_TIMER_BATT:
-		case CART_MBC3_TIMER_RAM_BATT:
-			state->bank = data & 0x7F;
-			return;
-		case CART_MBC5:
-		case CART_MBC5_RAM:
-		case CART_MBC5_RAM_BATT:
-		case CART_MBC5_RUMBLE:
-		case CART_MBC5_RUMBLE_SRAM:
-		case CART_MBC5_RUMBLE_SRAM_BATT:
-			if((location >> 12) == 0x2)
-			{
-				state->bank = data;
-			}
-			else
-			{
-				state->bank |= data & 0x1 << 8;
-			}
-			return;
-		default:
-			fatal(state, "banks for this cart (type %04X [%s]) aren't done yet sorry :(",
-					state->cart_data[OFF_CART_TYPE],
-					friendly_cart_names[location >> 12]);
-		}
 	case 0x4:
 	case 0x5:
-		switch(state->cart_data[OFF_CART_TYPE])
-		{
-		case CART_ROM_ONLY:
-		case CART_MBC3:
-		case CART_MBC3_TIMER_BATT:
-		case CART_MBC5:
-			fatal(state, "invalid memory write at %04X (%02X)",
-				location, data);
-		case CART_MBC3_RAM:
-		case CART_MBC3_RAM_BATT:
-		case CART_MBC3_TIMER_RAM_BATT:
-			state->ram_bank = data & 0x3;
-			return;
-		case CART_MBC5_RAM:
-		case CART_MBC5_RAM_BATT:
-			state->ram_bank = data & 0xF;
-			return;
-		default:
-			fatal(state, "RAM banks for this cart (type %04X) aren't done yet sorry :(",
-					state->cart_data[OFF_CART_TYPE]);
-		}
+	case 0x6:
+	case 0x7:
+		// MBC controller regs (varies based on MBC)
+	case 0xA:
+	case 0xB:
+		// switched RAM bank (depends on MBC)
+		MBC_WRITE(state, location, data);
+		return;
 	case 0x8:
 	case 0x9:
 		// VRAM
 		vram_write(state, location, data);
-		return;
-	case 0xA:
-	case 0xB:
-		// switched RAM bank
-		state->cart_ram[state->ram_bank][location - 0xA000] = data;
 		return;
 	case 0xE:
 	case 0xF:
@@ -468,6 +412,15 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			location -= 0x2000;
 		}
 	}
+#ifndef NDEBUG
+	if((location < 0xC000 || location > 0xCFFF) &&
+		(location < 0xD000 || location > 0xDFFF) &&
+		(location < 0xFF80 || location > 0xFFFE))
+	{
+		warning(state, "Memory write outside of real RAM at %04X",
+			location);
+	}
+#endif
 
 	state->memory[location] = data;
 }

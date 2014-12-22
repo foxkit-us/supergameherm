@@ -6,9 +6,8 @@
 #include <caca.h>	// libcaca
 #include <stdbool.h>	// bool
 #include <stdlib.h>	// calloc
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <string.h>	// strerror
+#include <errno.h>	// errno
 
 
 #define LEN 160
@@ -34,14 +33,14 @@ bool libcaca_init_video(emu_state *state)
 	// Redirect stdout and stderr
 	if(!(video->stdout_new = fopen("stdout.log", "w")))
 	{
-		perror("fopen");
+		fatal(state, "Could not open stdout.log: %s", strerror(errno));
 		free(video);
 		return false;
 	}
 
 	if(!(video->stderr_new = fopen("stderr.log", "w")))
 	{
-		perror("fopen");
+		fatal(state, "Could not open stderr.log: %s", strerror(errno));
 		fclose(video->stdout_new);
 		free(video);
 		return false;
