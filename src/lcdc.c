@@ -101,16 +101,21 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		uint8_t *mem;
 		uint16_t pixel_temp;
 		uint16_t s = 15, t;
-		oam obj = state->lcdc.oam_store[curr_tile];
-		uint8_t tile = obj.chr;
-		uint8_t actual_x = obj.x;
+		oam *obj = (oam *)(state->lcdc.oam_ram + (4 * curr_tile));
+		uint8_t tile = obj->chr;
+		uint8_t actual_x = obj->x;
 
-		pixel_y_offset = state->lcdc.ly - obj.y;
+		pixel_y_offset = state->lcdc.ly - obj->y;
 
-		if(pixel_y_offset > (y_len))
+		if(pixel_y_offset > (y_len - 1))
 		{
 			// out of display
 			continue;
+		}
+
+		if(obj->vflip)
+		{
+			pixel_y_offset = y_len - 1 - pixel_y_offset;
 		}
 
 		// Position in memory
@@ -119,34 +124,27 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		// Interleave bits and reverse
 		t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
-		for(t >>= 1; t; t >>= 1, s--)
+		if(!obj->hflip)
 		{
-			pixel_temp <<= 1;
-			pixel_temp |= t & 1;
-		}
-		pixel_temp <<= s;
-
-		if(obj.hflip)
-		{
-			tx = 8;
-			tx_dest = 0;
-		}
-		else
-		{
-			tx = 0;
-			tx_dest = 8;
+			for(t >>= 1; t; t >>= 1, s--)
+			{
+				pixel_temp <<= 1;
+				pixel_temp |= t & 1;
+			}
+			pixel_temp <<= s;
 		}
 
-		for (; tx != tx_dest; pixel_temp >>= 2)
+		for(tx = 0; tx < 8; tx++, pixel_temp >>= 2)
 		{
-			if(obj.hflip) { tx--; }
-			else { tx++; }
-
-			//if((pixel_temp & 0x03) == 0) continue; // invisible.
-			if(actual_x + tx > 160) continue; // off screen
-			//if(!obj.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
-			row[actual_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
+			if(!(
+				((pixel_temp & 0x03) == 0)
+				|| (actual_x + tx > 160)
+				//|| (!obj->priority && row[actual_x] != dmg_palette[0])
+			)) row[actual_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
 		}
+
+		// only do even numbered sprites in 8x16 mode
+		if(state->lcdc.lcd_control.obj_block_size) curr_tile++;
 	}
 }
 
