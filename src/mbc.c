@@ -37,6 +37,7 @@ static inline uint8_t nombc_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x0:
 	case 0x1:
 	case 0x2:
 	case 0x3:
@@ -46,14 +47,14 @@ static inline uint8_t nombc_read(emu_state *restrict state, uint16_t location)
 	case 0x7:
 		return state->cart_data[location];
 	default:
-		warning(state, "Unimplemented read for MBC at address %d", location);
+		warning(state, "Unimplemented read for ROM at address %04X", location);
 		return 0xFF;
 	}
 }
 
 static inline void nombc_write(emu_state *restrict state, uint16_t location, uint8_t value UNUSED)
 {
-	warning(state, "Unimplemented write for MBC at address %d", location);
+	warning(state, "Unimplemented write for ROM at address %04X", location);
 }
 
 static inline void nombc_finish(emu_state *restrict state UNUSED)
@@ -82,6 +83,7 @@ static inline uint8_t mbc1_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x0:
 	case 0x1:
 	case 0x2:
 	case 0x3:
@@ -97,7 +99,7 @@ static inline uint8_t mbc1_read(emu_state *restrict state, uint16_t location)
 		// switchable RAM bank - 0xA000..0xBFFF
 		return ram_bank_read(state, location);
 	default:
-		warning(state, "Unimplemented read for MBC at address %d", location);
+		warning(state, "Unimplemented read for MBC1 at address %04X", location);
 		return 0xFF;
 	}
 }
@@ -136,7 +138,7 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 		ram_bank_write(state, location, value);
 		break;
 	default:
-		warning(state, "Unimplemented write for MBC at address %d", location);
+		warning(state, "Unimplemented write for MBC1 at address %04X", location);
 		break;
 	}
 }
@@ -183,7 +185,7 @@ static inline uint8_t mbc2_read(emu_state *restrict state, uint16_t location)
 		// switchable RAM bank - 0xA000..0xBFFF
 		return ram_bank_read(state, location);
 	default:
-		warning(state, "Unimplemented read for MBC at address %d", location);
+		warning(state, "Unimplemented read for MBC2 at address %04X", location);
 		return 0xFF;
 	}
 }
@@ -207,7 +209,7 @@ static inline void mbc2_write(emu_state *restrict state, uint16_t location, uint
 		}
 		break;
 	default:
-		warning(state, "Unimplemented write for MBC at address %d", location);
+		warning(state, "Unimplemented write for MBC2 at address %04X", location);
 		return;
 	}
 }
@@ -282,9 +284,11 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 			// switchable RAM bank - 0xA000..0xBFFF
 			return ram_bank_read(state, location);
 		}
+
+		break;
 	}
 	default:
-		warning(state, "Unimplemented read for MBC at address %d", location);
+		warning(state, "Unimplemented read for MBC3 at address %04X", location);
 		return 0xFF;
 	}
 }
@@ -302,8 +306,8 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		// Bank switch
 		state->mbc.rom_bank = value & 0x7F;
 		break;
-	case 0x4:
-	case 0x5:
+	case 0xA:
+	case 0xB:
 		// Select RTC or RAM bank
 		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
@@ -333,12 +337,12 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		default:
 			// switchable RAM bank - 0xA000..0xBFFF
 			ram_bank_write(state, location, value);
-			break;
+			return;
 		}
 
 		// XXX
 		memcpy(&(state->mbc.mbc3.rtc[1]), &(state->mbc.mbc3.rtc[0]),
-			sizeof(state->mbc.mbc3.rtc));
+			sizeof(state->mbc.mbc3.rtc[0]));
 		break;
 	case 0x6:
 	case 0x7:
@@ -347,13 +351,13 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		{
 			// Copy the present RTC value
 			memcpy(&(state->mbc.mbc3.rtc[0]), &(state->mbc.mbc3.rtc[1]),
-				sizeof(state->mbc.mbc3.rtc));
+				sizeof(state->mbc.mbc3.rtc[0]));
 		}
 
 		state->mbc.mbc3.latched = value;
 		break;
 	default:
-		warning(state, "Unimplemented read for MBC at address %d", location);
+		warning(state, "Unimplemented write for MBC3 at address %04X", location);
 		break;
 	}
 }
@@ -402,7 +406,7 @@ static inline uint8_t mbc5_read(emu_state *restrict state, uint16_t location)
 		// switchable RAM bank - 0xA000..0xBFFF
 		return ram_bank_read(state, location);
 	default:
-		warning(state, "Unimplemented read for MBC at address %d", location);
+		warning(state, "Unimplemented read for MBC5 at address %04X", location);
 		return 0xFF;
 	}
 }
@@ -421,6 +425,9 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 	case 0x5:
 		// RAM banking mode
 		state->mbc.ram_bank = value;
+	default:
+		warning(state, "Unimplemented write for MBC5 at address %04X", location);
+		break;
 	}
 }
 
