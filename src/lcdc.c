@@ -89,7 +89,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	uint8_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
 	uint8_t y_len = (state->lcdc.lcd_control.obj_block_size) ? 16 : 8;
-	int tx;
+	uint8_t tx, tx_dest;
 
 	if(!state->lcdc.lcd_control.obj)
 	{
@@ -99,35 +99,53 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	for(; curr_tile < 40; curr_tile++)
 	{
 		uint8_t *mem;
-		uint32_t pixel_temp;
+		uint16_t pixel_temp;
+		uint16_t s = 15, t;
 		oam obj = state->lcdc.oam_store[curr_tile];
+		uint8_t tile = obj.chr;
+		uint8_t actual_x = obj.x;
 
-		pixel_y_offset = obj.y - state->lcdc.ly;
+		pixel_y_offset = state->lcdc.ly - obj.y;
 
-		if(pixel_y_offset > (y_len - 1))
+		if(pixel_y_offset > (y_len))
 		{
 			// out of display
 			continue;
 		}
 
-		if(!obj.flags.vflip) pixel_y_offset = y_len - 1 - pixel_y_offset;
+		// Position in memory
+		mem = state->lcdc.vram[0x0] + (tile * (y_len * 2)) + (pixel_y_offset * 2);
 
-		mem = state->lcdc.vram[0x0] + (obj.chr * (y_len * 2)) + (pixel_y_offset * 2);
-		pixel_temp = interleave8(0, *mem, 0, *(mem+1));
+		// Interleave bits and reverse
+		t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
-		for (tx = 8; tx > 0; tx--, pixel_temp >>= 2)
+		for(t >>= 1; t; t >>= 1, s--)
 		{
-			uint8_t actual_x;
+			pixel_temp <<= 1;
+			pixel_temp |= t & 1;
+		}
+		pixel_temp <<= s;
 
-			if((pixel_temp & 0x02) == 0) continue; // invisible.
+		if(obj.hflip)
+		{
+			tx = 8;
+			tx_dest = 0;
+		}
+		else
+		{
+			tx = 0;
+			tx_dest = 8;
+		}
 
-			actual_x = (!obj.flags.hflip) ? 8 - tx : tx;
-			actual_x += obj.x;
-			if(actual_x > 160) continue; // off screen
+		for (; tx != tx_dest; pixel_temp >>= 2)
+		{
+			if(obj.hflip) { tx--; }
+			else { tx++; }
 
-			if(!obj.flags.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
-
-			row[actual_x] = dmg_palette[pixel_temp & 0x03] + 100;
+			//if((pixel_temp & 0x03) == 0) continue; // invisible.
+			if(actual_x + tx > 160) continue; // off screen
+			//if(!obj.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
+			row[actual_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
 		}
 	}
 }
