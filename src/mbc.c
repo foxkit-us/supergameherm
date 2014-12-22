@@ -326,35 +326,10 @@ const mbc_func mbc2_func =
 
 static inline bool mbc3_init(emu_state *restrict state)
 {
-	int s = state->cart_data[OFF_RAM_SIZE];
-
-	state->mbc.rom_bank = 1;
-	state->mbc.use_4bit = false;
-	state->mbc.mbc3.ram_rtc_enable = 0;
-	state->mbc.mbc3.rtc_select = 0;
-
-	// TODO load state with batt
-	if(s)
+	// Init is same as MBC1
+	if(!mbc1_init(state))
 	{
-		// Get total memory size
-		s = 0x400 << ((s << 1) - 1);
-
-		debug(state, "RAM size is %d\n", s);
-
-		// MBC3 uses 8k banks (like most carts)
-		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
-		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
-		state->mbc.ram_total = s;
-		state->mbc.cart_ram = calloc(s, 1);
-		if(!(state->mbc.cart_ram))
-		{
-			return false;
-		}
-	}
-	else
-	{
-		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
-		state->mbc.cart_ram = NULL;
+		return false;
 	}
 
 	// TODO proper RTC data
@@ -503,33 +478,10 @@ const mbc_func mbc3_func =
 
 static inline bool mbc5_init(emu_state *restrict state)
 {
-	int s = state->cart_data[OFF_RAM_SIZE];
-
-	state->mbc.rom_bank = 1;
-	state->mbc.use_4bit = false;
-	state->mbc.mbc3.ram_rtc_enable = 0;
-	state->mbc.mbc3.rtc_select = 0;
-
-	// TODO load state with batt
-	if(s)
+	// Init is same as MBC1
+	if(!mbc1_init(state))
 	{
-		// Get total memory size
-		s = 0x400 << ((s << 1) - 1);
-
-		// MBC5 uses 8k banks (like most carts)
-		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
-		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
-		state->mbc.ram_total = s;
-		state->mbc.cart_ram = calloc(s, 1);
-		if(!(state->mbc.cart_ram))
-		{
-			return false;
-		}
-	}
-	else
-	{
-		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
-		state->mbc.cart_ram = NULL;
+		return false;
 	}
 
 	return true;
