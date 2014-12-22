@@ -61,6 +61,7 @@ void finish_emulator(emu_state *restrict state)
 {
 	print_cycles(state);
 
+	MBC_FINISH(state);
 	free(state->cart_data);
 	free(state);
 }
