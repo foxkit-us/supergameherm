@@ -186,8 +186,8 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	}
 
 #ifndef NDEBUG
-	if((location < 0xC000 || location > 0xCFFF) ||
-		(location < 0xD000 || location > 0xDFFF) ||
+	if((location < 0xC000 || location > 0xCFFF) &&
+		(location < 0xD000 || location > 0xDFFF) &&
 		(location < 0xFF80 || location > 0xFFFE))
 	{
 		warning(state, "Memory read outside of real RAM at %04X",
