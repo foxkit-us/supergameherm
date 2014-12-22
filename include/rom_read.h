@@ -8,9 +8,6 @@
 
 typedef enum
 {
-	//! A list of constants, mostly used for documentation purposes.
-	// TODO GBC constants
-
 	// restart and interrupt vectors
 	OFF_VEC_BEGIN = 0x0000,
 	OFF_VEC_END = 0x00FF,
@@ -63,50 +60,7 @@ typedef enum
 	OFF_CART_CHECKSUM_END = 0x014F,
 
 	OFF_CART_END = 0x014F,
-
-	// Fixed bank
-	OFF_ROM0_BEGIN = 0x0150,
-	OFF_ROM0_END = 0x3FFF,
-
-	// Switchable bank
-	OFF_ROM_BANK_BEGIN = 0x4000,
-	OFF_ROM_BANK_END = 0x7FFF,
-
-	OFF_TILE_RAM_BEGIN = 0x8000,
-	OFF_TILE_RAM_END = 0x97FF,
-
-	OFF_BG0_BEGIN = 0x9800,
-	OFF_BG0_END = 0x9BFF,
-
-	OFF_BG1_BEGIN = 0x9C00,
-	OFF_BG1_END = 0x9FFF,
-
-	// Not present on all carts!
-	OFF_CART_RAM_BEGIN = 0xA000,
-	OFF_CART_RAM_END = 0xBFFF,
-
-	OFF_RAM_BEGIN = 0xC000,
-	OFF_RAM_END = 0xDFFF,
-
-	OFF_SHADOW_BEGIN = 0xE000,
-	OFF_SHADOW_END = 0xFDFF,
-
-	OFF_OAM_BEGIN = 0xFE00,
-	OFF_OAM_END = 0xFE9F,
-
-	// Contains control registers and other doodads
-	OFF_CGB_MMIO_BEGIN = 0xFF00,
-	// TODO more I/O constants
-
-	OFF_CGB_SWITCH_VIDEO_BANK = 0xFF40,
-
-	OFF_CGB_MMIO_END = 0xFF7F,
-
-	OFF_HIGH_RAM_BEGIN = 0xFF80,
-	OFF_HIGH_RAM_END = 0xFFFE,
-
-	OFF_INT_FLAG = 0xFFFF,
-} offsets;
+} cart_offsets;
 
 struct cart_header_t
 {
