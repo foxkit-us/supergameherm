@@ -34,7 +34,6 @@ emu_state * init_emulator(const char *rom_path)
 	}
 
 	state->interrupts.enabled = true;
-	state->bank = 1;
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
 

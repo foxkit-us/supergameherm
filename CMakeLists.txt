@@ -15,8 +15,8 @@ platform_checks()
 
 # Doodads for the core
 set(CORE_FILES src/sgherm.c src/ctl_unit.c src/input.c src/lcdc.c src/memory.c
-	src/print.c src/rom_read.c src/serio.c src/sound.c src/timer.c
-	src/debug.c src/signals.c src/util.c src/frontend.c)
+	src/mbc.c src/print.c src/rom_read.c src/serio.c src/sound.c
+	src/timer.c src/debug.c src/signals.c src/util.c src/frontend.c)
 add_library("sgherm-core" OBJECT ${CORE_FILES})
 
 # Do the frontend checks
