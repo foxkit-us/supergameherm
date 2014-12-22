@@ -12,9 +12,8 @@
 #include "mbc.h"	// MBC_FINISH
 
 #include <stdio.h>	// file methods
-#include <errno.h>	// strerror
 #include <stdlib.h>	// exit
-#include <string.h>	// memset
+#include <string.h>	// memset, strerror
 
 // This is probably wrong but it seems to be smooth enough
 #define NSEC_PER_VBLANK 16680567L
