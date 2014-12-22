@@ -413,18 +413,17 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			location -= 0x2000;
 		}
 	}
-
 #ifndef NDEBUG
-		if((location < 0xC000 || location > 0xCFFF) &&
-			(location < 0xD000 || location > 0xDFFF) &&
-			(location < 0xFF80 || location > 0xFFFE))
-		{
-			warning(state, "Memory write outside of real RAM at %04X",
-				location);
-		}
+	if((location < 0xC000 || location > 0xCFFF) &&
+		(location < 0xD000 || location > 0xDFFF) &&
+		(location < 0xFF80 || location > 0xFFFE))
+	{
+		warning(state, "Memory write outside of real RAM at %04X",
+			location);
+	}
 #endif
 
-		state->memory[location] = data;
+	state->memory[location] = data;
 }
 
 void mem_write16(emu_state *restrict state, uint16_t location, uint16_t data)
