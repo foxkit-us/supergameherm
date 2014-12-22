@@ -37,6 +37,7 @@ static inline uint8_t nombc_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x1:
 	case 0x2:
 	case 0x3:
 	case 0x4:
@@ -81,6 +82,7 @@ static inline uint8_t mbc1_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x1:
 	case 0x2:
 	case 0x3:
 		return state->cart_data[location];
@@ -165,6 +167,8 @@ static inline uint8_t mbc2_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
 	case 0x2:
 	case 0x3:
 		return state->cart_data[location];
@@ -238,6 +242,8 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
 	case 0x2:
 	case 0x3:
 		return state->cart_data[location];
@@ -380,6 +386,8 @@ static inline uint8_t mbc5_read(emu_state *restrict state, uint16_t location)
 {
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
 	case 0x2:
 	case 0x3:
 		return state->cart_data[location];

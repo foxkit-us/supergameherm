@@ -139,6 +139,8 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
 	case 0x2:
 	case 0x3:
 	case 0x4:
@@ -181,19 +183,18 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 			// who knows? the SHADOW knows! - 0xE000..0xFDFF
 			location -= 0x2000;
 		}
-	default:
-#ifndef NDEBUG
-		if((location < 0xC000 || location > 0xCFFF) ||
-			(location < 0xD000 || location > 0xDFFF) ||
-			(location < 0xFF80 || location > 0xFFFE))
-		{
-			warning(state, "Memory read outside of real RAM at %04X",
-				location);
-		}
-#endif
-
-		return direct_read(state, location);
 	}
+
+#ifndef NDEBUG
+	if((location < 0xC000 || location > 0xCFFF) ||
+		(location < 0xD000 || location > 0xDFFF) ||
+		(location < 0xFF80 || location > 0xFFFE))
+	{
+		warning(state, "Memory read outside of real RAM at %04X",
+			location);
+	}
+#endif
+	return direct_read(state, location);
 }
 
 /*!
@@ -363,6 +364,8 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
 	case 0x2:
 	case 0x3:
 	case 0x4:
@@ -409,7 +412,8 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			// who knows? the SHADOW knows! - 0xE000..0xFDFF
 			location -= 0x2000;
 		}
-	default:
+	}
+
 #ifndef NDEBUG
 		if((location < 0xC000 || location > 0xCFFF) &&
 			(location < 0xD000 || location > 0xDFFF) &&
@@ -421,7 +425,6 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 #endif
 
 		state->memory[location] = data;
-	}
 }
 
 void mem_write16(emu_state *restrict state, uint16_t location, uint16_t data)

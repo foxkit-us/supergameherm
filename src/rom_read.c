@@ -163,8 +163,6 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	// FIXME For now we're targeting DMG, not CGB.
 	state->system = SYSTEM_DMG;
 
-	memcpy(state->memory, state->cart_data, 0x7fff);
-
 	if(!mbc_select(state))
 	{
 		goto close_rom;
