@@ -15,7 +15,8 @@
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
-#include <string.h>	// memset
+#include <string.h>	// memset, strerror
+#include <errno.h>	// errno
 
 // This is probably wrong but it seems to be smooth enough
 #define NSEC_PER_VBLANK 16680567L
