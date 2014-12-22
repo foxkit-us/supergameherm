@@ -126,7 +126,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		}
 		pixel_temp <<= s;
 
-		if(obj.flags.hflip)
+		if(obj.hflip)
 		{
 			tx = 8;
 			tx_dest = 0;
@@ -139,12 +139,12 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		for (; tx != tx_dest; pixel_temp >>= 2)
 		{
-			if(obj.flags.hflip) { tx--; }
+			if(obj.hflip) { tx--; }
 			else { tx++; }
 
 			//if((pixel_temp & 0x03) == 0) continue; // invisible.
 			if(actual_x + tx > 160) continue; // off screen
-			//if(!obj.flags.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
+			//if(!obj.priority && row[actual_x] != dmg_palette[0]) continue; // hidden
 			row[actual_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
 		}
 	}
