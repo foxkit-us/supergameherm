@@ -6,7 +6,7 @@
 #include "sgherm.h"	// emu_state
 
 #include <assert.h>
-#include <stdlib.h>	// abs
+#include <string.h>	// memset
 
 
 #define LCDC_BGWINDOW_SHOW	0x01
@@ -34,6 +34,12 @@ void init_lcdc(emu_state *restrict state)
 
 static inline void dmg_bg_render(emu_state *restrict state)
 {
+	if(!(state->lcdc.lcd_control.dmg_bg))
+	{
+		memset(state->lcdc.out, dmg_palette[0], sizeof(state->lcdc.out));
+		return;
+	}
+
 	// Compute positions in the "virtual" map of tiles
 	const uint8_t sy = state->lcdc.ly + state->lcdc.scroll_y, s_sy = sy / 8;
 	uint8_t x, sx = state->lcdc.scroll_x;
@@ -83,8 +89,73 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	}
 }
 
+static inline void dmg_window_render(emu_state *restrict state)
+{
+	if(!(state->lcdc.lcd_control.win))
+	{
+		return;
+	}
+
+	const uint16_t y = state->lcdc.ly, wy = y + state->lcdc.window_y;
+	uint16_t x = 0, wx = state->lcdc.window_x - 7;
+	uint16_t tile_map_start = 0x1800; // Initial offset
+
+	// Pixel offsets
+	uint8_t pixel_y_offset = (y & 7) * 2;
+	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
+
+	uint16_t pixel_temp = 0;
+
+	if(wx > 159 || wy > 143)
+	{
+		// Off-screen
+		return;
+	}
+
+	if(state->lcdc.lcd_control.win_code_sel)
+	{
+		tile_map_start += 0x400;
+		printf("%04X\n", tile_map_start + 0x8000);
+	}
+
+	for(; wx < 159; x++, wx++)
+        {
+                if(!((wx & 7) && x))
+                {
+                        const uint16_t tile_index = (y / 8) * 32 + (x / 8);
+                        uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+
+			if(!state->lcdc.lcd_control.bg_char_sel)
+			{
+				tile -= 0x80;
+			}
+
+                        uint8_t *mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
+                        uint16_t s = 15, t;
+
+                        // Interleave bits and reverse
+                        t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
+
+                        for(t >>= 1; t; t >>= 1, s--)
+                        {
+                                pixel_temp <<= 1;
+                                pixel_temp |= t & 1;
+                        }
+                        pixel_temp <<= s;
+                }
+
+                state->lcdc.out[wy][wx] = dmg_palette[pixel_temp & 0x3];
+                pixel_temp >>= 2;
+        }
+}
+
 static inline void dmg_oam_render(emu_state *restrict state)
 {
+	if(!(state->lcdc.lcd_control.obj))
+	{
+		return;
+	}
+
 	uint8_t curr_tile = 0;
 	uint8_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
@@ -188,6 +259,7 @@ void lcdc_tick(emu_state *restrict state)
 			case SYSTEM_SGB:
 			case SYSTEM_SGB2:
 				dmg_bg_render(state);
+				dmg_window_render(state);
 				dmg_oam_render(state);
 				break;
 			case SYSTEM_CGB:
