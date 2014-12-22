@@ -110,6 +110,7 @@ void w32_finish_video(emu_state *state)
 {
 	video_state *s = (video_state *)state->front.video.data;
 
+	DeleteObject(s->vramBM);
 	DeleteObject(s->bm);
 	DeleteDC(s->mem);
 
@@ -356,6 +357,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
+	finish_frontend(g_state);
 	finish_emulator(g_state);
 
 	return 0;
