@@ -113,15 +113,16 @@ static inline void dmg_window_render(emu_state *restrict state)
                 {
                         const uint16_t tile_index = (y / 8) * 32 + (x / 8);
                         uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+			uint8_t *mem;
+			uint16_t s = 15, t;
 
 			if(!state->lcdc.lcd_control.bg_char_sel)
 			{
 				tile -= 0x80;
 			}
 
-                        uint8_t *mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
-                        uint16_t s = 15, t;
-
+                        mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
+                        
                         // Interleave bits and reverse
                         t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
