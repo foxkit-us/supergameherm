@@ -8,7 +8,6 @@
 #include "lcdc.h"	// lcdc_read
 #include "memory.h"	// Constants and what have you
 #include "print.h"	// fatal
-#include "rom_read.h"	// OFF_CART_TYPE
 #include "serio.h"	// serial_*
 #include "sound.h"	// sound_*
 #include "timer.h"	// timer_*

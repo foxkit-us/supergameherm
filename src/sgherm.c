@@ -2,18 +2,17 @@
 
 #include "sgherm.h"	// emu_state, constants
 #include "ctl_unit.h"	// init_ctl, execute
-#include "debug.h"	// print_cycles
-#include "frontend.h"	// null_frontend_*
 #include "lcdc.h"	// lcdc_tick
-#include "print.h"	// fatal, error, debug
-#include "rom_read.h"	// offsets
-#include "serio.h"	// serial_tick
-#include "signals.h"	// register_handler
 #include "sound.h"	// sound_tick
-#include "timer.h"	// get_clock
+#include "timer.h"	// timer_tick
+#include "serio.h"	// serial_tick
+#include "debug.h"	// print_cycles
+#include "print.h"	// fatal, error, debug
 #include "util_time.h"	// get_time
+#include "mbc.h"	// MBC_FINISH
 
 #include <stdio.h>	// file methods
+#include <errno.h>	// strerror
 #include <stdlib.h>	// exit
 #include <string.h>	// memset
 
@@ -28,6 +27,7 @@ emu_state * init_emulator(const char *rom_path)
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
 	{
+		fatal(state, "Can't open ROM: %s", strerror(errno));
 		perror("fopen");
 		free(state);
 		return NULL;
