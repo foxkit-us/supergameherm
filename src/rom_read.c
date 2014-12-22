@@ -2,7 +2,8 @@
 
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// malloc
-#include <string.h>	// memcmp
+#include <string.h>	// memcmp, strerror
+#include <errno.h>	// errno
 
 #include "sgherm.h"	// emu_state
 #include "print.h"	// fatal, error, debug
@@ -48,7 +49,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	// Get the full ROM size
 	if(unlikely(fseek(rom, 0, SEEK_END)))
 	{
-		perror("seeking");
+		error(state, "Could not get size of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -66,13 +67,13 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 	if(unlikely(fseek(rom, 0, SEEK_SET)))
 	{
-		perror("seeking");
+		error(state, "Could not seek to end of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
 	if(unlikely(fread(state->cart_data, actual_size, 1, rom) != 1))
 	{
-		perror("Could not read ROM");
+		error(state, "Could not read ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 

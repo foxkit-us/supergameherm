@@ -26,8 +26,7 @@ emu_state * init_emulator(const char *rom_path)
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
 	{
-		fatal(state, "Can't open ROM: %s", strerror(errno));
-		perror("fopen");
+		error(state, "Can't open ROM: %s", strerror(errno));
 		free(state);
 		return NULL;
 	}
@@ -38,7 +37,7 @@ emu_state * init_emulator(const char *rom_path)
 
 	if(unlikely(!read_rom_data(state, rom, &header)))
 	{
-		fatal(state, "can't read ROM data (ROM is corrupt)?");
+		error(state, "can't read ROM data (ROM is corrupt)?");
 		free(state);
 		fclose(rom);
 		return NULL;
