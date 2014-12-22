@@ -51,20 +51,10 @@ typedef struct mbc3_data_t
 		uint8_t seconds;
 		uint8_t minutes;
 		uint8_t hours;
-		struct
-		{
-#ifdef LITTLE_ENDIAN
-			unsigned int day_carry:1;
-			unsigned int halt:1;
-			unsigned int unused:5;
-			unsigned int days:9;
-#else
-			unsigned int days:9;
-			unsigned int unused:5;
-			unsigned int halt:1;
-			unsigned int day_carry:1;
-#endif
-		};
+
+		uint16_t days;
+		uint8_t halt;
+		uint8_t day_carry;
 	} rtc[2];
 
 	uint8_t latched;	//! If 0x1, copy time into rtc[1] and read from that
@@ -89,8 +79,12 @@ struct mbc_state_t
 
 	cart_types cart;	//! Cartridge in use
 
-	//! Cartridge RAM
-	uint8_t cart_ram[0xF][0x2000];
+	uint8_t *cart_ram;	//! Cartridge RAM
+
+	unsigned ram_bank_size;	//! Size of each bank
+	uint8_t ram_bank_count;	//! Number of banks
+	unsigned ram_total;	//! Total on-cart RAM
+	bool use_4bit;		//! Use 4-bit values (MBC2 only!)
 
 	uint_fast16_t ram_bank;	//! Current RAM bank
 	uint_fast16_t rom_bank;	//! Current ROM bank

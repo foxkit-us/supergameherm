@@ -4,6 +4,7 @@
 #include "print.h"	// warning/debug
 
 #include <string.h>	// memset
+#include <stdlib.h>	// calloc, free
 
 // TODO - dynamically allocate RAM banks based on MBC type!
 
@@ -17,19 +18,73 @@ static inline uint8_t rom_bank_read(emu_state *restrict state, uint16_t location
 //! read from the switchable RAM bank space
 static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location)
 {
-	return state->mbc.cart_ram[state->mbc.ram_bank][location - 0xA000];
+	size_t pos = state->mbc.ram_bank * state->mbc.ram_bank_size +
+		(location - 0xA000);
+	uint8_t val;
+
+	if(unlikely(pos > state->mbc.ram_total))
+	{
+		warning(state, "Attempt to read from nonexistent cart RAM at %04X!",
+			location);
+		return 0xFF;
+	}
+
+	val = state->mbc.cart_ram[pos];
+	if(state->mbc.use_4bit)
+	{
+		val &= 0xF;
+	}
+
+	return val;
 }
 
 //! write to the switchable RAM bank space
 static inline void ram_bank_write(emu_state *restrict state, uint16_t location, uint8_t value)
 {
-	state->mbc.cart_ram[state->mbc.ram_bank][location - 0xA000] = value;
+	size_t pos = state->mbc.ram_bank * state->mbc.ram_bank_size +
+		(location - 0xA000);
+
+	if(unlikely(pos > state->mbc.ram_total))
+	{
+		warning(state, "Attempt to write to nonexistent cart RAM at %04X!",
+			location);
+		return;
+	}
+
+	state->mbc.cart_ram[pos] = value;
 }
 
 // MBC-less operation
 
 static inline bool nombc_init(emu_state *restrict state UNUSED)
 {
+	int s = state->cart_data[OFF_RAM_SIZE];
+
+	state->mbc.use_4bit = false;
+
+	// Most MBC-less carts don't have RAM... but some rare ones apparently do.
+	// TODO load state with batt
+	if(s)
+	{
+		// Get total memory size
+		s = 0x400 << ((s << 1) - 1);
+
+		// I don't know the bank size, assuming 8k banks (or bank size)
+		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
+		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
+		state->mbc.ram_total = s;
+		state->mbc.cart_ram = calloc(s, 1);
+		if(!(state->mbc.cart_ram))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
+		state->mbc.cart_ram = NULL;
+	}
+
 	return true;
 }
 
@@ -59,6 +114,7 @@ static inline void nombc_write(emu_state *restrict state, uint16_t location, uin
 
 static inline void nombc_finish(emu_state *restrict state UNUSED)
 {
+	free(state->mbc.cart_ram);
 }
 
 const mbc_func nombc_func =
@@ -73,9 +129,35 @@ const mbc_func nombc_func =
 
 static inline bool mbc1_init(emu_state *restrict state)
 {
+	int s = state->cart_data[OFF_RAM_SIZE];
+
 	state->mbc.rom_bank = 1;
+	state->mbc.use_4bit = false;
 	state->mbc.mbc_common.rom_select = false;
 	state->mbc.mbc_common.ram_enable = 0;
+
+	// TODO load state with batt
+	if(s)
+	{
+		// Get total memory size
+		s = 0x400 << ((s << 1) - 1);
+
+		// MBC1 uses 8k banks (like most carts)
+		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
+		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
+		state->mbc.ram_total = s;
+		state->mbc.cart_ram = calloc(s, 1);
+		if(!(state->mbc.cart_ram))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
+		state->mbc.cart_ram = NULL;
+	}
+
 	return true;
 }
 
@@ -145,6 +227,7 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc1_finish(emu_state *restrict state UNUSED)
 {
+	free(state->mbc.cart_ram);
 }
 
 const mbc_func mbc1_func =
@@ -162,6 +245,18 @@ static inline bool mbc2_init(emu_state *restrict state)
 	state->mbc.rom_bank = 1;
 	state->mbc.mbc_common.rom_select = false;
 	state->mbc.mbc_common.ram_enable = 0;
+
+	// MBC2 does *not* use 8K banks, it only has 512 4-bit values.
+	state->mbc.ram_bank_size = 512;
+	state->mbc.ram_bank_count = 1;
+	state->mbc.ram_total = 512;
+	state->mbc.use_4bit = true;
+	state->mbc.cart_ram = calloc(512, 1);
+	if(!(state->mbc.cart_ram))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -216,6 +311,7 @@ static inline void mbc2_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc2_finish(emu_state *restrict state UNUSED)
 {
+	free(state->mbc.cart_ram);
 }
 
 const mbc_func mbc2_func =
@@ -230,9 +326,36 @@ const mbc_func mbc2_func =
 
 static inline bool mbc3_init(emu_state *restrict state)
 {
+	int s = state->cart_data[OFF_RAM_SIZE];
+
 	state->mbc.rom_bank = 1;
+	state->mbc.use_4bit = false;
 	state->mbc.mbc3.ram_rtc_enable = 0;
 	state->mbc.mbc3.rtc_select = 0;
+
+	// TODO load state with batt
+	if(s)
+	{
+		// Get total memory size
+		s = 0x400 << ((s << 1) - 1);
+
+		debug(state, "RAM size is %d\n", s);
+
+		// MBC3 uses 8k banks (like most carts)
+		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
+		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
+		state->mbc.ram_total = s;
+		state->mbc.cart_ram = calloc(s, 1);
+		if(!(state->mbc.cart_ram))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
+		state->mbc.cart_ram = NULL;
+	}
 
 	// TODO proper RTC data
 	memset(state->mbc.mbc3.rtc, 0, sizeof(state->mbc.mbc3.rtc));
@@ -364,6 +487,7 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc3_finish(emu_state *restrict state UNUSED)
 {
+	free(state->mbc.cart_ram);
 }
 
 const mbc_func mbc3_func =
@@ -379,9 +503,34 @@ const mbc_func mbc3_func =
 
 static inline bool mbc5_init(emu_state *restrict state)
 {
+	int s = state->cart_data[OFF_RAM_SIZE];
+
 	state->mbc.rom_bank = 1;
-	state->mbc.mbc_common.ram_enable = 0;
-	state->mbc.mbc_common.rom_select = false;
+	state->mbc.use_4bit = false;
+	state->mbc.mbc3.ram_rtc_enable = 0;
+	state->mbc.mbc3.rtc_select = 0;
+
+	// TODO load state with batt
+	if(s)
+	{
+		// Get total memory size
+		s = 0x400 << ((s << 1) - 1);
+
+		// MBC5 uses 8k banks (like most carts)
+		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
+		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
+		state->mbc.ram_total = s;
+		state->mbc.cart_ram = calloc(s, 1);
+		if(!(state->mbc.cart_ram))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
+		state->mbc.cart_ram = NULL;
+	}
 
 	return true;
 }
@@ -433,6 +582,7 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc5_finish(emu_state *restrict state UNUSED)
 {
+	free(state->mbc.cart_ram);
 }
 
 const mbc_func mbc5_func =
