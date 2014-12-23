@@ -11,19 +11,19 @@ struct oam_t
 	uint8_t x;
 	uint8_t chr;	//! CHR code
 #ifdef LITTLE_ENDIAN
-	bool priority:1;		//! Priority to obj/bg
-	bool vflip:1;			//! Vertical flip flag
-	bool hflip:1;			//! Horizontal flip
-	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
-	unsigned int char_bank:1;	//! Character bank (CGB only)
 	unsigned int pal_cgb:3;		//! Palette selection CGB only)
+	unsigned int char_bank:1;	//! Character bank (CGB only)
+	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
+	bool hflip:1;			//! Horizontal flip
+	bool vflip:1;			//! Vertical flip flag
+	bool priority:1;		//! Priority to obj/bg
 #else
-	unsigned int pal_cgb:3;		//! Palette selection CGB only)
-	unsigned int char_bank:1;	//! Character bank (CGB only)
-	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
-	bool hflip:1;			//! Horizontal flip
-	bool vflip:1;			//! Vertical flip flag
 	bool priority:1;		//! Priority to obj/bg
+	bool vflip:1;			//! Vertical flip flag
+	bool hflip:1;			//! Horizontal flip
+	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
+	unsigned int char_bank:1;	//! Character bank (CGB only)
+	unsigned int pal_cgb:3;		//! Palette selection CGB only)
 #endif
 };
 
