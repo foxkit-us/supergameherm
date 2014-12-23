@@ -164,7 +164,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		uint16_t pixel_temp;
 		uint16_t s = 15, t;
 
-		if(obj->x < 8 || obj->y < 16)
+		if(!(obj->x) || !(obj->y))
 		{
 			// Off-screen
 			return;
@@ -197,7 +197,12 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		for(tx = 0; tx < 8; tx++)
 		{
-			if(!((pixel_temp & 0x03) == 0) || (obj_x + tx > 160))
+			if(obj_x + tx < 0)
+			{
+				continue;
+			}
+
+			if((pixel_temp & 0x03) && ((obj_x + tx) < 160) && ((obj_x + tx) > 0))
 			//|| (!obj->priority && row[obj_x] != dmg_palette[0])
 			{
 				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
