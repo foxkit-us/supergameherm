@@ -91,6 +91,8 @@ static inline void dmg_window_render(emu_state *restrict state)
 
 	// Pixel offsets
 	uint8_t pixel_y_offset = (y & 7) * 2;
+
+	// Yes, windows use this.
 	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
 
 	uint16_t pixel_temp = 0;
@@ -104,7 +106,6 @@ static inline void dmg_window_render(emu_state *restrict state)
 	if(state->lcdc.lcd_control.win_code_sel)
 	{
 		tile_map_start += 0x400;
-		printf("%04X\n", tile_map_start + 0x8000);
 	}
 
 	for(; wx < 159; x++, wx++)
@@ -122,7 +123,7 @@ static inline void dmg_window_render(emu_state *restrict state)
 			}
 
                         mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
-                        
+
                         // Interleave bits and reverse
                         t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
