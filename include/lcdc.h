@@ -14,13 +14,13 @@ struct oam_t
 	unsigned int pal_cgb:3;		//! Palette selection CGB only)
 	unsigned int char_bank:1;	//! Character bank (CGB only)
 	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
-	bool hflip:1;			//! Horizontal flip
-	bool vflip:1;			//! Vertical flip flag
-	bool priority:1;		//! Priority to obj/bg
+	unsigned int hflip:1;		//! Horizontal flip
+	unsigned int vflip:1;		//! Vertical flip flag
+	unsigned int priority:1;	//! Priority to obj/bg
 #else
-	bool priority:1;		//! Priority to obj/bg
-	bool vflip:1;			//! Vertical flip flag
-	bool hflip:1;			//! Horizontal flip
+	unsigned int priority:1;	//! Priority to obj/bg
+	unsigned int vflip:1;		//! Vertical flip flag
+	unsigned int hflip:1;		//! Horizontal flip
 	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
 	unsigned int char_bank:1;	//! Character bank (CGB only)
 	unsigned int pal_cgb:3;		//! Palette selection CGB only)
@@ -30,17 +30,17 @@ struct oam_t
 struct cps_t
 {
 #ifdef LITTLE_ENDIAN
-	bool pal_sel:1;			//! Palette changes on next write
+	unsigned int pal_sel:1;			//! Palette changes on next write
 	unsigned int notused:1;		//! Not used
 	unsigned int pal_num:3;		//! Select palette number
 	unsigned int pal_data_num:2;	//! Select palette data number
-	bool hl:1;			//! Specify H/L
+	unsigned int hl:1;			//! Specify H/L
 #else
-	bool hl:1;			//! Specify H/L
+	unsigned int hl:1;			//! Specify H/L
 	unsigned int pal_data_num:2;	//! Select palette data number
 	unsigned int pal_num:3;		//! Select palette number
 	unsigned int notused:1;		//! Not used
-	bool pal_sel:1;			//! Palette changes on next write
+	unsigned int pal_sel:1;			//! Palette changes on next write
 #endif
 };
 
@@ -83,23 +83,23 @@ struct lcdc_state_t
 		struct
 		{
 #ifdef LITTLE_ENDIAN
-			bool dmg_bg:1;		//! BG is on or off (DMG only)
-			bool obj:1;		//! OBJ's are off or on
-			bool obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
-			bool bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
-			bool bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
-			bool win:1;		//! Windowing on
-			bool win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
-			bool enable:1;		//! LCD enabled
+			unsigned int dmg_bg:1;		//! BG is on or off (DMG only)
+			unsigned int obj:1;		//! OBJ's are off or on
+			unsigned int obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
+			unsigned int bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
+			unsigned int bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
+			unsigned int win:1;		//! Windowing on
+			unsigned int win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
+			unsigned int enable:1;		//! LCD enabled
 #else
-			bool enable:1;		//! LCD enabled
-			bool win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
-			bool win:1;		//! Windowing on
-			bool bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
-			bool bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
-			bool obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
-			bool obj:1;		//! OBJ's are off or on
-			bool dmg_bg:1;		//! BG is on or off (DMG only)
+			unsigned int enable:1;		//! LCD enabled
+			unsigned int win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
+			unsigned int win:1;		//! Windowing on
+			unsigned int bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
+			unsigned int bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
+			unsigned int obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
+			unsigned int obj:1;		//! OBJ's are off or on
+			unsigned int dmg_bg:1;		//! BG is on or off (DMG only)
 #endif
 		};
 	} lcd_control;
@@ -118,19 +118,19 @@ struct lcdc_state_t
 			 */
 			unsigned int mode_flag:2;
 
-			bool lyc_state:1;	//! LYC matches LY
-			bool mode_00:1;		//! int on mode 00 selection
-			bool mode_01:1;		//! int on mode 01 selection
-			bool mode_10:1;		//! int on mode 10 selection
-			bool lyc:1;		//! int on LY matching selection
-			unsigned int notused:1;	//! Upper bit padding
+			unsigned int lyc_state:1;	//! LYC matches LY
+			unsigned int mode_00:1;		//! int on mode 00 selection
+			unsigned int mode_01:1;		//! int on mode 01 selection
+			unsigned int mode_10:1;		//! int on mode 10 selection
+			unsigned int lyc:1;		//! int on LY matching selection
+			unsigned int notused:1;		//! Upper bit padding
 #else
-			unsigned int notused:1;	//! Upper bit padding
-			bool lyc:1;		//! int on LY matching selection
-			bool mode_10:1;		//! int on mode 10 selection
-			bool mode_01:1;		//! int on mode 01 selection
-			bool mode_00:1;		//! int on mode 00 selection
-			bool lyc_state:1;	//! LYC matches LY
+			unsigned int notused:1;		//! Upper bit padding
+			unsigned int lyc:1;		//! int on LY matching selection
+			unsigned int mode_10:1;		//! int on mode 10 selection
+			unsigned int mode_01:1;		//! int on mode 01 selection
+			unsigned int mode_00:1;		//! int on mode 00 selection
+			unsigned int lyc_state:1;	//! LYC matches LY
 
 			/*! Mode flag
 			 * Mode 00: enable CPU access to VRAM
