@@ -165,7 +165,8 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		uint16_t s = 15, t;
 		uint16_t offset;
 
-		if(!(obj->x && obj->y && obj->x < 160 && obj->y < 144))
+		// Adjusted for offsets
+		if(!(obj->x && obj->y && obj->x < 168 && obj->y < 160))
 		{
 			// Off-screen
 			continue;
@@ -201,6 +202,12 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			pixel_temp |= t & 1;
 		}
 		pixel_temp <<= s;
+
+		if(obj->hflip)
+		{
+			// XXX this is bogus
+			pixel_temp = rotl_16(pixel_temp, 2);
+		}
 
 		for(tx = 0; tx < 8; tx++)
 		{
