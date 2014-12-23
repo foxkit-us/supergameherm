@@ -164,10 +164,9 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		uint8_t tile = obj->chr;
 		const int16_t obj_x = obj->x - 8, obj_y = obj->y - 16;
 
-		uint8_t *mem, *mem2;
+		uint8_t *mem;
 		uint16_t pixel_temp;
 		uint16_t s = 15, t;
-		uint16_t offset;
 
 		// Adjusted for offsets
 		if(!(obj->x && obj->y && obj->x < 168 && obj->y < 160))
@@ -188,14 +187,20 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			pixel_y_offset = y_len - 1 - pixel_y_offset;
 		}
 
-		offset = tile * 16;
-		pixel_y_offset *= 2;
+		if(pixel_y_offset > 7)
+		{
+			// Bottom tile
+			pixel_y_offset *= 2;
+			mem = state->lcdc.vram[0x0] + (tile * 32) + pixel_y_offset;
+		}
+		else
+		{
+			// Top tile
+			pixel_y_offset *= 2;
+			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_y_offset;
+		}
 
-		mem = state->lcdc.vram[0x0] + offset + pixel_y_offset;
-		offset *= 2;
-		mem2 = state->lcdc.vram[0x0] + offset + pixel_y_offset;
-
-		t = pixel_temp = interleave8(*mem2, *mem, *(mem2 + 1), *(mem + 1));
+		t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
 		// Interleave bits and reverse
 
