@@ -405,6 +405,7 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		state->mbc.rom_bank = value & 0x7F;
 		break;
 	case 0x4:
+	case 0x5:
 		state->mbc.mbc3.rtc_select = value;
 		break;
 	case 0xA:
