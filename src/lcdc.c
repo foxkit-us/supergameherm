@@ -86,9 +86,10 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 static inline void dmg_window_render(emu_state *restrict state)
 {
-	const uint16_t y = state->lcdc.ly, wy = y + state->lcdc.window_y;
-	uint16_t x = 0, wx = state->lcdc.window_x - 7;
-	uint16_t tile_map_start = 0x1800; // Initial offset
+	const int16_t y = state->lcdc.ly, wy = y + state->lcdc.window_y;
+	uint16_t x = 0;
+	int16_t wx = state->lcdc.window_x - 7;
+	uint16_t tile_map_start = state->lcdc.lcd_control.win_code_sel ? 0x1c00 : 0x1800;
 
 	// Pixel offsets
 	uint8_t pixel_y_offset = (y & 7) * 2;
@@ -104,19 +105,14 @@ static inline void dmg_window_render(emu_state *restrict state)
 		return;
 	}
 
-	if(state->lcdc.lcd_control.win_code_sel)
-	{
-		tile_map_start += 0x400;
-	}
-
 	for(; wx < 159; x++, wx++)
-        {
+	{
 		uint8_t pixel;
 
-                if(!((wx & 7) && x))
-                {
-                        const uint16_t tile_index = (y / 8) * 32 + (x / 8);
-                        uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+		if(!(wx == 0 || ((wx & 7) && x)))
+		{
+			const uint16_t tile_index = (y / 8) * 32 + (x / 8);
+			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
 			uint8_t *mem;
 			uint16_t s = 15, t;
 
@@ -125,24 +121,30 @@ static inline void dmg_window_render(emu_state *restrict state)
 				tile -= 0x80;
 			}
 
-                        mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
+			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
 
-                        // Interleave bits and reverse
-                        t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
+			// Interleave bits and reverse
+			t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
-                        for(t >>= 1; t; t >>= 1, s--)
-                        {
-                                pixel_temp <<= 1;
-                                pixel_temp |= t & 1;
-                        }
-                        pixel_temp <<= s;
-                }
+			for(t >>= 1; t; t >>= 1, s--)
+			{
+				pixel_temp <<= 1;
+				pixel_temp |= t & 1;
+			}
+			pixel_temp <<= s;
 
+			printf("%d %d\n", wx, wy);
+		}
+
+		if(wx < 0)
+		{
+			continue;
+		}
 
 		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
-                state->lcdc.out[wy][wx] = dmg_palette[pixel];
-                pixel_temp >>= 2;
-        }
+		state->lcdc.out[wy][wx] = dmg_palette[pixel];
+		pixel_temp >>= 2;
+	}
 }
 
 static inline void dmg_oam_render(emu_state *restrict state)
