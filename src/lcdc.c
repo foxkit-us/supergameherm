@@ -215,9 +215,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		for(tx = 0; tx < 8; tx++)
 		{
 			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) &&
-				((obj_x + tx) >= 0))
-			//if(!obj->priority || (obj->priority && row[obj_x + tx] == dmg_palette[0]))
+				((obj_x + tx) >= 0) && (!obj->priority ||
+				(obj->priority && row[obj_x + tx] ==
+				 dmg_palette[0])))
 			{
+
 				const uint8_t pal = state->lcdc.obj_pal[obj->pal_dmg];
 				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
 				row[obj_x + tx] = dmg_palette[pixel];
