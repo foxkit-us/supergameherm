@@ -197,11 +197,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		for(tx = 0; tx < 8; tx++)
 		{
-			if(!(
-				((pixel_temp & 0x03) == 0)
-				|| (obj_x + tx > 160)
-				//|| (!obj->priority && row[obj_x] != dmg_palette[0])
-			)) row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
+			if(!((pixel_temp & 0x03) == 0) || (obj_x + tx > 160))
+			//|| (!obj->priority && row[obj_x] != dmg_palette[0])
+			{
+				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
+			}
 
 			if(obj->hflip)
 			{
