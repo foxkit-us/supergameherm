@@ -520,6 +520,10 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 {
 	switch(location >> 12)
 	{
+	case 0x0:
+	case 0x1:
+		state->mbc.mbc_common.ram_enable = value;
+		break;
 	case 0x2:
 		state->mbc.rom_bank = (state->mbc.rom_bank & 0x100) | value;
 		break;
@@ -530,6 +534,12 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 	case 0x5:
 		// RAM banking mode
 		state->mbc.ram_bank = value;
+		break;
+	case 0xA:
+	case 0xB:
+		// switchable RAM bank - 0xA000..0xBFFF
+		ram_bank_write(state, location, value);
+		break;
 	default:
 		warning(state, "Unimplemented write for MBC5 at address %04X", location);
 		break;
