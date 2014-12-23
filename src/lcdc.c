@@ -158,7 +158,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		return;
 	}
 
-	for(curr_tile = 39; curr_tile >= 0; curr_tile -= (y_len / 8))
+	for(curr_tile = 39; curr_tile >= 0; curr_tile -= 1)
 	{
 		oam *obj = (oam *)(state->lcdc.oam_ram + (4 * curr_tile));
 		uint8_t tile = obj->chr;
@@ -190,11 +190,12 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		if(pixel_y_offset > 7)
 		{
 			// Bottom tile
-			pixel_y_offset *= 2;
-			mem = state->lcdc.vram[0x0] + (tile * 32) + pixel_y_offset;
+			pixel_y_offset = (pixel_y_offset - 8) * 2;
+			mem = state->lcdc.vram[0x0] + ((tile | 0x01) * 16) + pixel_y_offset;
 		}
 		else
 		{
+			if (y_len == 16) tile &= 0xFE;
 			// Top tile
 			pixel_y_offset *= 2;
 			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_y_offset;
