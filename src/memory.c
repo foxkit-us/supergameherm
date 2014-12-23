@@ -165,6 +165,11 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 				// FIXME I'm feeling lazy
 				return state->lcdc.oam_ram[location - 0xFE00];
 			}
+			else if(location < 0xFF00)
+			{
+				// Unusable memory - would warn but too noisy
+				return 0xFF;
+			}
 
 			break;
 		case 0xFF:
@@ -181,7 +186,9 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 		default:
 			// who knows? the SHADOW knows! - 0xE000..0xFDFF
 			location -= 0x2000;
+			break;
 		}
+		break;
 	}
 
 #ifndef NDEBUG
@@ -391,6 +398,12 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 			{
 				// FIXME I'm feeling lazy
 				state->lcdc.oam_ram[location - 0xFE00] = data;
+				return;
+			}
+			else if(location < 0xFF00)
+			{
+				// Unusable memory - would warn but too noisy
+				return;
 			}
 
 			break;
@@ -408,9 +421,11 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 
 			break;
 		default:
-			// who knows? the SHADOW knows! - 0xE000..0xFDFF
+			// Shadow RAM
 			location -= 0x2000;
+			break;
 		}
+		break;
 	}
 #ifndef NDEBUG
 	if((location < 0xC000 || location > 0xCFFF) &&
