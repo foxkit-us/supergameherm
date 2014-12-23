@@ -52,11 +52,7 @@ struct lcdc_state_t
 	uint_fast8_t vram_bank;		//! Present VRAM bank
 	uint8_t vram[0x2][0x2000];	//! VRAM banks (DMG only uses 1)
 
-	union
-	{
-		oam oam_store[40];		//! OAM
-		uint8_t oam_ram[160];
-	};
+	uint8_t oam_ram[160];
 
 	//! LCD control register
 	union

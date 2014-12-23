@@ -79,7 +79,6 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		}
 
 		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
-		assert(pixel < 4);
 		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel];
 		pixel_temp >>= 2;
 	}
@@ -112,6 +111,8 @@ static inline void dmg_window_render(emu_state *restrict state)
 
 	for(; wx < 159; x++, wx++)
         {
+		uint8_t pixel;
+
                 if(!((wx & 7) && x))
                 {
                         const uint16_t tile_index = (y / 8) * 32 + (x / 8);
@@ -137,7 +138,9 @@ static inline void dmg_window_render(emu_state *restrict state)
                         pixel_temp <<= s;
                 }
 
-                state->lcdc.out[wy][wx] = dmg_palette[pixel_temp & 0x3];
+
+		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
+                state->lcdc.out[wy][wx] = dmg_palette[pixel];
                 pixel_temp >>= 2;
         }
 }
@@ -215,7 +218,9 @@ static inline void dmg_oam_render(emu_state *restrict state)
 				((obj_x + tx) >= 0))
 			//if(!obj->priority || (obj->priority && row[obj_x + tx] == dmg_palette[0]))
 			{
-				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3];
+				const uint8_t pal = state->lcdc.obj_pal[obj->pal_dmg];
+				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
+				row[obj_x + tx] = dmg_palette[pixel];
 			}
 
 			if(obj->hflip)
