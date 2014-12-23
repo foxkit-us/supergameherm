@@ -4,6 +4,7 @@
 #include "ctl_unit.h"	// signal_interrupt
 #include "util.h"	// likely/unlikely
 #include "sgherm.h"	// emu_state
+#include "util_bitops.h"// bitops
 
 #include <assert.h>
 #include <string.h>	// memset
@@ -143,10 +144,10 @@ static inline void dmg_window_render(emu_state *restrict state)
 static inline void dmg_oam_render(emu_state *restrict state)
 {
 	uint8_t curr_tile;
-	uint8_t pixel_y_offset;
+	uint16_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
 	uint8_t y_len = (state->lcdc.lcd_control.obj_block_size) ? 16 : 8;
-	uint8_t tx;
+	uint16_t tx;
 
 	if(!state->lcdc.lcd_control.obj)
 	{
@@ -163,8 +164,13 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		uint16_t pixel_temp;
 		uint16_t s = 15, t;
 
-		pixel_y_offset = state->lcdc.ly - obj_y;
+		if(obj->x < 8 || obj->y < 16)
+		{
+			// Off-screen
+			return;
+		}
 
+		pixel_y_offset = state->lcdc.ly - obj_y;
 		if(pixel_y_offset > (y_len - 1))
 		{
 			// out of display
@@ -182,23 +188,29 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		// Interleave bits and reverse
 		t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
 
-		if(!obj->hflip)
+		for(t >>= 1; t; t >>= 1, s--)
 		{
-			for(t >>= 1; t; t >>= 1, s--)
-			{
-				pixel_temp <<= 1;
-				pixel_temp |= t & 1;
-			}
-			pixel_temp <<= s;
+			pixel_temp <<= 1;
+			pixel_temp |= t & 1;
 		}
+		pixel_temp <<= s;
 
-		for(tx = 0; tx < 8; tx++, pixel_temp >>= 2)
+		for(tx = 0; tx < 8; tx++)
 		{
 			if(!(
 				((pixel_temp & 0x03) == 0)
 				|| (obj_x + tx > 160)
 				//|| (!obj->priority && row[obj_x] != dmg_palette[0])
 			)) row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
+
+			if(obj->hflip)
+			{
+				pixel_temp = rotl_16(pixel_temp, 2);
+			}
+			else
+			{
+				pixel_temp >>= 2;
+			}
 		}
 
 		// only do even numbered sprites in 8x16 mode

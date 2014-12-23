@@ -59,27 +59,27 @@ static inline uint16_t swap_16(uint16_t number)
 }
 
 //! Do a right-rotate, 8-bit style
-static inline uint8_t rotr_8(uint8_t number)
+static inline uint8_t rotr_8(uint8_t number, uint8_t amount)
 {
-	return (number >> 1) | (number << 7);
+	return (number >> amount) | (number << (sizeof(number) * 8 - amount));
 }
 
 //! Do a left-rotate, 8-bit style
-static inline uint8_t rotl_8(uint8_t number)
+static inline uint8_t rotl_8(uint8_t number, uint8_t amount)
 {
-	return (number << 1) | (number >> 7);
+	return (number << amount) | (number >> (sizeof(number) * 8 - amount));
 }
 
 //! Do a right-rotate, 16-bit style
-static inline uint16_t rotr_16(uint16_t number)
+static inline uint16_t rotr_16(uint16_t number, uint8_t amount)
 {
-	return (number >> 1) | (number << 15);
+	return (number >> amount) | (number << (sizeof(number) * 8 - amount));
 }
 
 //! Do a left-rotate, 16-bit style
-static inline uint16_t rotl_16(uint16_t number)
+static inline uint16_t rotl_16(uint16_t number, uint8_t amount)
 {
-	return (number << 1) | (number >> 15);
+	return (number << amount) | (number >> (sizeof(number) * 8 - amount));
 }
 
 #endif /*__UTIL_BITOPS_H__*/

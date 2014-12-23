@@ -114,7 +114,7 @@ static inline void rlca(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	FLAGS_CLEAR(state);
 
-	REG_A(state) = rotl_8(REG_A(state));
+	REG_A(state) = rotl_8(REG_A(state), 1);
 
 	if(REG_A(state) & 0x01)
 	{
@@ -170,7 +170,7 @@ static inline void rrca(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	FLAGS_CLEAR(state);
 
-	REG_A(state) = rotr_8(REG_A(state));
+	REG_A(state) = rotr_8(REG_A(state), 1);
 
 	if(REG_A(state) & 0x80)
 	{
