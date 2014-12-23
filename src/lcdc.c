@@ -167,7 +167,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		if(!(obj->x) || !(obj->y))
 		{
 			// Off-screen
-			return;
+			continue;
 		}
 
 		pixel_y_offset = state->lcdc.ly - obj_y;
@@ -202,8 +202,9 @@ static inline void dmg_oam_render(emu_state *restrict state)
 				continue;
 			}
 
-			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) && ((obj_x + tx) >= 0))
-			//|| (!obj->priority && row[obj_x] != dmg_palette[0])
+			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) &&
+				((obj_x + tx) >= 0))
+				//(!obj->priority || (row[obj_x] == dmg_palette[0])))
 			{
 				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
 			}
