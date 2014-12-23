@@ -61,7 +61,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			uint8_t *mem;
 
 			if(!state->lcdc.lcd_control.bg_char_sel)
-		{
+			{
 				tile -= 0x80;
 			}
 
@@ -154,7 +154,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		return;
 	}
 
-	for(curr_tile = 39; curr_tile >= 0; curr_tile--)
+	for(curr_tile = 39; curr_tile >= 0; curr_tile -= (y_len / 8))
 	{
 		oam *obj = (oam *)(state->lcdc.oam_ram + (4 * curr_tile));
 		uint8_t tile = obj->chr;
@@ -187,10 +187,9 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		offset = tile * 16;
 		pixel_y_offset *= 2;
 
-		// Position in memory
 		mem = state->lcdc.vram[0x0] + offset + pixel_y_offset;
 		offset *= 2;
-		mem2 = state->lcdc.vram[0x0] + offset + pixel_y_offset; // 8x16
+		mem2 = state->lcdc.vram[0x0] + offset + pixel_y_offset;
 
 		t = pixel_temp = interleave8(*mem2, *mem, *(mem2 + 1), *(mem + 1));
 
@@ -213,11 +212,9 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		{
 			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) &&
 				((obj_x + tx) >= 0))
-				//(!obj->priority || (row[obj_x] == dmg_palette[0])))
+			//if(!obj->priority || (obj->priority && row[obj_x + tx] == dmg_palette[0]))
 			{
-				assert(obj_x + tx >= 0);
-				assert(obj_x + tx <= 159);
-				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
+				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3];
 			}
 
 			if(obj->hflip)
@@ -228,12 +225,6 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			{
 				pixel_temp >>= 2;
 			}
-		}
-
-		// only do even numbered sprites in 8x16 mode
-		if(state->lcdc.lcd_control.obj_block_size)
-		{
-			curr_tile--;
 		}
 	}
 }
