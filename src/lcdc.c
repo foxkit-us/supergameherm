@@ -143,7 +143,7 @@ static inline void dmg_window_render(emu_state *restrict state)
 
 static inline void dmg_oam_render(emu_state *restrict state)
 {
-	int curr_tile;
+	uint8_t curr_tile = 39;
 	uint16_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
 	uint8_t y_len = (state->lcdc.lcd_control.obj_block_size) ? 16 : 8;
@@ -154,7 +154,10 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		return;
 	}
 
-	for(curr_tile = 39; curr_tile >= 0; curr_tile--)
+	// only do even numbered sprites in 8x16 mode
+	if (state->lcdc.lcd_control.obj_block_size) curr_tile--;
+
+	for(; curr_tile > 0; curr_tile -= (state->lcdc.lcd_control.obj_block_size) + 1)
 	{
 		oam *obj = (oam *)(state->lcdc.oam_ram + (4 * curr_tile));
 		uint8_t tile = obj->chr;
@@ -196,12 +199,15 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		// Interleave bits and reverse
 
-		for(t >>= 1; t; t >>= 1, s--)
+		if(!obj->hflip)
 		{
-			pixel_temp <<= 1;
-			pixel_temp |= t & 1;
+			for(t >>= 1; t; t >>= 1, s--)
+			{
+				pixel_temp <<= 1;
+				pixel_temp |= t & 1;
+			}
+			pixel_temp <<= s;
 		}
-		pixel_temp <<= s;
 
 		if(obj->hflip)
 		{
@@ -220,20 +226,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 				row[obj_x + tx] = dmg_palette[pixel_temp & 0x3] + 100;
 			}
 
-			if(obj->hflip)
-			{
-				pixel_temp = rotl_16(pixel_temp, 2);
-			}
-			else
-			{
-				pixel_temp >>= 2;
-			}
-		}
-
-		// only do even numbered sprites in 8x16 mode
-		if(state->lcdc.lcd_control.obj_block_size)
-		{
-			curr_tile--;
+			pixel_temp >>= 2;
 		}
 	}
 }
