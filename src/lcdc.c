@@ -10,16 +10,13 @@
 #include <string.h>	// memset
 
 
-#define LCDC_BGWINDOW_SHOW	0x01
-#define LCDC_OBJ_DISPLAY	0x02
-#define LCDC_OBJ_LGSIZE		0x04
-#define LCDC_BGTILE_MAP_HI	0x08
-#define LCDC_BGWINDOW_TILE_LO	0x10
-#define LCDC_WINDOW_SHOW	0x20
-#define LCDC_WINTILE_MAP_HI	0x40
-#define LCDC_ENABLE		0x80
-
-uint32_t dmg_palette[4] = { 0x00FFFFFF, 0x00AAAAAA, 0x00777777, 0x00000000 };
+static const uint32_t dmg_palette[4] =
+{
+	0x00FFFFFF,
+	0x00AAAAAA,
+	0x00777777,
+	0x00000000
+};
 
 void init_lcdc(emu_state *restrict state)
 {
@@ -53,6 +50,8 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 	for(x = 0; x < 160; x++, sx++)
 	{
+		uint8_t pixel;
+
 		if(!((sx & 7) && x))
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
@@ -79,7 +78,9 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			pixel_temp <<= s;
 		}
 
-		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel_temp & 0x3];
+		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
+		assert(pixel < 4);
+		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel];
 		pixel_temp >>= 2;
 	}
 }
@@ -410,12 +411,12 @@ inline uint8_t lcdc_lyc_read(emu_state *restrict state, uint16_t reg UNUSED)
 
 inline uint8_t lcdc_bgp_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
-	return state->lcdc.bg_pal.reg;
+	return state->lcdc.bg_pal;
 }
 
 inline uint8_t lcdc_objp_read(emu_state *restrict state, uint16_t reg)
 {
-	return state->lcdc.obj_pal[reg - 0xFF48].reg;
+	return state->lcdc.obj_pal[reg - 0xFF48];
 }
 
 inline uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)
@@ -443,7 +444,7 @@ inline uint8_t bg_pal_ind_read(emu_state *restrict state, uint16_t reg)
 	}
 
 	// TODO
-	return state->memory[reg];
+	return 0xFF;
 }
 
 inline uint8_t bg_pal_data_read(emu_state *restrict state, uint16_t reg)
@@ -454,7 +455,7 @@ inline uint8_t bg_pal_data_read(emu_state *restrict state, uint16_t reg)
 	}
 
 	// TODO
-	return state->memory[reg];
+	return 0xFF;
 }
 
 inline uint8_t sprite_pal_ind_read(emu_state *restrict state, uint16_t reg)
@@ -465,7 +466,7 @@ inline uint8_t sprite_pal_ind_read(emu_state *restrict state, uint16_t reg)
 	}
 
 	// TODO
-	return state->memory[reg];
+	return 0xFF;
 }
 
 inline uint8_t sprite_pal_data_read(emu_state *restrict state, uint16_t reg)
@@ -476,7 +477,7 @@ inline uint8_t sprite_pal_data_read(emu_state *restrict state, uint16_t reg)
 	}
 
 	// TODO
-	return state->memory[reg];
+	return 0xFF;
 }
 
 void dump_lcdc_state(emu_state *restrict state)
@@ -561,12 +562,12 @@ inline void lcdc_lyc_write(emu_state *restrict state, uint16_t reg UNUSED, uint8
 
 inline void lcdc_bgp_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
-	state->lcdc.bg_pal.reg = data;
+	state->lcdc.bg_pal = data;
 }
 
 inline void lcdc_objp_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
-	state->lcdc.obj_pal[reg - 0xFF48].reg = data;
+	state->lcdc.obj_pal[reg - 0xFF48] = data;
 }
 
 inline void lcdc_window_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -594,7 +595,6 @@ void bg_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 
 	// TODO
-	state->memory[reg] = data;
 }
 
 void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -606,7 +606,6 @@ void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 
 	// TODO
-	state->memory[reg] = data;
 }
 
 void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -618,7 +617,6 @@ void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 
 	// TODO
-	state->memory[reg] = data;
 }
 
 void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -630,7 +628,6 @@ void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data
 	}
 
 	// TODO
-	state->memory[reg] = data;
 }
 
 void magical_mystery_cure(void)

@@ -30,37 +30,19 @@ struct oam_t
 struct cps_t
 {
 #ifdef LITTLE_ENDIAN
-	unsigned int pal_sel:1;			//! Palette changes on next write
+	unsigned int pal_sel:1;		//! Palette changes on next write
 	unsigned int notused:1;		//! Not used
 	unsigned int pal_num:3;		//! Select palette number
 	unsigned int pal_data_num:2;	//! Select palette data number
-	unsigned int hl:1;			//! Specify H/L
+	unsigned int hl:1;		//! Specify H/L
 #else
-	unsigned int hl:1;			//! Specify H/L
+	unsigned int hl:1;		//! Specify H/L
 	unsigned int pal_data_num:2;	//! Select palette data number
 	unsigned int pal_num:3;		//! Select palette number
 	unsigned int notused:1;		//! Not used
-	unsigned int pal_sel:1;			//! Palette changes on next write
+	unsigned int pal_sel:1;		//! Palette changes on next write
 #endif
 };
-
-typedef union
-{
-	uint8_t reg;
-	struct {
-#ifdef LITTLE_ENDIAN
-		unsigned int dot3 : 2;
-		unsigned int dot2 : 2;
-		unsigned int dot1 : 2;
-		unsigned int dot0 : 2;
-#else
-		unsigned int dot0 : 2;
-		unsigned int dot1 : 2;
-		unsigned int dot2 : 2;
-		unsigned int dot3 : 2;
-#endif
-	};
-} dmg_pal_t;
 
 struct lcdc_state_t
 {
@@ -143,51 +125,14 @@ struct lcdc_state_t
 		};
 	} stat;
 
-	union
+	//! CGB only (FIXME palette RAM)
+	struct
 	{
-		//! CGB only (FIXME palette RAM)
-		struct
-		{
-			cps bcps;
-			uint8_t bcpd;	//! BG data write
+		cps bcps;
+		uint8_t bcpd;	//! BG data write
 
-			cps ocps;
-			uint8_t ocpd;	//! OBJ data write
-		};
-
-		//! DMG only
-		struct
-		{
-			struct
-			{
-#ifdef LITTLE_ENDIAN
-				unsigned int shade_4:2;
-				unsigned int shade_3:2;
-				unsigned int shade_2:2;
-				unsigned int shade_1:2;
-#else
-				unsigned int shade_1:2;
-				unsigned int shade_2:2;
-				unsigned int shade_3:2;
-				unsigned int shade_4:2;
-#endif
-			} dmg_pal;
-
-			struct
-			{
-#ifdef LITTLE_ENDIAN
-				unsigned int notused:2;
-				unsigned int shade_3:2;
-				unsigned int shade_2:2;
-				unsigned int shade_1:2;
-#else
-				unsigned int shade_1:2;
-				unsigned int shade_2:2;
-				unsigned int shade_3:2;
-				unsigned int notused:2;
-#endif
-			} obp[2];
-		};
+		cps ocps;
+		uint8_t ocpd;	//! OBJ data write
 	};
 
 	uint_fast8_t scroll_y;	//! Y position in scrolling map
@@ -199,8 +144,8 @@ struct lcdc_state_t
 	uint_fast8_t ly;	//! Present line being transferred (144-153 = V-Blank)
 	uint_fast8_t lyc;	//! LY comparison (set stat.lyc_state when == ly)
 
-	dmg_pal_t bg_pal;	//! Background palette
-	dmg_pal_t obj_pal[2];	//! OAM palettes
+	uint8_t bg_pal;		//! Background palette
+	uint8_t obj_pal[2];	//! OAM palettes
 
 	uint32_t out[144][160];	//! Simulated LCD screen buffer
 };
