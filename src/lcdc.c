@@ -132,8 +132,6 @@ static inline void dmg_window_render(emu_state *restrict state)
 				pixel_temp |= t & 1;
 			}
 			pixel_temp <<= s;
-
-			printf("%d %d\n", wx, wy);
 		}
 
 		if(wx < 0)
