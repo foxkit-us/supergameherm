@@ -253,7 +253,7 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 
 	state->lcdc.curr_clk = 0;
 	state->lcdc.stat.mode_flag = mode;
-	if (state->lcdc.stat.reg & (1 << (mode + 3)))
+	if(mode < 3 && state->lcdc.stat.reg & (1 << (mode + 3)))
 	{
 		signal_interrupt(state, INT_LCD_STAT);
 	}
