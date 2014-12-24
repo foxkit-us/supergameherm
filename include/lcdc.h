@@ -97,17 +97,17 @@ struct lcdc_state_t
 			unsigned int mode_flag:2;
 
 			unsigned int lyc_state:1;	//! LYC matches LY
-			unsigned int mode_00:1;		//! int on mode 00 selection
-			unsigned int mode_01:1;		//! int on mode 01 selection
-			unsigned int mode_10:1;		//! int on mode 10 selection
+			unsigned int mode_0:1;		//! int on mode 00 selection
+			unsigned int mode_1:1;		//! int on mode 01 selection
+			unsigned int mode_2:1;		//! int on mode 10 selection
 			unsigned int lyc:1;		//! int on LY matching selection
 			unsigned int notused:1;		//! Upper bit padding
 #else
 			unsigned int notused:1;		//! Upper bit padding
 			unsigned int lyc:1;		//! int on LY matching selection
-			unsigned int mode_10:1;		//! int on mode 10 selection
-			unsigned int mode_01:1;		//! int on mode 01 selection
-			unsigned int mode_00:1;		//! int on mode 00 selection
+			unsigned int mode_2:1;		//! int on mode 10 selection
+			unsigned int mode_1:1;		//! int on mode 01 selection
+			unsigned int mode_0:1;		//! int on mode 00 selection
 			unsigned int lyc_state:1;	//! LYC matches LY
 
 			/*! Mode flag
