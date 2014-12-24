@@ -245,6 +245,20 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	}
 }
 
+static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
+{
+#ifndef NDEBUG
+	assert(mode < 4);
+#endif
+
+	state->lcdc.curr_clk = 0;
+	state->lcdc.stat.mode_flag = mode;
+	if (state->lcdc.stat.reg & (1 << (mode + 3)))
+	{
+		signal_interrupt(state, INT_LCD_STAT);
+	}
+}
+
 void lcdc_tick(emu_state *restrict state)
 {
 	if(unlikely(state->stop) ||
@@ -261,16 +275,14 @@ void lcdc_tick(emu_state *restrict state)
 		// first mode - reading OAM for h scan line
 		if(state->lcdc.curr_clk >= 80)
 		{
-			state->lcdc.curr_clk = 0;
-			state->lcdc.stat.mode_flag = 3;
+			lcdc_mode_change(state, 3);
 		}
 		break;
 	case 3:
 		// second mode - reading VRAM for h scan line
 		if(state->lcdc.curr_clk >= 172)
 		{
-			state->lcdc.curr_clk = 0;
-			state->lcdc.stat.mode_flag = 0;
+			lcdc_mode_change(state, 0);
 		}
 		break;
 	case 0:
@@ -310,16 +322,15 @@ void lcdc_tick(emu_state *restrict state)
 				break;
 			}
 
-			state->lcdc.curr_clk = 0;
 			if((++state->lcdc.ly) == 144)
 			{
 				// going to v-blank
-				state->lcdc.stat.mode_flag = 1;
+				lcdc_mode_change(state, 1);
 			}
 			else
 			{
 				// start another scan line
-				state->lcdc.stat.mode_flag = 2;
+				lcdc_mode_change(state, 2);
 			}
 		}
 		break;
@@ -342,9 +353,8 @@ void lcdc_tick(emu_state *restrict state)
 
 		if(state->lcdc.ly == 153)
 		{
-			state->lcdc.curr_clk = 0;
 			state->lcdc.ly = 0;
-			state->lcdc.stat.mode_flag = 2;
+			lcdc_mode_change(state, 2);
 		}
 
 		break;
@@ -542,7 +552,8 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 
 inline void lcdc_stat_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
-	state->lcdc.stat.lyc = ((data & 0x60) == 0x60);
+	/* don't overwrite mode bits */
+	state->lcdc.stat.reg = (data & 0x78) | state->lcdc.stat.mode_flag;
 }
 
 inline void lcdc_scroll_write(emu_state *restrict state, uint16_t reg, uint8_t data)
