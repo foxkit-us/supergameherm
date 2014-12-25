@@ -14,8 +14,8 @@ static const uint32_t dmg_palette[4] =
 {
 	0x00FFFFFF,
 	0x00AAAAAA,
-	0x00777777,
-	0x00000000
+	0x00555555,
+	0x00000000,
 };
 
 void init_lcdc(emu_state *restrict state)
@@ -52,7 +52,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	{
 		uint8_t pixel;
 
-		if(!((sx & 7) && x))
+		if(x == 0 || (sx & 7) == 0)
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
