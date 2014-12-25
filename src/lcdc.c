@@ -52,7 +52,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	{
 		uint8_t pixel;
 
-		if(x == 0 || (sx & 7) == 0)
+		if(!(x && (sx & 7)))
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
@@ -225,8 +225,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 				(obj->priority && row[obj_x + tx] ==
 				 dmg_palette[0])))
 			{
-
-				const uint8_t pal = state->lcdc.obj_pal[obj->pal_dmg];
+				const uint8_t pal = state->lcdc.obj_pal[-obj->pal_dmg];
 				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
 				row[obj_x + tx] = dmg_palette[pixel];
 			}
@@ -306,7 +305,7 @@ void lcdc_tick(emu_state *restrict state)
 
 				if(state->lcdc.lcd_control.win)
 				{
-					dmg_window_render(state);
+					//dmg_window_render(state);
 				}
 
 				if(state->lcdc.lcd_control.obj)
