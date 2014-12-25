@@ -20,9 +20,9 @@ static const uint32_t dmg_palette[4] =
 
 void init_lcdc(emu_state *restrict state)
 {
-	state->lcdc.lcd_control.enable = true;
-	state->lcdc.lcd_control.bg_char_sel = true;
-	state->lcdc.lcd_control.dmg_bg = true;
+	state->lcdc.lcd_control.enable = 1;
+	state->lcdc.lcd_control.bg_char_sel = 1;
+	state->lcdc.lcd_control.dmg_bg = 1;
 
 	state->lcdc.stat.mode_flag = 2;
 
@@ -299,6 +299,7 @@ void lcdc_tick(emu_state *restrict state)
 				}
 				else
 				{
+					debug(state, "blanking");
 					memset(state->lcdc.out, dmg_palette[0],
 							sizeof(state->lcdc.out));
 				}
@@ -361,7 +362,7 @@ void lcdc_tick(emu_state *restrict state)
 
 	if(state->lcdc.ly == state->lcdc.lyc)
 	{
-		state->lcdc.stat.lyc_state = true;
+		state->lcdc.stat.lyc_state = 1;
 		if(state->lcdc.stat.lyc)
 		{
 			signal_interrupt(state, INT_LCD_STAT);
@@ -369,7 +370,7 @@ void lcdc_tick(emu_state *restrict state)
 	}
 	else
 	{
-		state->lcdc.stat.lyc_state = false;
+		state->lcdc.stat.lyc_state = 0;
 	}
 }
 
