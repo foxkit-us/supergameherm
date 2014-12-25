@@ -305,7 +305,7 @@ void lcdc_tick(emu_state *restrict state)
 
 				if(state->lcdc.lcd_control.win)
 				{
-					//dmg_window_render(state);
+					dmg_window_render(state);
 				}
 
 				if(state->lcdc.lcd_control.obj)
