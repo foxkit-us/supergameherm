@@ -30,6 +30,35 @@ void init_lcdc(emu_state *restrict state)
 	state->lcdc.lyc = 0;
 }
 
+static inline uint16_t reverse_16(uint16_t num)
+{
+	uint16_t s = 15, t = num;
+	for(t >>= 1; t; t >>= 1, s--)
+	{
+		num <<= 1;
+		num |= t & 1;
+	}
+
+	num <<= s;
+
+	return num;
+}
+
+static inline uint8_t reverse_8(uint8_t num)
+{
+	uint8_t s = 7, t = num;
+	for(t >>= 1; t; t >>= 1, s--)
+	{
+		num <<= 1;
+		num |= t & 1;
+	}
+
+	num <<= s;
+
+	return num;
+}
+
+
 static inline void dmg_bg_render(emu_state *restrict state)
 {
 	// Compute positions in the "virtual" map of tiles
@@ -56,7 +85,6 @@ static inline void dmg_bg_render(emu_state *restrict state)
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
-			uint16_t s = 15, t;
 			uint8_t *mem;
 
 			if(!LCDC_BG_CHAR_SEL(state))
@@ -68,14 +96,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + pixel_y_offset;
 
 			// Interleave bits and reverse
-			t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
-
-			for(t >>= 1; t; t >>= 1, s--)
-			{
-				pixel_temp <<= 1;
-				pixel_temp |= t & 1;
-			}
-			pixel_temp <<= s;
+			pixel_temp = reverse_16(interleave8(0, *mem, 0, *(mem + 1)));
 		}
 
 		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
@@ -114,7 +135,6 @@ static inline void dmg_window_render(emu_state *restrict state)
 			const uint16_t tile_index = (wy / 8) * 32 + (x / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
 			uint8_t *mem;
-			uint16_t s = 15, t;
 
 			if(!LCDC_BG_CHAR_SEL(state))
 			{
@@ -124,14 +144,7 @@ static inline void dmg_window_render(emu_state *restrict state)
 			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
 
 			// Interleave bits and reverse
-			t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
-
-			for(t >>= 1; t; t >>= 1, s--)
-			{
-				pixel_temp <<= 1;
-				pixel_temp |= t & 1;
-			}
-			pixel_temp <<= s;
+			pixel_temp = reverse_16(interleave8(0, *mem, 0, *(mem + 1)));
 		}
 
 		if(wx < 0)
@@ -166,7 +179,6 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 		uint8_t *mem;
 		uint16_t pixel_temp;
-		uint16_t s = 15, t;
 
 		// Adjusted for offsets
 		if(!(obj->x && obj->y && obj->x < 168 && obj->y < 160))
@@ -201,16 +213,8 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_y_offset;
 		}
 
-		t = pixel_temp = interleave8(0, *mem, 0, *(mem + 1));
-
 		// Interleave bits and reverse
-
-		for(t >>= 1; t; t >>= 1, s--)
-		{
-			pixel_temp <<= 1;
-			pixel_temp |= t & 1;
-		}
-		pixel_temp <<= s;
+		pixel_temp = reverse_16(interleave8(0, *mem, 0, *(mem + 1)));
 
 		if(obj->hflip)
 		{
