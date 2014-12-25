@@ -299,7 +299,6 @@ void lcdc_tick(emu_state *restrict state)
 				}
 				else
 				{
-					debug(state, "blanking");
 					memset(state->lcdc.out, dmg_palette[0],
 							sizeof(state->lcdc.out));
 				}
