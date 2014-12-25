@@ -35,20 +35,20 @@ endmacro()
 
 macro(win32_check)
 	if(HAVE_WINDOWS)
-		option(WIN32_ENABLE "Enable the Win32 frontend" on)
+		option(WIN32_ENABLE "Enable the Win32 GDI frontend" on)
 	endif()
 
 	if(WIN32_ENABLE)
 		set(HAVE_WIN32 1)
 
 		file(GLOB W32_FRONTEND_SOURCES src/frontends/w32/*.c)
-		add_executable("sgherm-w32" WIN32 ${W32_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
+		add_executable("sgherm-gdi" WIN32 ${W32_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 
 		if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 			# necessary to work around 'stdbool' and related stuff
 			file(GLOB_RECURSE ALL_SOURCES src/*.c)
 			set_source_files_properties(ALL_SOURCES PROPERTIES LANGUAGE CXX)
-			set_target_properties("sgherm-w32" PROPERTIES LINKER_LANGUAGE CXX)
+			set_target_properties("sgherm-gdi" PROPERTIES LINKER_LANGUAGE CXX)
 		endif()
 
 		set(HAVE_FRONTEND on)
