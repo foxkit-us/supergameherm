@@ -14,7 +14,7 @@ int sdl2_event_loop(emu_state *state)
 
 	do
 	{
-		uint8_t mode = state->lcdc.stat.mode_flag;
+		uint8_t mode = LCDC_STAT_MODE_FLAG(state);
 		uint_fast16_t clock = state->lcdc.curr_clk;
 		frontend_input_return ret;
 

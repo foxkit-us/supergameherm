@@ -55,71 +55,10 @@ struct lcdc_state_t
 	uint8_t oam_ram[160];
 
 	//! LCD control register
-	union
-	{
-		uint8_t reg;
-		struct
-		{
-#ifdef LITTLE_ENDIAN
-			unsigned int dmg_bg:1;		//! BG is on or off (DMG only)
-			unsigned int obj:1;		//! OBJ's are off or on
-			unsigned int obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
-			unsigned int bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
-			unsigned int bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
-			unsigned int win:1;		//! Windowing on
-			unsigned int win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
-			unsigned int enable:1;		//! LCD enabled
-#else
-			unsigned int enable:1;		//! LCD enabled
-			unsigned int win_code_sel:1;	//! Active window at 9800-9BFF or 9C00-9FFF
-			unsigned int win:1;		//! Windowing on
-			unsigned int bg_char_sel:1;	//! BG character data at 8800-97FF or 8000-8FFF
-			unsigned int bg_code_sel:1;	//! BG code data at 9800-9BFF or 9C00-9FFF
-			unsigned int obj_block_size:1;	//! Size of OBJ's are 8x8 or 8x16
-			unsigned int obj:1;		//! OBJ's are off or on
-			unsigned int dmg_bg:1;		//! BG is on or off (DMG only)
-#endif
-		};
-	} lcd_control;
+	uint8_t lcd_control;
 
-	union
-	{
-		uint8_t reg;
-		struct
-		{
-#ifdef LITTLE_ENDIAN
-			/*! Mode flag
-			 * Mode 00: enable CPU access to VRAM
-			 * Mode 01: V-Blank interval
-			 * Mode 10: OAM search
-			 * Mode 11: LCD transfer
-			 */
-			unsigned int mode_flag:2;
-
-			unsigned int lyc_state:1;	//! LYC matches LY
-			unsigned int mode_0:1;		//! int on mode 00 selection
-			unsigned int mode_1:1;		//! int on mode 01 selection
-			unsigned int mode_2:1;		//! int on mode 10 selection
-			unsigned int lyc:1;		//! int on LY matching selection
-			unsigned int notused:1;		//! Upper bit padding
-#else
-			unsigned int notused:1;		//! Upper bit padding
-			unsigned int lyc:1;		//! int on LY matching selection
-			unsigned int mode_2:1;		//! int on mode 10 selection
-			unsigned int mode_1:1;		//! int on mode 01 selection
-			unsigned int mode_0:1;		//! int on mode 00 selection
-			unsigned int lyc_state:1;	//! LYC matches LY
-
-			/*! Mode flag
-			 * Mode 00: enable CPU access to VRAM
-			 * Mode 01: V-Blank interval
-			 * Mode 10: OAM search
-			 * Mode 11: LCD transfer
-			 */
-			unsigned int mode_flag:2;
-#endif
-		};
-	} stat;
+	//! LCD stat
+	uint8_t stat;
 
 	//! CGB only (FIXME palette RAM)
 	struct
@@ -145,6 +84,24 @@ struct lcdc_state_t
 
 	uint32_t out[144][160];	//! Simulated LCD screen buffer
 };
+
+#define LCDC_DMG_BG(state) ((state)->lcdc.lcd_control & 0x1)
+#define LCDC_OBJ(state) ((state)->lcdc.lcd_control & 0x2)
+#define LCDC_OBJ_SIZE(state) ((state)->lcdc.lcd_control & 0x4)
+#define LCDC_BG_CODE_SEL(state) ((state)->lcdc.lcd_control & 0x8)
+#define LCDC_BG_CHAR_SEL(state) ((state)->lcdc.lcd_control & 0x10)
+#define LCDC_WIN(state) ((state)->lcdc.lcd_control & 0x20)
+#define LCDC_WIN_CODE_SEL(state) ((state)->lcdc.lcd_control & 0x40)
+#define LCDC_ENABLE(state) ((state)->lcdc.lcd_control & 0x80)
+
+#define LCDC_STAT_MODE_FLAG(state) ((state)->lcdc.stat & 0x3)
+#define LCDC_STAT_LYC_STATE(state) ((state)->lcdc.stat & 0x4)
+#define LCDC_STAT_MODE0(state) ((state)->lcdc.stat & 0x8)
+#define LCDC_STAT_MODE1(state) ((state)->lcdc.stat & 0x10)
+#define LCDC_STAT_MODE2(state) ((state)->lcdc.stat & 0x20)
+#define LCDC_STAT_LYC(state) ((state)->lcdc.stat & 0x40)
+
+
 
 void init_lcdc(emu_state *restrict);
 void lcdc_tick(emu_state *restrict);

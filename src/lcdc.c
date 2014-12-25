@@ -20,11 +20,11 @@ static const uint32_t dmg_palette[4] =
 
 void init_lcdc(emu_state *restrict state)
 {
-	state->lcdc.lcd_control.enable = 1;
-	state->lcdc.lcd_control.bg_char_sel = 1;
-	state->lcdc.lcd_control.dmg_bg = 1;
+	// Enable LCD + BG char sel + BG
+	state->lcdc.lcd_control = 0x91;
 
-	state->lcdc.stat.mode_flag = 2;
+	// Initialise to mode 2
+	state->lcdc.stat = 2;
 
 	state->lcdc.ly = 0;
 	state->lcdc.lyc = 0;
@@ -38,12 +38,12 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	uint16_t tile_map_start = 0x1800; // Initial offset
 
 	// Pixel offsets
-	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
+	uint16_t pixel_data_start = LCDC_BG_CHAR_SEL(state) ? 0x0 : 0x800;
 	uint8_t pixel_y_offset = (sy & 7) * 2;
 
 	uint16_t pixel_temp = 0;
 
-	if(state->lcdc.lcd_control.bg_code_sel)
+	if(LCDC_BG_CODE_SEL(state))
 	{
 		tile_map_start += 0x400;
 	}
@@ -59,7 +59,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			uint16_t s = 15, t;
 			uint8_t *mem;
 
-			if(!state->lcdc.lcd_control.bg_char_sel)
+			if(!LCDC_BG_CHAR_SEL(state))
 			{
 				tile -= 0x80;
 			}
@@ -89,13 +89,13 @@ static inline void dmg_window_render(emu_state *restrict state)
 	const int16_t y = state->lcdc.ly, wy = y - state->lcdc.window_y;
 	uint16_t x = 0;
 	int16_t wx = state->lcdc.window_x - 7;
-	uint16_t tile_map_start = state->lcdc.lcd_control.win_code_sel ? 0x1c00 : 0x1800;
+	uint16_t tile_map_start = LCDC_WIN_CODE_SEL(state) ? 0x1c00 : 0x1800;
 
 	// Pixel offsets
 	uint8_t pixel_y_offset = (wy & 7) * 2;
 
 	// Yes, windows use this.
-	uint16_t pixel_data_start = state->lcdc.lcd_control.bg_char_sel ? 0x0 : 0x800;
+	uint16_t pixel_data_start = LCDC_BG_CHAR_SEL(state) ? 0x0 : 0x800;
 
 	uint16_t pixel_temp = 0;
 
@@ -116,7 +116,7 @@ static inline void dmg_window_render(emu_state *restrict state)
 			uint8_t *mem;
 			uint16_t s = 15, t;
 
-			if(!state->lcdc.lcd_control.bg_char_sel)
+			if(!LCDC_BG_CHAR_SEL(state))
 			{
 				tile -= 0x80;
 			}
@@ -150,10 +150,10 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	int curr_tile;
 	uint16_t pixel_y_offset;
 	uint32_t *row = state->lcdc.out[state->lcdc.ly];
-	uint8_t y_len = (state->lcdc.lcd_control.obj_block_size) ? 16 : 8;
+	uint8_t y_len = (LCDC_OBJ_SIZE(state)) ? 16 : 8;
 	uint16_t tx;
 
-	if(!state->lcdc.lcd_control.obj)
+	if(!LCDC_OBJ(state))
 	{
 		return;
 	}
@@ -249,8 +249,8 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 #endif
 
 	state->lcdc.curr_clk = 0;
-	state->lcdc.stat.mode_flag = mode;
-	if(mode < 3 && state->lcdc.stat.reg & (1 << (mode + 3)))
+	state->lcdc.stat = (state->lcdc.stat & ~0x3) | mode;
+	if(mode < 3 && state->lcdc.stat & (1 << (mode + 3)))
 	{
 		signal_interrupt(state, INT_LCD_STAT);
 	}
@@ -259,14 +259,14 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 void lcdc_tick(emu_state *restrict state)
 {
 	if(unlikely(state->stop) ||
-	   unlikely(!state->lcdc.lcd_control.enable))
+	   unlikely(!LCDC_ENABLE(state)))
 	{
 		return;
 	}
 
 	state->lcdc.curr_clk++;
 
-	switch(state->lcdc.stat.mode_flag)
+	switch(LCDC_STAT_MODE_FLAG(state))
 	{
 	case 2:
 		// first mode - reading OAM for h scan line
@@ -293,7 +293,7 @@ void lcdc_tick(emu_state *restrict state)
 			case SYSTEM_MGL:
 			case SYSTEM_SGB:
 			case SYSTEM_SGB2:
-				if(state->lcdc.lcd_control.dmg_bg)
+				if(LCDC_DMG_BG(state))
 				{
 					dmg_bg_render(state);
 				}
@@ -303,12 +303,12 @@ void lcdc_tick(emu_state *restrict state)
 							sizeof(state->lcdc.out));
 				}
 
-				if(state->lcdc.lcd_control.win)
+				if(LCDC_WIN(state))
 				{
 					dmg_window_render(state);
 				}
 
-				if(state->lcdc.lcd_control.obj)
+				if(LCDC_OBJ(state))
 				{
 					dmg_oam_render(state);
 				}
@@ -361,15 +361,16 @@ void lcdc_tick(emu_state *restrict state)
 
 	if(state->lcdc.ly == state->lcdc.lyc)
 	{
-		state->lcdc.stat.lyc_state = 1;
-		if(state->lcdc.stat.lyc)
+		// Set LYC flag
+		state->lcdc.stat |= 0x4;
+		if(LCDC_STAT_LYC(state))
 		{
 			signal_interrupt(state, INT_LCD_STAT);
 		}
 	}
 	else
 	{
-		state->lcdc.stat.lyc_state = 0;
+		state->lcdc.stat &= ~0x4;
 	}
 }
 
@@ -381,7 +382,7 @@ inline uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 {
-	uint8_t curr_mode = state->lcdc.stat.mode_flag;
+	uint8_t curr_mode = LCDC_STAT_MODE_FLAG(state);
 	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
@@ -394,12 +395,12 @@ inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t lcdc_control_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
-	return state->lcdc.lcd_control.reg;
+	return state->lcdc.lcd_control;
 }
 
 inline uint8_t lcdc_stat_read(emu_state *restrict state, uint16_t reg UNUSED)
 {
-	return state->lcdc.stat.reg;
+	return state->lcdc.stat;
 }
 
 inline uint8_t lcdc_scroll_read(emu_state *restrict state, uint16_t reg)
@@ -504,18 +505,18 @@ void dump_lcdc_state(emu_state *restrict state)
 {
 	debug(state, "---LCDC---");
 	debug(state, "CTRL: %02X (%s %s %s %s %s %s %s %s)",
-	      state->lcdc.lcd_control.reg,
-	      (state->lcdc.lcd_control.dmg_bg) ? "BG" : "bg",
-	      (state->lcdc.lcd_control.obj) ? "OBJ" : "obj",
-	      (state->lcdc.lcd_control.obj_block_size) ? "8x16" : "8x8",
-	      (state->lcdc.lcd_control.bg_code_sel) ? "9C" : "98",
-	      (state->lcdc.lcd_control.bg_char_sel) ? "sign" : "SIGN",
-	      (state->lcdc.lcd_control.win) ? "WIN" : "win",
-	      (state->lcdc.lcd_control.win_code_sel) ? "9C" : "98",
-	      (state->lcdc.lcd_control.enable) ? "E" : "e"
+	      state->lcdc.lcd_control,
+	      (LCDC_DMG_BG(state)) ? "BG" : "bg",
+	      (LCDC_OBJ(state)) ? "OBJ" : "obj",
+	      (LCDC_OBJ_SIZE(state)) ? "8x16" : "8x8",
+	      (LCDC_BG_CODE_SEL(state)) ? "9C" : "98",
+	      (LCDC_BG_CHAR_SEL(state)) ? "sign" : "SIGN",
+	      (LCDC_WIN(state)) ? "WIN" : "win",
+	      (LCDC_WIN_CODE_SEL(state)) ? "9C" : "98",
+	      (LCDC_ENABLE(state)) ? "E" : "e"
 	);
 	debug(state, "STAT: %02X (MODE=%d)",
-	      state->lcdc.stat.reg, state->lcdc.stat.mode_flag);
+	      state->lcdc.stat, LCDC_STAT_MODE_FLAG(state));
 	debug(state, "ICLK: %02X", state->lcdc.curr_clk);
 	debug(state, "LY  : %02X", state->lcdc.ly);
 }
@@ -527,7 +528,7 @@ inline void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data UNU
 
 inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
-	uint8_t curr_mode = state->lcdc.stat.mode_flag;
+	uint8_t curr_mode = LCDC_STAT_MODE_FLAG(state);
 	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
@@ -540,13 +541,13 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 
 inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
-	state->lcdc.lcd_control.reg = data;
+	state->lcdc.lcd_control = data;
 }
 
 inline void lcdc_stat_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
 	/* don't overwrite mode bits */
-	state->lcdc.stat.reg = (data & 0x78) | state->lcdc.stat.mode_flag;
+	state->lcdc.stat = (data & 0x78) | LCDC_STAT_MODE_FLAG(state);
 }
 
 inline void lcdc_scroll_write(emu_state *restrict state, uint16_t reg, uint8_t data)
