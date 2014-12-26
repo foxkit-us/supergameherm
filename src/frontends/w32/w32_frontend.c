@@ -329,7 +329,9 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
 		rom_path = AskUserForROMPath();
-	} else {
+	}
+	else
+	{
 		rom_path = strdup(szCmdLine);
 	}
 
@@ -338,7 +340,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
-	if((g_state = init_emulator(rom_path)) == NULL)
+	if((g_state = init_emulator(rom_path, NULL)) == NULL)
 	{
 		return -1;
 	}

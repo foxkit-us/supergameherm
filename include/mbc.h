@@ -3,7 +3,8 @@
 
 #include "config.h"	// bool, *int*_t
 #include "sgherm.h"	// emu_state
-#include "rom_read.h"	// OFF_CART_TYPE
+#include "rom.h"	// OFF_CART_TYPE
+
 
 typedef enum
 {
@@ -37,7 +38,7 @@ typedef struct mbc_common_data_t
 	uint8_t ram_enable;
 	bool rom_select;	//! ROM/RAM select switch (MBC1 only)
 
-	//! TODO various MBC hardware stuff
+	// TODO various MBC hardware stuff
 } mbc_common_data;
 
 typedef struct mbc3_data_t
@@ -56,6 +57,9 @@ typedef struct mbc3_data_t
 		uint8_t halt;
 		uint8_t day_carry;
 	} rtc[2];
+
+	// Not part of hardware
+	uint64_t unix_time_last;
 
 	uint8_t latched;	//! If 0x1, copy time into rtc[1] and read from that
 } mbc3_data;

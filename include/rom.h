@@ -1,5 +1,5 @@
-#ifndef __ROM_READ_H__
-#define __ROM_READ_H__
+#ifndef __ROM_H__
+#define __ROM_H__
 
 #include "config.h"	// macros, bool
 #include "typedefs.h"	// typedefs
@@ -100,7 +100,8 @@ struct cart_header_t
 
 extern const char *friendly_cart_names[0x20];
 
-bool read_rom_data(emu_state *restrict, FILE *restrict,
+bool read_rom_data(emu_state *restrict, const char *restrict,
 	cart_header *restrict *restrict);
+void ram_load(emu_state *, const char *);
 
-#endif /*__ROM_READ_H__*/
+#endif /*__ROM_H__*/

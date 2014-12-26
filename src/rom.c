@@ -4,10 +4,11 @@
 #include <stdlib.h>	// malloc
 #include <string.h>	// memcmp, strerror
 #include <errno.h>	// errno
+#include <time.h>	// time
 
 #include "sgherm.h"	// emu_state
 #include "print.h"	// fatal, error, debug
-#include "rom_read.h"	// constants, cart_header, etc.
+#include "rom.h"	// constants, cart_header, etc.
 #include "util.h"	// likely/unlikely
 
 
@@ -33,7 +34,7 @@ const char *friendly_cart_names[0x20] =
 	"MBC5 Rumble Cart with SRAM (Battery)", "GB Pocket Camera"
 };
 
-bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
+bool read_rom_data(emu_state *restrict state, const char *rom_path,
 		cart_header *restrict *restrict header)
 {
 	long size_in_bytes, actual_size;
@@ -42,9 +43,16 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	const cart_offsets begin = OFF_GRAPHIC_BEGIN;
 	bool err = true;
 	size_t i;
+	FILE *rom;
 
 	// Initalise
 	*header = NULL;
+
+	if((rom = fopen(rom_path, "rb")) == NULL)
+	{
+		error(state, "Could not open ROM: %s", strerror(errno));
+		goto close_rom;
+	}
 
 	// Get the full ROM size
 	if(unlikely(fseek(rom, 0, SEEK_END)))
@@ -67,11 +75,11 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 
 	if(unlikely(fseek(rom, 0, SEEK_SET)))
 	{
-		error(state, "Could not seek to end of ROM: %s", strerror(errno));
+		error(state, "Could not seek to start of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
-	if(unlikely(fread(state->cart_data, actual_size, 1, rom) != 1))
+	if(unlikely(fread(state->cart_data, actual_size, 1, rom) == 0))
 	{
 		error(state, "Could not read ROM: %s", strerror(errno));
 		goto close_rom;
@@ -164,6 +172,7 @@ bool read_rom_data(emu_state *restrict state, FILE *restrict rom,
 	// FIXME For now we're targeting DMG, not CGB.
 	state->system = SYSTEM_DMG;
 
+	// Select the correct MBC
 	if(!mbc_select(state))
 	{
 		goto close_rom;
@@ -176,5 +185,117 @@ close_rom:
 		free(state->cart_data);
 	}
 
+	fclose(rom);
+
 	return !err;
+}
+
+/*!
+ * Load RAM state from given file
+ * @param state state structure
+ * @param state file to load as save state
+ * @warning you must call read_rom_data first!
+ */
+void ram_load(emu_state *state, const char *save_path)
+{
+	FILE *save;
+	size_t s;
+	const uint32_t ram_total = state->mbc.ram_total;
+
+	if(ram_total <= 0)
+	{
+		info(state, "Not loading save state, cart is ROM only");
+		return;
+	}
+
+	if((save = fopen(save_path, "rb")) == NULL)
+	{
+		error(state, "Could not open save file: %s", strerror(errno));
+		return;
+	}
+
+	// Get the full ROM size
+	if(unlikely(fseek(save, 0, SEEK_END)))
+	{
+		error(state, "Could not get size of save file: %s", strerror(errno));
+		return;
+	}
+
+	s = ftell(save);
+
+	if(unlikely(fseek(save, 0, SEEK_SET)))
+	{
+		error(state, "Could not seek to start of file: %s", strerror(errno));
+		fclose(save);
+		return;
+	}
+
+	if(s < ram_total)
+	{
+		error(state, "Save file was too small");
+		fclose(save);
+		return;
+	}
+
+	// Load in RAM data
+	if(fread(state->mbc.cart_ram, 1, ram_total, save) < ram_total)
+	{
+		error(state, "Could not read from save file: %s", strerror(errno));
+		fclose(save);
+		return;
+	}
+
+	info(state, "Loaded save fule successfully!");
+
+	if(s > ram_total)
+	{
+		uint32_t data[12];
+
+		memset(data, 0, sizeof(data));
+
+		// XXX MBC3 has RTC bits but this loading stuff doesn't belong here
+		switch(state->mbc.cart)
+		{
+		case CART_MBC3_TIMER_BATT:
+		case CART_MBC3_TIMER_RAM_BATT:
+		case CART_MBC3:
+		case CART_MBC3_RAM:
+		case CART_MBC3_RAM_BATT:
+			if((s - ram_total) < 44)
+			{
+				error(state, "Bad RTC data, not reading");
+				fclose(save);
+				return;
+			}
+
+			if(unlikely(fread(data, 1, s - ram_total, save) < ((unsigned)s - ram_total)))
+			{
+				error(state, "Couldn't get RTC data: %s", strerror(errno));
+				fclose(save);
+				return;
+			}
+
+			// Standard VBA format
+			state->mbc.mbc3.rtc[0].seconds   = le32toh(data[0]) & 0xFF;
+			state->mbc.mbc3.rtc[0].minutes   = le32toh(data[1]) & 0xFF;
+			state->mbc.mbc3.rtc[0].hours     = le32toh(data[2]) & 0xFF;
+			state->mbc.mbc3.rtc[0].days      = le32toh(data[3]) & 0xFF;
+			state->mbc.mbc3.rtc[0].day_carry = le32toh(data[4]) & 0x01;
+
+			state->mbc.mbc3.rtc[1].seconds   = le32toh(data[5]) & 0xFF;
+			state->mbc.mbc3.rtc[1].minutes   = le32toh(data[6]) & 0xFF;
+			state->mbc.mbc3.rtc[1].hours     = le32toh(data[7]) & 0xFF;
+			state->mbc.mbc3.rtc[1].days      = le32toh(data[8]) & 0xFF;
+			state->mbc.mbc3.rtc[1].day_carry = le32toh(data[9]) & 0x01;
+
+			state->mbc.mbc3.unix_time_last   = le32toh(data[10]);
+			state->mbc.mbc3.unix_time_last  |= (uint64_t)(le32toh(data[11])) << 32;
+
+			// TODO unix time offset stuff
+			info(state, "RTC data loaded");
+		default:
+			// Call it done
+			return;
+		}
+	}
 }

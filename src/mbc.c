@@ -22,6 +22,8 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
 		(location - 0xA000);
 	uint8_t val;
 
+	debug(state, "bank: %04X size: %04X location: %04X", state->mbc.ram_bank, state->mbc.ram_bank_size, (location - 0xA000));
+
 	if(unlikely(pos > state->mbc.ram_total))
 	{
 		warning(state, "Attempt to read from nonexistent cart RAM at %04X!",
@@ -217,7 +219,10 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 	case 0xA:
 	case 0xB:
 		// switchable RAM bank - 0xA000..0xBFFF
-		ram_bank_write(state, location, value);
+		if(state->mbc.mbc_common.ram_enable)
+		{
+			ram_bank_write(state, location, value);
+		}
 		break;
 	default:
 		warning(state, "Unimplemented write for MBC1 at address %04X", location);
@@ -363,6 +368,12 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
 		{
+		case 0x0:
+		case 0x1:
+		case 0x2:
+		case 0x3:
+			return ram_bank_read(state, location);
+			break;
 		case 0x8:
 			return state->mbc.mbc3.rtc[l_index].seconds;
 		case 0x9:
@@ -379,8 +390,8 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 			return ret;
 		}
 		default:
-			// switchable RAM bank - 0xA000..0xBFFF
-			return ram_bank_read(state, location);
+			warning(state, "Unimplemented read for MBC3 at address %04X", location);
+			return 0xFF;
 		}
 
 		break;
@@ -410,6 +421,11 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		break;
 	case 0xA:
 	case 0xB:
+		if(!(state->mbc.mbc3.ram_rtc_enable))
+		{
+			return;
+		}
+
 		// Select RTC or RAM bank
 		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
@@ -537,8 +553,11 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 		break;
 	case 0xA:
 	case 0xB:
-		// switchable RAM bank - 0xA000..0xBFFF
-		ram_bank_write(state, location, value);
+		if(state->mbc.mbc_common.ram_enable)
+		{
+			// switchable RAM bank - 0xA000..0xBFFF
+			ram_bank_write(state, location, value);
+		}
 		break;
 	default:
 		warning(state, "Unimplemented write for MBC5 at address %04X", location);
@@ -602,16 +621,13 @@ static inline bool huc3_init(emu_state *restrict state)
 	return false;
 }
 
-static inline uint8_t huc3_read(emu_state *restrict state, uint16_t location UNUSED)
+static inline uint8_t huc3_read(emu_state *restrict state UNUSED, uint16_t location UNUSED)
 {
-	// TODO
-	fatal(state, "Unimplemented cartridge variant HUC3");
 	return 0xFF;
 }
 
-static inline void huc3_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t value UNUSED)
+static inline void huc3_write(emu_state *restrict state UNUSED, uint16_t location UNUSED, uint8_t value UNUSED)
 {
-	fatal(state, "Unimplemented cartridge variant HUC3");
 }
 
 static inline void huc3_finish(emu_state *restrict state UNUSED)
@@ -638,15 +654,18 @@ bool mbc_select(emu_state *restrict state)
 	case CART_ROM_ONLY:
 	case CART_RAM:
 	case CART_RAM_BATT:
+		debug(state, "ROM only cartridge");
 		state->mbc.func = &nombc_func;
 		break;
 	case CART_MBC1:
 	case CART_MBC1_RAM:
 	case CART_MBC1_RAM_BATT:
+		debug(state, "MBC1 cartridge");
 		state->mbc.func = &mbc1_func;
 		break;
 	case CART_MBC2:
 	case CART_MBC2_BATT:
+		debug(state, "MBC2 cartridge");
 		state->mbc.func = &mbc2_func;
 		break;
 	case CART_MBC3_TIMER_BATT:
@@ -654,6 +673,7 @@ bool mbc_select(emu_state *restrict state)
 	case CART_MBC3:
 	case CART_MBC3_RAM:
 	case CART_MBC3_RAM_BATT:
+		debug(state, "MBC3 cartridge");
 		state->mbc.func = &mbc3_func;
 		break;
 	case CART_MBC5:
@@ -662,6 +682,7 @@ bool mbc_select(emu_state *restrict state)
 	case CART_MBC5_RUMBLE:
 	case CART_MBC5_RUMBLE_SRAM:
 	case CART_MBC5_RUMBLE_SRAM_BATT:
+		debug(state, "MBC5 cartridge");
 		state->mbc.func = &mbc5_func;
 		break;
 	default:
@@ -669,5 +690,6 @@ bool mbc_select(emu_state *restrict state)
 		return false;
 	}
 
+	debug(state, "Initalising MBC...");
 	return MBC_INIT(state);
 }
