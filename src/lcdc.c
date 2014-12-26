@@ -26,38 +26,13 @@ void init_lcdc(emu_state *restrict state)
 	// Initialise to mode 2
 	state->lcdc.stat = 2;
 
+	// Palette init
+	state->lcdc.bg_pal = 0xFC;
+	state->lcdc.obj_pal[0] = state->lcdc.obj_pal[1] = 0xFF;
+
 	state->lcdc.ly = 0;
 	state->lcdc.lyc = 0;
 }
-
-static inline uint16_t reverse_16(uint16_t num)
-{
-	uint16_t s = 15, t = num;
-	for(t >>= 1; t; t >>= 1, s--)
-	{
-		num <<= 1;
-		num |= t & 1;
-	}
-
-	num <<= s;
-
-	return num;
-}
-
-static inline uint8_t reverse_8(uint8_t num)
-{
-	uint8_t s = 7, t = num;
-	for(t >>= 1; t; t >>= 1, s--)
-	{
-		num <<= 1;
-		num |= t & 1;
-	}
-
-	num <<= s;
-
-	return num;
-}
-
 
 static inline void dmg_bg_render(emu_state *restrict state)
 {
@@ -96,12 +71,15 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			mem = state->lcdc.vram[0x0] + pixel_data_start + (tile * 16) + pixel_y_offset;
 
 			// Interleave bits and reverse
-			pixel_temp = reverse_16(interleave8(0, *mem, 0, *(mem + 1)));
+			pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
+
+			// XXX kinda bogus but needed to make it look right
+			pixel_temp = rotl_16(pixel_temp, 2);
 		}
 
 		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
 		state->lcdc.out[state->lcdc.ly][x] = dmg_palette[pixel];
-		pixel_temp >>= 2;
+		pixel_temp = rotl_16(pixel_temp, 2);
 	}
 }
 
@@ -144,7 +122,10 @@ static inline void dmg_window_render(emu_state *restrict state)
 			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_data_start + pixel_y_offset;
 
 			// Interleave bits and reverse
-			pixel_temp = reverse_16(interleave8(0, *mem, 0, *(mem + 1)));
+			pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
+
+			// XXX
+			pixel_temp = rotl_16(pixel_temp, 2);
 		}
 
 		if(wx < 0)
@@ -154,7 +135,7 @@ static inline void dmg_window_render(emu_state *restrict state)
 
 		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
 		state->lcdc.out[y][wx] = dmg_palette[pixel];
-		pixel_temp >>= 2;
+		pixel_temp = rotl_16(pixel_temp, 2);
 	}
 }
 
@@ -214,11 +195,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		}
 
 		// Interleave bits and reverse
-		pixel_temp = reverse_16(interleave8(0, *mem, 0, *(mem + 1)));
+		pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
 
-		if(obj->hflip)
+		if(!(obj->hflip))
 		{
-			// XXX this is bogus
+			// XXX
 			pixel_temp = rotl_16(pixel_temp, 2);
 		}
 
@@ -236,11 +217,11 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 			if(obj->hflip)
 			{
-				pixel_temp = rotl_16(pixel_temp, 2);
+				pixel_temp >>= 2;
 			}
 			else
 			{
-				pixel_temp >>= 2;
+				pixel_temp = rotl_16(pixel_temp, 2);
 			}
 		}
 	}
