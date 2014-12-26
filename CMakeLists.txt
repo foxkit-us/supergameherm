@@ -10,6 +10,8 @@ include(frontend)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+option(THROTTLE_VBLANK "Enable throttling of vblank" OFF)
+
 set_cflags()
 platform_checks()
 
@@ -23,3 +25,7 @@ add_library("sgherm-core" OBJECT ${CORE_FILES})
 frontend_checks()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
+
+if(THROTTLE_VBLANK)
+	add_definitions("-DTHROTTLE_VBLANK")
+endif()
