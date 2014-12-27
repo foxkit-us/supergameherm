@@ -86,6 +86,7 @@ struct mbc_state_t
 
 	uint8_t *cart_ram;	//! Cartridge RAM
 	memmap_state *cart_mm_data;	//! Opaque data
+	bool dirty;		//! Whether pages need to be written back
 
 	unsigned ram_bank_size;	//! Size of each bank
 	uint8_t ram_bank_count;	//! Number of banks

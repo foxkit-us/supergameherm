@@ -73,6 +73,12 @@ bool step_emulator(emu_state *restrict state)
 
 	state->cycles++;
 
+	if(state->mbc.dirty && (state->cycles % state->freq) == 0)
+	{
+		// Do a write back
+		memmap_sync(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	}
+
 #ifdef THROTTLE_VBLANK
 	// Wait for vblank
 	if(unlikely(state->lcdc.stat.mode_flag == 1 &&

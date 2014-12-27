@@ -572,7 +572,18 @@ inline void lcdc_bgp_write(emu_state *restrict state, uint16_t reg UNUSED, uint8
 
 inline void lcdc_objp_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
-	state->lcdc.obj_pal[reg - 0xFF48] = data;
+	if(reg == 0xFF48)
+	{
+		state->lcdc.obj_pal[0] = data;
+	}
+	else if(reg == 0xFF49)
+	{
+		state->lcdc.obj_pal[1] = data;
+	}
+	else
+	{
+		fatal(state, "BUG: Attempt to write OBP data to non-OBP register");
+	}
 }
 
 inline void lcdc_window_write(emu_state *restrict state, uint16_t reg, uint8_t data)
