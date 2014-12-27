@@ -434,6 +434,11 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
 		{
+		case 0x0:
+		case 0x1:
+		case 0x2:
+		case 0x3:
+			return ram_bank_read(state, location);
 		case 0x8:
 			return state->mbc.mbc3.rtc[l_index].seconds;
 		case 0x9:
@@ -450,7 +455,9 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 			return ret;
 		}
 		default:
-			return ram_bank_read(state, location);
+			warning(state, "Unimplemented read for MBC3 at address %04X",
+				location);
+			return 0xFF;
 		}
 
 		break;
@@ -493,6 +500,13 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
 		{
+		case 0x0:
+		case 0x1:
+		case 0x2:
+		case 0x3:
+			// switchable RAM bank - 0xA000..0xBFFF
+			ram_bank_write(state, location, value);
+			return;
 		case 0x8:
 			state->mbc.mbc3.rtc[0].seconds = value;
 			break;
@@ -516,8 +530,8 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 			break;
 		}
 		default:
-			// switchable RAM bank - 0xA000..0xBFFF
-			ram_bank_write(state, location, value);
+			warning(state, "Unimplemented write for MBC3 at address %04X",
+				location);
 			return;
 		}
 
