@@ -15,36 +15,34 @@
 #include <stdlib.h>	// exit
 #include <string.h>	// memset, strerror
 #include <errno.h>	// errno
+#include <assert.h>	// assert
 
 // This is probably wrong but it seems to be smooth enough
 #define NSEC_PER_VBLANK 16680567L
 
-emu_state * init_emulator(const char *rom_path)
+emu_state * init_emulator(const char *rom_path, const char *save_path)
 {
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
-	FILE *rom;
 
-	if((rom = fopen(rom_path, "rb")) == NULL)
-	{
-		error(state, "Can't open ROM: %s", strerror(errno));
-		free(state);
-		return NULL;
-	}
+	assert(rom_path != save_path);
 
 	state->interrupts.enabled = true;
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
 
-	if(unlikely(!read_rom_data(state, rom, &header)))
+	if(unlikely(!read_rom_data(state, rom_path, &header)))
 	{
 		error(state, "can't read ROM data (ROM is corrupt)?");
 		free(state);
-		fclose(rom);
 		return NULL;
 	}
 
-	fclose(rom);
+	// Get save state
+	if(save_path)
+	{
+		ram_load(state, save_path);
+	}
 
 	// Initalise state
 	init_ctl(state);

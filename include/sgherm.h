@@ -113,7 +113,7 @@ struct emu_state_t
 
 #define IS_FLAG(state, flag) ((REG_F(state) & (flag)) == flag)
 
-emu_state * init_emulator(const char *);
+emu_state * init_emulator(const char *, const char *);
 void finish_emulator(emu_state * restrict);
 bool step_emulator(emu_state * restrict);
 

@@ -122,7 +122,7 @@ uint32_t *GetPixelsForTiles(emu_state *state)
 {
 	uint32_t *fb = calloc(256 * 256, 4);
 
-	uint16_t start = (state->lcdc.lcd_control.bg_char_sel) ? 0x0 : 0x800;
+	uint16_t start = (LCDC_BG_CODE_SEL(state)) ? 0x0 : 0x800;
 	uint32_t val[4] = { 0x00FFFFFF, 0x00AAAAAA, 0x00777777, 0x00000000 };
 	uint8_t curr_tile = 0;
 	uint8_t iter = 0, col = 0, row = 0, skip = 0;
@@ -329,7 +329,9 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
 		rom_path = AskUserForROMPath();
-	} else {
+	}
+	else
+	{
 		rom_path = strdup(szCmdLine);
 	}
 
@@ -338,7 +340,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
-	if((g_state = init_emulator(rom_path)) == NULL)
+	if((g_state = init_emulator(rom_path, NULL)) == NULL)
 	{
 		return -1;
 	}
