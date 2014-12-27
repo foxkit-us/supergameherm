@@ -65,6 +65,8 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 		return NULL;
 	}
 
+	madvise(map, size, MADV_RANDOM);
+
 	m_state->size = size;
 	*data = m_state;
 	return map;
@@ -80,6 +82,8 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 		error(state, "Could not resize mmap file: %s", strerror(errno));
 		return NULL;
 	}
+
+	madvise(map_new, size, MADV_RANDOM);
 
 	// Remove old mapping
 	munmap(map, m_state->size);
