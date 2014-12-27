@@ -228,7 +228,7 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 	case 0xA:
 	case 0xB:
 		// switchable RAM bank - 0xA000..0xBFFF
-		if(state->mbc.mbc_common.ram_enable)
+		if((state->mbc.mbc_common.ram_enable & 0xA) == 0xA)
 		{
 			ram_bank_write(state, location, value);
 		}
