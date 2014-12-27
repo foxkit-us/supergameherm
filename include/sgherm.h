@@ -54,6 +54,7 @@ struct emu_state_t
 {
 	uint8_t memory[MEM_SIZE];	//! RAM
 	uint8_t *cart_data;		//! Cartridge data
+	const char *save_path;		//! Save file
 
 	mbc_state mbc;
 

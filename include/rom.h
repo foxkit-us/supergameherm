@@ -103,5 +103,6 @@ extern const char *friendly_cart_names[0x20];
 bool read_rom_data(emu_state *restrict, const char *restrict,
 	cart_header *restrict *restrict);
 void ram_load(emu_state *, const char *);
+void ram_save(emu_state *, const char *);
 
 #endif /*__ROM_H__*/

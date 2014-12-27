@@ -41,6 +41,7 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 	// Get save state
 	if(save_path)
 	{
+		state->save_path = save_path;
 		ram_load(state, save_path);
 	}
 

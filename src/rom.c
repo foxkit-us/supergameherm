@@ -299,3 +299,77 @@ void ram_load(emu_state *state, const char *save_path)
 		}
 	}
 }
+
+/*!
+ * Save RAM state to given file
+ * @param state state structure
+ * @param state file to load as save state
+ * @warning you must call read_rom_data first!
+ */
+void ram_save(emu_state *state, const char *save_path)
+{
+	FILE *save;
+	const uint32_t ram_total = state->mbc.ram_total;
+	uint32_t data[12];
+
+	if(ram_total <= 0)
+	{
+		info(state, "Not writing save state, cart is ROM only");
+		return;
+	}
+
+	if((save = fopen(save_path, "wb")) == NULL)
+	{
+		error(state, "Could not open save file: %s", strerror(errno));
+		return;
+	}
+
+	// Write out RAM data
+	if(fwrite(state->mbc.cart_ram, 1, ram_total, save) < ram_total)
+	{
+		error(state, "Could not write to save file: %s", strerror(errno));
+		fclose(save);
+		return;
+	}
+
+	info(state, "Wrote save fule successfully!");
+
+	// XXX MBC3 has RTC bits but this loading stuff doesn't belong here
+	switch(state->mbc.cart)
+	{
+	case CART_MBC3_TIMER_BATT:
+	case CART_MBC3_TIMER_RAM_BATT:
+	case CART_MBC3:
+	case CART_MBC3_RAM:
+	case CART_MBC3_RAM_BATT:
+		memset(data, 0, sizeof(data));
+
+		// Standard VBA format
+		data[0]  = htole32(state->mbc.mbc3.rtc[0].seconds);
+		data[1]  = htole32(state->mbc.mbc3.rtc[0].minutes);
+		data[2]  = htole32(state->mbc.mbc3.rtc[0].hours);
+		data[3]  = htole32(state->mbc.mbc3.rtc[0].days);
+		data[4]  = htole32(state->mbc.mbc3.rtc[0].day_carry);
+
+		data[5]  = htole32(state->mbc.mbc3.rtc[1].seconds);
+		data[6]  = htole32(state->mbc.mbc3.rtc[1].minutes);
+		data[7]  = htole32(state->mbc.mbc3.rtc[1].hours);
+		data[8]  = htole32(state->mbc.mbc3.rtc[1].days);
+		data[9]  = htole32(state->mbc.mbc3.rtc[1].day_carry);
+
+		data[10] = htole32(state->mbc.mbc3.unix_time_last & 0xFFFFFFFF);
+		data[11] = htole32(state->mbc.mbc3.unix_time_last >> 32);
+
+		if(unlikely(fwrite(data, 1, 48, save) < 48))
+		{
+			error(state, "Couldn't save RTC data: %s", strerror(errno));
+			fclose(save);
+			return;
+		}
+
+		info(state, "RTC data saved");
+	default:
+		// Call it done
+		return;
+	}
+}

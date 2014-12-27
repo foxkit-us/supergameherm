@@ -310,10 +310,12 @@ static inline void mbc2_write(emu_state *restrict state, uint16_t location, uint
 	{
 	case 0x0:
 	case 0x1:
-		if(!(location & 0x100))
+		if(location & 0x100)
 		{
-			state->mbc.mbc_common.ram_enable = value;
+			break;
 		}
+
+		state->mbc.mbc_common.ram_enable = value;
 		break;
 	case 0x2:
 	case 0x3:
