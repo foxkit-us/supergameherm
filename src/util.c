@@ -53,3 +53,52 @@ uint32_t interleave16(uint16_t x, uint16_t y)
 		MortonTable256[y & 0xFF] << 1 |
 		MortonTable256[x & 0xFF]);
 }
+
+#if defined(_WIN32)
+#	define stat _stat
+#elif defined(HAVE_POSIX)
+#	include <unistd.h>
+#endif
+
+#if defined(_WIN32) || defined(HAVE_POSIX)
+#include <sys/types.h>
+#include <sys/stat.h>
+
+int64_t get_file_size(const char *path)
+{
+	struct stat buf;
+
+	if(stat(path, &buf) != 0)
+	{
+		return -1;
+	}
+
+	return buf.st_size;
+}
+#else
+
+#include <stdio.h>	// FILE, etc.
+
+// ANSI portable version, slow but works
+int64_t get_file_size(const char *path)
+{
+	FILE *f;
+	int64_t ret;
+
+	if((f = fopen(save_path, "rb")) == NULL)
+	{
+		return -1;
+	}
+
+	if(unlikely(fseek(save, 0, SEEK_END)))
+	{
+		return -1;
+	}
+
+	ret = ftell(save);
+
+	fclose(f);
+
+	return ret;
+}
+#endif

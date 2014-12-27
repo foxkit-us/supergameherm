@@ -6,5 +6,6 @@
 // Functions
 uint32_t interleave8(uint8_t, uint8_t, uint8_t, uint8_t);
 uint32_t interleave16(uint16_t, uint16_t);
+int64_t get_file_size(const char *);
 
 #endif /*__UTIL_H__*/
