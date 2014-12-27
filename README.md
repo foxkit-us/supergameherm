@@ -41,13 +41,15 @@ Platforms we have tested SuperGameHerm with:
 * Linux ~3.13 kernel (x86, amd64, and PowerPC)
 * FreeBSD 10 (i386 and amd64)
 * Windows NT 4 (x86, but we've seen snails run faster)
-* Windows 10 (x64, kinda slow)
+* Windows 7 (x64)
+* Windows 10 (x64)
 * NetBSD 6 (i386)
+* OpenBSD 5.4 (amd64)
 
 Currently supported frontends (they work wherever the given frontends
 work):
 * [SDL2](https://www.libsdl.org/download-2.0.php)
-* Win32 API (slow)
+* [Windows API](http://msdn.microsoft.com/en-us/library/dd145203.aspx)
 * [libcaca](http://caca.zoy.org/) (no sound, obviously)
 
 Please report to us if your platform doesn't work, or your favourite frontend
