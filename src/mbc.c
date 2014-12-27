@@ -216,6 +216,11 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 		}
 
 		break;
+	case 0x6:
+	case 0x7:
+		// TODO enforce mode 0/1 limitations
+		state->mbc.mbc_common.rom_select = value;
+		break;
 	case 0xA:
 	case 0xB:
 		// switchable RAM bank - 0xA000..0xBFFF
