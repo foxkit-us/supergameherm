@@ -135,7 +135,7 @@ static inline bool mbc1_init(emu_state *restrict state)
 	state->mbc.rom_bank = 1;
 	state->mbc.use_4bit = false;
 	state->mbc.mbc_common.rom_select = false;
-	state->mbc.mbc_common.ram_enable = 0;
+	state->mbc.mbc_common.ram_enable = 1;
 
 	// TODO load state with batt
 	if(s)
@@ -155,7 +155,8 @@ static inline bool mbc1_init(emu_state *restrict state)
 	}
 	else
 	{
-		state->mbc.ram_bank_size = state->mbc.ram_bank_count = 0;
+		state->mbc.ram_bank_size = state->mbc.ram_bank_count =
+			state->mbc.ram_total = 0;
 		state->mbc.cart_ram = NULL;
 	}
 
