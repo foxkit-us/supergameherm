@@ -89,8 +89,8 @@ anything should be able to compile supergameherm. We aim to avoid conflicts
 with C++ identifiers in our code to ensure compatibility with older MSVC.
 
 ## Does this work as a practical emulator?
-Not yet. There's no sound, and only limited graphics support. We're working on
-it.
+Not yet. There's no sound, and graphics support is rough around the edges.
+We're working on it.
 
 Interestingly, we do pass all of Blargg's CPU tests. Many emulators can't
 manage to do that. :)
