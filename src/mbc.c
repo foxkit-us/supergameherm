@@ -389,6 +389,7 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 
 		if(!((state->mbc.mbc3.ram_rtc_enable & 0xA) == 0xA))
 		{
+			debug(state, "MBC disabled, tried to read from %04X'", location);
 			return 0xFF;
 		}
 
@@ -444,12 +445,13 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		break;
 	case 0x4:
 	case 0x5:
-		state->mbc.mbc3.rtc_select = value;
+		state->mbc.ram_bank = state->mbc.mbc3.rtc_select = value;
 		break;
 	case 0xA:
 	case 0xB:
 		if(!((state->mbc.mbc3.ram_rtc_enable & 0xA) == 0xA))
 		{
+			debug(state, "MBC disabled, tried to write to %04X'", location);
 			return;
 		}
 
@@ -487,6 +489,7 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 			break;
 		}
 		default:
+			warning(state, "Unimplemented write for MBC3 at address %04X", location);
 			return;
 		}
 
