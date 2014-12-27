@@ -4,6 +4,7 @@
 #include "config.h"	// bool, *int*_t
 #include "sgherm.h"	// emu_state
 #include "rom.h"	// OFF_CART_TYPE
+#include "mmap.h"	// memmap_*
 
 
 typedef enum
@@ -84,6 +85,7 @@ struct mbc_state_t
 	cart_types cart;	//! Cartridge in use
 
 	uint8_t *cart_ram;	//! Cartridge RAM
+	memmap_state *cart_mm_data;	//! Opaque data
 
 	unsigned ram_bank_size;	//! Size of each bank
 	uint8_t ram_bank_count;	//! Number of banks

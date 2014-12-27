@@ -25,7 +25,13 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
 
-	assert(rom_path != save_path);
+	if(strcmp(rom_path, save_path) == 0)
+	{
+		error(state, "ROM path can't be the same as the save path!");
+		return NULL;
+	}
+
+	state->save_path = save_path;
 
 	state->interrupts.enabled = true;
 	state->wait = 1;
@@ -36,13 +42,6 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 		error(state, "can't read ROM data (ROM is corrupt)?");
 		free(state);
 		return NULL;
-	}
-
-	// Get save state
-	if(save_path)
-	{
-		state->save_path = save_path;
-		ram_load(state, save_path);
 	}
 
 	// Initalise state

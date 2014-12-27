@@ -84,7 +84,6 @@ void register_handlers(void)
 
 void register_handlers(void)
 {
-	// TODO maybe some windows signal handling?
 }
 
 #endif // HAVE_POSIX

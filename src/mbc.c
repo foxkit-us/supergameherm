@@ -2,6 +2,7 @@
 #include "sgherm.h"	// emu_state
 #include "memory.h"	// constants
 #include "print.h"	// warning/debug
+#include "mmap.h"	// memmap_*
 
 #include <string.h>	// memset
 #include <stdlib.h>	// calloc, free
@@ -21,7 +22,7 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
 {
 	size_t pos = (state->mbc.ram_bank * state->mbc.ram_bank_size) +
 		(location - 0xA000);
-	uint8_t val;
+	uint8_t value;
 
 	if(unlikely(pos > state->mbc.ram_total))
 	{
@@ -30,13 +31,13 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
 		return 0xFF;
 	}
 
-	val = state->mbc.cart_ram[pos];
+	value = state->mbc.cart_ram[pos];
 	if(state->mbc.use_4bit)
 	{
-		val |= 0xF0;
+		value |= 0xF0;
 	}
 
-	return val;
+	return value;
 }
 
 //! write to the switchable RAM bank space
@@ -52,7 +53,14 @@ static inline void ram_bank_write(emu_state *restrict state, uint16_t location, 
 		return;
 	}
 
+	if(state->mbc.use_4bit)
+	{
+		value |= 0xF0;
+	}
 	state->mbc.cart_ram[pos] = value;
+
+	// Write back to storage
+	memmap_sync(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 
 // MBC-less operation
@@ -74,7 +82,8 @@ static inline bool nombc_init(emu_state *restrict state UNUSED)
 		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
 		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
 		state->mbc.ram_total = s;
-		state->mbc.cart_ram = calloc(s, 1);
+		state->mbc.cart_ram = memmap_open(state, state->save_path, s,
+			&(state->mbc.cart_mm_data));
 		if(!(state->mbc.cart_ram))
 		{
 			return false;
@@ -113,9 +122,9 @@ static inline void nombc_write(emu_state *restrict state, uint16_t location, uin
 	warning(state, "Unimplemented write for ROM at address %04X", location);
 }
 
-static inline void nombc_finish(emu_state *restrict state UNUSED)
+static inline void nombc_finish(emu_state *restrict state)
 {
-	free(state->mbc.cart_ram);
+	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 
 const mbc_func nombc_func =
@@ -147,7 +156,8 @@ static inline bool mbc1_init(emu_state *restrict state)
 		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
 		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
 		state->mbc.ram_total = s;
-		state->mbc.cart_ram = calloc(s, 1);
+		state->mbc.cart_ram = memmap_open(state, state->save_path, s,
+			&(state->mbc.cart_mm_data));
 		if(!(state->mbc.cart_ram))
 		{
 			return false;
@@ -239,9 +249,9 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 	}
 }
 
-static inline void mbc1_finish(emu_state *restrict state UNUSED)
+static inline void mbc1_finish(emu_state *restrict state)
 {
-	free(state->mbc.cart_ram);
+	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 
 const mbc_func mbc1_func =
@@ -265,7 +275,8 @@ static inline bool mbc2_init(emu_state *restrict state)
 	state->mbc.ram_bank_count = 1;
 	state->mbc.ram_total = 512;
 	state->mbc.use_4bit = true;
-	state->mbc.cart_ram = calloc(512, 1);
+	state->mbc.cart_ram = memmap_open(state, state->save_path,
+		state->mbc.ram_bank_size, &(state->mbc.cart_mm_data));
 	if(!(state->mbc.cart_ram))
 	{
 		return false;
@@ -339,9 +350,9 @@ static inline void mbc2_write(emu_state *restrict state, uint16_t location, uint
 	}
 }
 
-static inline void mbc2_finish(emu_state *restrict state UNUSED)
+static inline void mbc2_finish(emu_state *restrict state)
 {
-	free(state->mbc.cart_ram);
+	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 
 const mbc_func mbc2_func =
@@ -356,14 +367,38 @@ const mbc_func mbc2_func =
 
 static inline bool mbc3_init(emu_state *restrict state)
 {
-	// Init is same as MBC1
-	if(!mbc1_init(state))
-	{
-		return false;
-	}
+	int s = state->cart_data[OFF_RAM_SIZE];
 
-	// TODO proper RTC data
-	memset(state->mbc.mbc3.rtc, 0, sizeof(state->mbc.mbc3.rtc));
+	state->mbc.rom_bank = 1;
+	state->mbc.use_4bit = false;
+	state->mbc.mbc_common.rom_select = false;
+	state->mbc.mbc_common.ram_enable = 1;
+
+	// TODO load state with batt
+	if(s)
+	{
+		// Get total memory size
+		s = 0x400 << ((s << 1) - 1);
+
+		// Just like MBC1
+		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
+		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
+		state->mbc.ram_total = s;
+
+		// Compensate for RTC data (in-file)
+		state->mbc.cart_ram = memmap_open(state, state->save_path, s + 48,
+			&(state->mbc.cart_mm_data));
+		if(!(state->mbc.cart_ram))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		state->mbc.ram_bank_size = state->mbc.ram_bank_count =
+			state->mbc.ram_total = 0;
+		state->mbc.cart_ram = NULL;
+	}
 
 	return true;
 }
@@ -391,7 +426,6 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 
 		if(!((state->mbc.mbc3.ram_rtc_enable & 0xA) == 0xA))
 		{
-			debug(state, "MBC disabled, tried to read from %04X'", location);
 			return 0xFF;
 		}
 
@@ -453,7 +487,6 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 	case 0xB:
 		if(!((state->mbc.mbc3.ram_rtc_enable & 0xA) == 0xA))
 		{
-			debug(state, "MBC disabled, tried to write to %04X'", location);
 			return;
 		}
 
@@ -517,9 +550,9 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 	}
 }
 
-static inline void mbc3_finish(emu_state *restrict state UNUSED)
+static inline void mbc3_finish(emu_state *restrict state)
 {
-	free(state->mbc.cart_ram);
+	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 
 const mbc_func mbc3_func =
@@ -606,9 +639,9 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 	}
 }
 
-static inline void mbc5_finish(emu_state *restrict state UNUSED)
+static inline void mbc5_finish(emu_state *restrict state)
 {
-	free(state->mbc.cart_ram);
+	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 
 const mbc_func mbc5_func =

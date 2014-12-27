@@ -10,6 +10,7 @@
 #include "print.h"	// fatal, error, debug
 #include "rom.h"	// constants, cart_header, etc.
 #include "util.h"	// likely/unlikely
+#include "mmap.h"	// memmap_*
 
 
 static const unsigned char graphic_expected[] =
@@ -191,16 +192,14 @@ close_rom:
 }
 
 /*!
- * Load RAM state from given file
+ * Save RTC data to file
  * @param state state structure
- * @param state file to load as save state
  * @warning you must call read_rom_data first!
  */
-void ram_load(emu_state *state, const char *save_path)
+void rtc_load(emu_state *state)
 {
-	FILE *save;
-	size_t s;
 	const uint32_t ram_total = state->mbc.ram_total;
+	uint32_t data[12];
 
 	if(ram_total <= 0)
 	{
@@ -208,131 +207,7 @@ void ram_load(emu_state *state, const char *save_path)
 		return;
 	}
 
-	if((save = fopen(save_path, "rb")) == NULL)
-	{
-		error(state, "Could not open save file: %s", strerror(errno));
-		return;
-	}
-
-	// Get the full ROM size
-	if(unlikely(fseek(save, 0, SEEK_END)))
-	{
-		error(state, "Could not get size of save file: %s", strerror(errno));
-		return;
-	}
-
-	s = ftell(save);
-
-	if(unlikely(fseek(save, 0, SEEK_SET)))
-	{
-		error(state, "Could not seek to start of file: %s", strerror(errno));
-		fclose(save);
-		return;
-	}
-
-	if(s < ram_total)
-	{
-		error(state, "Save file was too small");
-		fclose(save);
-		return;
-	}
-
-	// Load in RAM data
-	if(fread(state->mbc.cart_ram, 1, ram_total, save) < ram_total)
-	{
-		error(state, "Could not read from save file: %s", strerror(errno));
-		fclose(save);
-		return;
-	}
-
-	info(state, "Loaded save fule successfully!");
-
-	if(s > ram_total)
-	{
-		uint32_t data[12];
-
-		memset(data, 0, sizeof(data));
-
-		// XXX MBC3 has RTC bits but this loading stuff doesn't belong here
-		switch(state->mbc.cart)
-		{
-		case CART_MBC3_TIMER_BATT:
-		case CART_MBC3_TIMER_RAM_BATT:
-		case CART_MBC3:
-		case CART_MBC3_RAM:
-		case CART_MBC3_RAM_BATT:
-			if((s - ram_total) < 44)
-			{
-				error(state, "Bad RTC data, not reading");
-				fclose(save);
-				return;
-			}
-
-			if(unlikely(fread(data, 1, s - ram_total, save) < ((unsigned)s - ram_total)))
-			{
-				error(state, "Couldn't get RTC data: %s", strerror(errno));
-				fclose(save);
-				return;
-			}
-
-			// Standard VBA format
-			state->mbc.mbc3.rtc[0].seconds   = le32toh(data[0]) & 0xFF;
-			state->mbc.mbc3.rtc[0].minutes   = le32toh(data[1]) & 0xFF;
-			state->mbc.mbc3.rtc[0].hours     = le32toh(data[2]) & 0xFF;
-			state->mbc.mbc3.rtc[0].days      = le32toh(data[3]) & 0xFF;
-			state->mbc.mbc3.rtc[0].day_carry = le32toh(data[4]) & 0x01;
-
-			state->mbc.mbc3.rtc[1].seconds   = le32toh(data[5]) & 0xFF;
-			state->mbc.mbc3.rtc[1].minutes   = le32toh(data[6]) & 0xFF;
-			state->mbc.mbc3.rtc[1].hours     = le32toh(data[7]) & 0xFF;
-			state->mbc.mbc3.rtc[1].days      = le32toh(data[8]) & 0xFF;
-			state->mbc.mbc3.rtc[1].day_carry = le32toh(data[9]) & 0x01;
-
-			state->mbc.mbc3.unix_time_last   = le32toh(data[10]);
-			state->mbc.mbc3.unix_time_last  |= (uint64_t)(le32toh(data[11])) << 32;
-
-			// TODO unix time offset stuff
-			info(state, "RTC data loaded");
-		default:
-			// Call it done
-			return;
-		}
-	}
-}
-
-/*!
- * Save RAM state to given file
- * @param state state structure
- * @param state file to load as save state
- * @warning you must call read_rom_data first!
- */
-void ram_save(emu_state *state, const char *save_path)
-{
-	FILE *save;
-	const uint32_t ram_total = state->mbc.ram_total;
-	uint32_t data[12];
-
-	if(ram_total <= 0)
-	{
-		info(state, "Not writing save state, cart is ROM only");
-		return;
-	}
-
-	if((save = fopen(save_path, "wb")) == NULL)
-	{
-		error(state, "Could not open save file: %s", strerror(errno));
-		return;
-	}
-
-	// Write out RAM data
-	if(fwrite(state->mbc.cart_ram, 1, ram_total, save) < ram_total)
-	{
-		error(state, "Could not write to save file: %s", strerror(errno));
-		fclose(save);
-		return;
-	}
-
-	info(state, "Wrote save fule successfully!");
+	memset(data, 0, sizeof(data));
 
 	// XXX MBC3 has RTC bits but this loading stuff doesn't belong here
 	switch(state->mbc.cart)
@@ -342,8 +217,55 @@ void ram_save(emu_state *state, const char *save_path)
 	case CART_MBC3:
 	case CART_MBC3_RAM:
 	case CART_MBC3_RAM_BATT:
-		memset(data, 0, sizeof(data));
+		memcpy(data, state->mbc.cart_ram + ram_total, sizeof(data));
 
+		// Standard VBA format
+		state->mbc.mbc3.rtc[0].seconds   = le32toh(data[0]) & 0xFF;
+		state->mbc.mbc3.rtc[0].minutes   = le32toh(data[1]) & 0xFF;
+		state->mbc.mbc3.rtc[0].hours     = le32toh(data[2]) & 0xFF;
+		state->mbc.mbc3.rtc[0].days      = le32toh(data[3]) & 0xFF;
+		state->mbc.mbc3.rtc[0].day_carry = le32toh(data[4]) & 0x01;
+
+		state->mbc.mbc3.rtc[1].seconds   = le32toh(data[5]) & 0xFF;
+		state->mbc.mbc3.rtc[1].minutes   = le32toh(data[6]) & 0xFF;
+		state->mbc.mbc3.rtc[1].hours     = le32toh(data[7]) & 0xFF;
+		state->mbc.mbc3.rtc[1].days      = le32toh(data[8]) & 0xFF;
+		state->mbc.mbc3.rtc[1].day_carry = le32toh(data[9]) & 0x01;
+
+		state->mbc.mbc3.unix_time_last   = le32toh(data[10]);
+		state->mbc.mbc3.unix_time_last  |= (uint64_t)(le32toh(data[11])) << 32;
+
+		// TODO unix time offset stuff
+		info(state, "RTC data loaded");
+	default:
+		// Call it done
+		return;
+	}
+}
+
+/*!
+ * Save RTC data to file
+ * @param state state structure
+ */
+void rtc_save(emu_state *state)
+{
+	const uint32_t ram_total = state->mbc.ram_total;
+	uint32_t data[12];
+
+	if(ram_total <= 0)
+	{
+		info(state, "Not writing save state, cart is ROM only");
+		return;
+	}
+
+	// XXX MBC3 has RTC bits but this loading stuff doesn't belong here
+	switch(state->mbc.cart)
+	{
+	case CART_MBC3_TIMER_BATT:
+	case CART_MBC3_TIMER_RAM_BATT:
+	case CART_MBC3:
+	case CART_MBC3_RAM:
+	case CART_MBC3_RAM_BATT:
 		// Standard VBA format
 		data[0]  = htole32(state->mbc.mbc3.rtc[0].seconds);
 		data[1]  = htole32(state->mbc.mbc3.rtc[0].minutes);
@@ -360,12 +282,7 @@ void ram_save(emu_state *state, const char *save_path)
 		data[10] = htole32(state->mbc.mbc3.unix_time_last & 0xFFFFFFFF);
 		data[11] = htole32(state->mbc.mbc3.unix_time_last >> 32);
 
-		if(unlikely(fwrite(data, 1, 48, save) < 48))
-		{
-			error(state, "Couldn't save RTC data: %s", strerror(errno));
-			fclose(save);
-			return;
-		}
+		memcpy(state->mbc.cart_ram + ram_total, data, sizeof(data));
 
 		info(state, "RTC data saved");
 	default:
