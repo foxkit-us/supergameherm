@@ -15,12 +15,12 @@ Windows
 *******
 
 This chapter outlines notes about building and running SuperGameHerm on
-computers running Windows®.
+computers running Windows.
 
 General
 =======
 
-The native Windows® API frontend (sgherm-w32.exe) uses GDI calls.  These
+The native Windows API frontend (sgherm-gdi.exe) uses GDI calls.  These
 calls are accelerated under Windows Vista™ and later versions (including
 7, 8, and 10).
 
