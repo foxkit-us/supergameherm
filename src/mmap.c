@@ -96,11 +96,11 @@ void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **da
 {
 	memmap_state *m_state = *data;
 
-	munmap(map, m_state->size);
 	if(m_state->fd > 0)
 	{
 		close(m_state->fd);
 	}
+	munmap(map, m_state->size);
 
 	free(m_state);
 	*data = NULL;
