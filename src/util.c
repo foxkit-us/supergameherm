@@ -1,6 +1,9 @@
 #include "config.h"	// bool, uint[XX]_t
 #include "util.h"	// prototypes
 
+#include <time.h>	// time
+#include <string.h>	// memset
+
 
 // Taken from the bit twiddling hacks
 static const uint16_t MortonTable256[256] =
@@ -52,6 +55,46 @@ uint32_t interleave16(uint16_t x, uint16_t y)
 		MortonTable256[x >> 8] << 16 |
 		MortonTable256[y & 0xFF] << 1 |
 		MortonTable256[x & 0xFF]);
+}
+
+void unix_time_delta(uint64_t t_new, uint64_t t_old, time_delta *td)
+{
+	uint64_t delta = 0, val = 0;
+
+	if(t_new < t_old)
+	{
+		delta = t_old - t_new;
+		td->negative = true;
+	}
+	else if(t_new == t_old)
+	{
+		// No delta
+		memset(td, 0, sizeof(time_delta));
+		return;
+	}
+	else
+	{
+		delta = t_new - t_old;
+		td->negative = false;
+	}
+
+	// Days
+	td->days = delta / 86400;
+
+	// Seconds remaining in the day
+	val = delta % 86400;
+
+	// Hours
+	td->hours = val / 3600;
+
+	// Seconds remaining in the hour
+	val %= 3600;
+
+	// Minutes
+	td->minutes = val / 60;
+
+	// Seconds
+	td->seconds = val % 60;
 }
 
 #if defined(_WIN32)

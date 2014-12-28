@@ -3,10 +3,12 @@
 #include "memory.h"	// constants
 #include "print.h"	// warning/debug
 #include "mmap.h"	// memmap_*
+#include "util.h"	// unix_time_delta
 
 #include <string.h>	// memset
 #include <stdlib.h>	// calloc, free
 #include <assert.h>	// assert
+#include <time.h>	// time
 
 
 //! read from the switchable ROM bank space
@@ -73,7 +75,6 @@ static inline bool nombc_init(emu_state *restrict state UNUSED)
 	state->mbc.use_4bit = false;
 
 	// Most MBC-less carts don't have RAM... but some rare ones apparently do.
-	// TODO load state with batt
 	if(s)
 	{
 		// Get total memory size
@@ -366,6 +367,61 @@ const mbc_func mbc2_func =
 
 // MBC3
 
+// XXX exported for rom.c stuff
+void adjust_mbc3_time(emu_state *restrict state)
+{
+	time_delta td;
+	uint64_t t = time(NULL);
+
+	if(state->mbc.mbc3.rtc[0].halt)
+	{
+		// Timer halted, no adjustment required
+		return;
+	}
+
+	if(t == state->mbc.mbc3.unix_time_last)
+	{
+		// No need to redo this expensive calculation
+		return;
+	}
+
+	unix_time_delta(t, state->mbc.mbc3.unix_time_last, &td);
+
+	// Set
+	state->mbc.mbc3.unix_time_last = t;
+
+	state->mbc.mbc3.rtc[0].seconds += td.seconds;
+	if(state->mbc.mbc3.rtc[0].seconds >= 60)
+	{
+		state->mbc.mbc3.rtc[0].minutes += state->mbc.mbc3.rtc[0].seconds / 60;
+		state->mbc.mbc3.rtc[0].seconds %= 60;
+	}
+
+	state->mbc.mbc3.rtc[0].minutes += td.minutes;
+	if(state->mbc.mbc3.rtc[0].minutes >= 60)
+	{
+		state->mbc.mbc3.rtc[0].hours += state->mbc.mbc3.rtc[0].minutes / 60;
+		state->mbc.mbc3.rtc[0].minutes %= 60;
+	}
+
+	state->mbc.mbc3.rtc[0].hours += td.hours;
+	if(state->mbc.mbc3.rtc[0].hours >= 24)
+	{
+		state->mbc.mbc3.rtc[0].days += state->mbc.mbc3.rtc[0].hours / 24;
+		state->mbc.mbc3.rtc[0].hours %= 24;
+	}
+
+	state->mbc.mbc3.rtc[0].days += td.days;
+	if(state->mbc.mbc3.rtc[0].days > 512)
+	{
+		state->mbc.mbc3.rtc[0].day_carry = 1;
+		state->mbc.mbc3.rtc[0].days %= 512;
+	}
+
+	// Write back
+	rtc_save(state);
+}
+
 static inline bool mbc3_init(emu_state *restrict state)
 {
 	int s = state->cart_data[OFF_RAM_SIZE];
@@ -401,6 +457,9 @@ static inline bool mbc3_init(emu_state *restrict state)
 		state->mbc.cart_ram = NULL;
 	}
 
+	rtc_load(state);
+	adjust_mbc3_time(state);
+
 	return true;
 }
 
@@ -430,15 +489,15 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 			return 0xFF;
 		}
 
+		if(l_index == 0 && state->mbc.mbc3.rtc_select >= 0x8)
+		{
+			// Unlatched, sync clock
+			adjust_mbc3_time(state);
+		}
+
 		// Select RTC or RAM bank
-		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
 		{
-		case 0x0:
-		case 0x1:
-		case 0x2:
-		case 0x3:
-			return ram_bank_read(state, location);
 		case 0x8:
 			return state->mbc.mbc3.rtc[l_index].seconds;
 		case 0x9:
@@ -455,9 +514,7 @@ static inline uint8_t mbc3_read(emu_state *restrict state, uint16_t location)
 			return ret;
 		}
 		default:
-			warning(state, "Unimplemented read for MBC3 at address %04X",
-				location);
-			return 0xFF;
+			return ram_bank_read(state, location);
 		}
 
 		break;
@@ -491,62 +548,65 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 		break;
 	case 0xA:
 	case 0xB:
+	{
+		//Select latched or unlatched value
+		size_t l_index = state->mbc.mbc3.latched == 1 ? 1 : 0;
+
 		if(!((state->mbc.mbc3.ram_rtc_enable & 0xA) == 0xA))
 		{
 			return;
 		}
 
+		if(l_index == 0 && state->mbc.mbc3.rtc_select >= 0x8)
+		{
+			// Unlatched, sync clock
+			adjust_mbc3_time(state);
+		}
+
+
 		// Select RTC or RAM bank
-		// TODO - actual ticking of the clock
 		switch(state->mbc.mbc3.rtc_select)
 		{
-		case 0x0:
-		case 0x1:
-		case 0x2:
-		case 0x3:
+		case 0x8:
+			state->mbc.mbc3.rtc[l_index].seconds = value;
+			return;
+		case 0x9:
+			state->mbc.mbc3.rtc[l_index].minutes = value;
+			return;
+		case 0xA:
+			state->mbc.mbc3.rtc[l_index].hours = value;
+			return;
+		case 0xB:
+			state->mbc.mbc3.rtc[l_index].days =
+				(state->mbc.mbc3.rtc[l_index].days & 0x100) | value;
+			return;
+		case 0xC:
+		{
+			state->mbc.mbc3.rtc[l_index].days =
+				(state->mbc.mbc3.rtc[l_index].days & 0xFF) |
+				((value & 0x1) << 8);
+			state->mbc.mbc3.rtc[l_index].halt = (value & 0x40) >> 6;
+			state->mbc.mbc3.rtc[l_index].day_carry = (value & 0x80) >> 7;
+			return;
+		}
+		default:
 			// switchable RAM bank - 0xA000..0xBFFF
 			ram_bank_write(state, location, value);
 			return;
-		case 0x8:
-			state->mbc.mbc3.rtc[0].seconds = value;
-			break;
-		case 0x9:
-			state->mbc.mbc3.rtc[0].minutes = value;
-			break;
-		case 0xA:
-			state->mbc.mbc3.rtc[0].hours = value;
-			break;
-		case 0xB:
-			state->mbc.mbc3.rtc[0].days =
-				(state->mbc.mbc3.rtc[0].days & 0x100) | value;
-			break;
-		case 0xC:
-		{
-			state->mbc.mbc3.rtc[0].days =
-				(state->mbc.mbc3.rtc[0].days & 0xFF) |
-				((value & 0x1) << 8);
-			state->mbc.mbc3.rtc[0].halt = (value & 0x40) >> 6;
-			state->mbc.mbc3.rtc[0].day_carry = (value & 0x80) >> 7;
-			break;
 		}
-		default:
-			warning(state, "Unimplemented write for MBC3 at address %04X",
-				location);
-			return;
-		}
-
-		// XXX
-		memcpy(&(state->mbc.mbc3.rtc[1]), &(state->mbc.mbc3.rtc[0]),
-			sizeof(state->mbc.mbc3.rtc[0]));
 		break;
+	}
 	case 0x6:
 	case 0x7:
 		// Latch RTC value
-		if(value == 1 && state->mbc.mbc3.latched == 0)
+		if(value && state->mbc.mbc3.latched == 0)
 		{
+			// Do adjustment before latch
+			adjust_mbc3_time(state);
+
 			// Copy the present RTC value
-			memcpy(&(state->mbc.mbc3.rtc[0]), &(state->mbc.mbc3.rtc[1]),
-				sizeof(state->mbc.mbc3.rtc[0]));
+			memcpy(&(state->mbc.mbc3.rtc[1]), &(state->mbc.mbc3.rtc[0]),
+				sizeof(state->mbc.mbc3.rtc[1]));
 		}
 
 		state->mbc.mbc3.latched = value;
@@ -559,6 +619,7 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc3_finish(emu_state *restrict state)
 {
+	rtc_save(state);
 	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 }
 

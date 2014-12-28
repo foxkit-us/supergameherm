@@ -207,8 +207,6 @@ void rtc_load(emu_state *state)
 		return;
 	}
 
-	memset(data, 0, sizeof(data));
-
 	// XXX MBC3 has RTC bits but this loading stuff doesn't belong here
 	switch(state->mbc.cart)
 	{
@@ -284,7 +282,10 @@ void rtc_save(emu_state *state)
 
 		memcpy(state->mbc.cart_ram + ram_total, data, sizeof(data));
 
-		info(state, "RTC data saved");
+		// Need writeback
+		state->mbc.dirty = true;
+
+		//info(state, "RTC data saved");
 	default:
 		// Call it done
 		return;

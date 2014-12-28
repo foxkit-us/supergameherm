@@ -31,7 +31,7 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 
 	if(path)
 	{
-		if((m_state->fd = open(path, O_CREAT | O_RDWR, ~umask(0))) < 0)
+		if((m_state->fd = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) < 0)
 		{
 			error(state, "Could not open file for mmap: %s", strerror(errno));
 			free(m_state);
