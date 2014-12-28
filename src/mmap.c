@@ -8,7 +8,7 @@
 #include <errno.h>	// errno
 
 
-#ifdef HAVE_POSIX
+#ifdef HAVE_MMAP
 
 #include <sys/mman.h>	// mmap/munmap/msync
 #include <sys/stat.h>	// open
@@ -87,6 +87,30 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	return map;
 }
 
+#if defined(HAVE_MREMAP) && !defined(__NetBSD__)
+// Use a better implementation (NetBSD's is not compatible)
+
+#ifndef MREMAP_MAYMOVE
+#	define MREMAP_MAYMOVE 0
+#endif //!MREMAP_MAYMOVE
+
+void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_state **data)
+{
+	memmap_state *m_state = *data;
+	void *map_new;
+
+	if(!(map_new = mremap(map, m_state->size, size, MREMAP_MAYMOVE)))
+	{
+		error(state, "Could not remap file: %s", strerror(errno));
+		return NULL;
+	}
+
+	return map_new;
+}
+
+#else //defined(HAVE_MREMAP) && !defined(__NetBSD__)
+// Fall back to POSIXly correct method
+
 void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_state **data)
 {
 	memmap_state *m_state = *data;
@@ -117,6 +141,8 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 	return map_new;
 }
 
+#endif //defined(HAVE_MREMAP) && !defined(__NetBSD__)
+
 void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **data)
 {
 	memmap_state *m_state = *data;
@@ -135,7 +161,7 @@ void memmap_sync(emu_state *restrict state UNUSED, void *map, memmap_state **dat
 	msync(map, m_state->size, MS_ASYNC);
 }
 
-#else
+#else //HAVE_MMAP
 
 // Shitty fallback implementation for lesser systems
 
@@ -240,4 +266,4 @@ void memmap_sync(emu_state *restrict state UNUSED, void *map, memmap_state **dat
 	}
 }
 
-#endif
+#endif //HAVE_MMAP

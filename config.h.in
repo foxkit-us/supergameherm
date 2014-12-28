@@ -1,17 +1,9 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-// Have the libcaca frontend
+// Frontends
 #cmakedefine HAVE_LIBCACA
-
-// Have the SDL2 frontend
 #cmakedefine HAVE_SDL2
-
-// System is POSIX
-#cmakedefine HAVE_POSIX
-
-// System has unistd.h
-#cmakedefine HAVE_UNISTD_H
 
 // System has CLOCK_GETTIME
 #cmakedefine HAVE_CLOCK_GETTIME
@@ -22,7 +14,12 @@
 // System has nanosleep
 #cmakedefine HAVE_NANOSLEEP
 
-// System is windows
+// System has mmap/mremap
+#cmakedefine HAVE_MMAP
+#cmakedefine HAVE_MREMAP
+
+// Platforms
+#cmakedefine HAVE_POSIX
 #cmakedefine HAVE_WINDOWS
 
 // Compiler-specific checks
