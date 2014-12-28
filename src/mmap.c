@@ -130,7 +130,7 @@ typedef struct memmap_state_t
 
 void * memmap_open(emu_state *restrict state, const char *path, size_t size, memmap_state **data)
 {
-	memmap_state *m_state = (m_state *)malloc(sizeof(memmap_state));
+	memmap_state *m_state = (memmap_state *)malloc(sizeof(memmap_state));
 	void *map = malloc(size);
 
 	if(path)
