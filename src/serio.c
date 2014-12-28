@@ -18,8 +18,14 @@ uint8_t serial_read(emu_state *restrict state, uint16_t reg)
 	case 0xFF02:	// SC - serial control
 	{
 		uint8_t res = 0;
-		if(state->ser.enabled) res |= 0x80;
-		if(state->ser.use_internal) res |= 0x01;
+		if(state->ser.enabled)
+		{
+			res |= 0x80;
+		}
+		if(state->ser.use_internal)
+		{
+			res |= 0x01;
+		}
 		return res;
 	}
 	default:
@@ -45,8 +51,8 @@ void serial_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		state->ser.out = data;
 		break;
 	case 0xFF02:	// SC - serial control
-		state->ser.enabled = (data && 0x80 == 0x80);
-		state->ser.use_internal = (data && 0x01 == 0x01);
+		state->ser.enabled = (data && 0x80) == 0x80;
+		state->ser.use_internal = (data & 0x01) == 0x01;
 		break;
 	default:
 		error(state, "serial: unknown register %04X (W)", reg);
@@ -64,7 +70,10 @@ void serial_tick(emu_state *restrict state)
 	uint16_t ticks;
 
 	// we aren't active; we don't care
-	if(!state->ser.enabled) return;
+	if(!state->ser.enabled)
+	{
+		return;
+	}
 
 	state->ser.curr_clk++;
 	// XXX TODO FIXME this does NOT support external clocks
@@ -77,12 +86,12 @@ void serial_tick(emu_state *restrict state)
 		ticks = 8;
 	}
 
-	if(state->ser.curr_clk % ticks == 0)
+	if((state->ser.curr_clk % ticks) == 0)
 	{
 		// TODO put out a bit.
 		// TODO take in a bit.
 		// sockets?  IPC?  something else?  all three?
-		if(state->ser.cur_bit-- == -1)
+		if(state->ser.cur_bit == -1)
 		{
 			state->ser.enabled = false;
 			signal_interrupt(state, INT_SERIAL);
