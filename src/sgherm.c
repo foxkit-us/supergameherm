@@ -77,6 +77,7 @@ bool step_emulator(emu_state *restrict state)
 	{
 		// Do a write back
 		memmap_sync(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+		state->mbc.dirty = false;
 	}
 
 #ifdef THROTTLE_VBLANK
