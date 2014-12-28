@@ -81,7 +81,7 @@ bool step_emulator(emu_state *restrict state)
 
 #ifdef THROTTLE_VBLANK
 	// Wait for vblank
-	if(unlikely(state->lcdc.stat.mode_flag == 1 &&
+	if(unlikely(LCDC_STAT_MODE_FLAG(state) == 1 &&
 		state->lcdc.curr_clk == 0))
 	{
 		uint64_t t = get_time();
