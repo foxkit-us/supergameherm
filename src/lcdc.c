@@ -56,7 +56,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	{
 		uint8_t pixel;
 
-		if(!(x && (sx & 7)))
+		if(x == 0 || (sx & 7) == 0)
 		{
 			const uint16_t tile_index = s_sy * 32 + (sx / 8);
 			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
@@ -75,6 +75,12 @@ static inline void dmg_bg_render(emu_state *restrict state)
 
 			// XXX kinda bogus but needed to make it look right
 			pixel_temp = rotl_16(pixel_temp, 2);
+
+			if(x == 0)
+			{
+				// Compensate for off-screen pixels
+				rotl_16(pixel_temp, 2 * (sx & 7));
+			}
 		}
 
 		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
