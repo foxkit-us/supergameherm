@@ -13,6 +13,7 @@
 #include "mbc.h"	// mbc
 #include "ctl_unit.h"	// interrupts
 #include "frontend.h"	// frontend
+#include "debug.h"	// debug_state
 
 
 typedef enum
@@ -84,6 +85,8 @@ struct emu_state_t
 	timer_state timer;
 	input_state input;
 	ser_state ser;
+
+	debug_state debug;
 
 	frontend front;
 };

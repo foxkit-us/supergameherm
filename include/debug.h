@@ -5,6 +5,11 @@
 #include "typedefs.h"	// typedefs
 #include "ctl_unit.h"	// flags
 
+struct debug_state_t
+{
+	bool instr_dump;	//! Dump instructions
+};
+
 extern const char * const mnemonics[0x100];
 extern const char * const mnemonics_cb[0x100];
 extern const char * const flags_expect[0x100];

@@ -251,8 +251,8 @@ static inline void dma_write(emu_state *restrict state, uint16_t location UNUSED
 	 * this correctly. --Elizabeth
 	 */
 	uint16_t addr = data << 8;
-	uint8_t curr = 0;
-	assert(location == 0xFF46);
+	int curr = 0;
+
 	for (; curr < 160; curr++, addr++)
 	{
 		state->lcdc.oam_ram[curr] = mem_read8(state, addr);

@@ -433,6 +433,7 @@ inline uint8_t lcdc_objp_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)
 {
+	debug(state, "Window y/x read %d", reg);
 	if(reg == 0xFF4A)
 	{
 		return state->lcdc.window_y;

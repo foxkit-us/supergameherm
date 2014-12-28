@@ -256,6 +256,7 @@ bool execute(emu_state *restrict state)
 		call_interrupt(state);
 	}
 
+
 	switch(state->interrupts.enable_ctr)
 	{
 	case 2:
@@ -284,6 +285,13 @@ bool execute(emu_state *restrict state)
 		{
 			op_data[i] = mem_read8(state, REG_PC(state)++);
 		}
+	}
+
+	if(unlikely(state->debug.instr_dump))
+	{
+		const char * const *m_table = (opcode != 0xCB) ? mnemonics : mnemonics_cb;
+		debug(state, "INSTR DUMP: [PC=%04X] %s [%02X %02X]", REG_PC(state), m_table[opcode],
+			op_data[0], op_data[1]);
 	}
 
 #ifndef NDEBUG

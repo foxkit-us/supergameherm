@@ -77,6 +77,12 @@ void sdl2_get_key(emu_state *state UNUSED, frontend_input_return *ret)
 		case SDLK_ESCAPE:
 			do_exit = true;
 
+		case SDLK_SPACE:
+			if(ev.type == SDL_KEYDOWN)
+			{
+				state->debug.instr_dump ^= 1;
+			}
+
 		default:
 			ret->key = 0;
 			break;

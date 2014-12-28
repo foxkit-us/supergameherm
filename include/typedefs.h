@@ -24,6 +24,8 @@ typedef struct mbc_func_t mbc_func;
 
 typedef struct memmap_state_t memmap_state;
 
+typedef struct debug_state_t debug_state;
+
 // Depends on emu_state *sigh*
 typedef int (*frontend_event_loop)(emu_state *);
 
