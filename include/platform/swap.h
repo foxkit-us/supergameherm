@@ -71,14 +71,14 @@ static inline uint16_t htobe16(uint16_t host_16bits)
 }
 
 //!
-static inline uint16_t be16toh(uint16_t big_endian_16bits)
+static inline uint32_t be32toh(uint32_t big_endian_32bits)
 {
 #if defined(BIG_ENDIAN)
-	return big_endian_16bits;
-#elif defined(HAVE_BSWAP_16)
-	return __bswap_16(big_endian_16bits);
-#elif defined(HAVE_BYTESWAP_USHORT)
-	return _byteswap_ushort(big_endian_16bits);
+	return big_endian_32bits;
+#elif defined(HAVE_BSWAP_32)
+	return __bswap_32(big_endian_32bits);
+#elif defined(HAVE_BYTESWAP_ULONG)
+	return _byteswap_ulong(big_endian_32bits);
 #else
 	// TODO make our own builtins
 	return 0;
@@ -86,14 +86,14 @@ static inline uint16_t be16toh(uint16_t big_endian_16bits)
 #endif /*BIG_ENDIAN*/
 }
 
-static inline uint32_t le32toh(uint16_t little_endian_32bits)
+static inline uint32_t le32toh(uint32_t little_endian_32bits)
 {
 #if defined(LITTLE_ENDIAN)
 	return little_endian_32bits;
-#elif defined(HAVE_BSWAP_16)
+#elif defined(HAVE_BSWAP_32)
 	return __bswap_32(little_endian_32bits);
-#elif defined(HAVE_BYTESWAP_USHORT)
-	return _byteswap_ushort(little_endian_32bits);
+#elif defined(HAVE_BYTESWAP_ULONG)
+	return _byteswap_ulong(little_endian_32bits);
 #else
 	// TODO make our own builtins
 	return 0;
@@ -101,7 +101,7 @@ static inline uint32_t le32toh(uint16_t little_endian_32bits)
 #endif /*LITTLE_ENDIAN*/
 }
 
-static inline uint32_t htole32(uint16_t host_32bits)
+static inline uint32_t htole32(uint32_t host_32bits)
 {
 #if defined(LITTLE_ENDIAN)
 	return host_32bits;
@@ -110,7 +110,7 @@ static inline uint32_t htole32(uint16_t host_32bits)
 #endif /*LITTLE_ENDIAN*/
 }
 
-static inline uint32_t htobe32(uint16_t host_32bits)
+static inline uint32_t htobe32(uint32_t host_32bits)
 {
 #if defined(BIG_ENDIAN)
 	return host_32bits;
