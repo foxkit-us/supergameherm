@@ -18,31 +18,42 @@
 
 typedef struct memmap_state_t
 {
-	int fd;
+	char *path;
 	size_t size;
 	int flags;
 } memmap_state;
+
+static inline int _open_map(const char *path, size_t size)
+{
+	int fd;
+
+	if((fd = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) < 0)
+	{
+		return -1;
+	}
+
+	if(ftruncate(fd, size) < 0)
+	{
+		return -1;
+	}
+
+	return fd;
+}
 
 
 void * memmap_open(emu_state *restrict state, const char *path, size_t size, memmap_state **data)
 {
 	memmap_state *m_state = malloc(sizeof(memmap_state));
+	int fd;
 	void *map;
 
 	if(path)
 	{
-		if((m_state->fd = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) < 0)
+		m_state->path = strdup(path);
+
+		if((fd = _open_map(m_state->path, m_state->size)) < 0)
 		{
 			error(state, "Could not open file for mmap: %s", strerror(errno));
-			free(m_state);
-			*data = NULL;
-			return NULL;
-		}
-
-		if(ftruncate(m_state->fd, size) < 0)
-		{
-			error(state, "Could not resize file: %s", strerror(errno));
-			close(m_state->fd);
 			free(m_state);
 			*data = NULL;
 			return NULL;
@@ -53,17 +64,21 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	else
 	{
 		// Anonymous mapping
-		m_state->fd = -1;
+		fd = -1;
+		m_state->path = NULL;
 		m_state->flags = MAP_PRIVATE|MAP_ANONYMOUS;
 	}
 
-	if((map = mmap(NULL, size, PROT_READ|PROT_WRITE, m_state->flags, m_state->fd, 0)) == NULL)
+	if((map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)) == NULL)
 	{
 		error(state, "Could not mmap file: %s", strerror(errno));
 		free(m_state);
 		*data = NULL;
 		return NULL;
 	}
+
+	// POSIX says it's okay to close the file
+	close(fd);
 
 	madvise(map, size, MADV_RANDOM);
 
@@ -76,8 +91,18 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 {
 	memmap_state *m_state = *data;
 	void *map_new;
+	int fd = -1;
 
-	if((map_new = mmap(NULL, size, PROT_READ|PROT_WRITE, m_state->flags, m_state->fd, 0)) == NULL)
+	if(m_state->path)
+	{
+		if((fd = _open_map(m_state->path, m_state->size)) < 0)
+		{
+			error(state, "Could not open file for remap: %s", strerror(errno));
+			return NULL;
+		}
+	}
+
+	if((map_new = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)) == NULL)
 	{
 		error(state, "Could not resize mmap file: %s", strerror(errno));
 		return NULL;
@@ -96,12 +121,9 @@ void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **da
 {
 	memmap_state *m_state = *data;
 
-	if(m_state->fd > 0)
-	{
-		close(m_state->fd);
-	}
 	munmap(map, m_state->size);
 
+	free(m_state->path);
 	free(m_state);
 	*data = NULL;
 }
