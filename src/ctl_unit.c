@@ -290,8 +290,11 @@ bool execute(emu_state *restrict state)
 	if(unlikely(state->debug.instr_dump))
 	{
 		const char * const *m_table = (opcode != 0xCB) ? mnemonics : mnemonics_cb;
-		debug(state, "INSTR DUMP: [PC=%04X] %s [%02X %02X]", REG_PC(state), m_table[opcode],
-			op_data[0], op_data[1]);
+		debug(state, "INSTR DUMP: [PC=%04X] %s [%02X %02X] " \
+			"(AF=%04X BC=%04X DE=%04X HL=%04X SP=%04X)",
+			REG_PC(state), m_table[opcode], op_data[0], op_data[1],
+			REG_AF(state), REG_BC(state), REG_DE(state),
+			REG_HL(state), REG_SP(state));
 	}
 
 #ifndef NDEBUG

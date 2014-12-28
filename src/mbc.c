@@ -215,6 +215,12 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 	case 0x2:
 	case 0x3:
 		// Bank switch
+		if(value == 0)
+		{
+			// 0 gets remapped to 1
+			value = 1;
+		}
+
 		state->mbc.rom_bank = (value & 0x1F) |
 			(state->mbc.rom_bank & 0x60);
 		break;
@@ -228,12 +234,6 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 		else
 		{
 			// ROM banking mode
-			if(value == 0)
-			{
-				// 0 gets remapped to 1
-				value = 1;
-			}
-
 			state->mbc.rom_bank = (state->mbc.rom_bank & 0x1F) |
 				((value & 0x3) << 5);
 		}
