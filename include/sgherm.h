@@ -52,33 +52,33 @@ struct registers_t
 //! The main emulation state structure
 struct emu_state_t
 {
-	uint8_t memory[MEM_SIZE];	//! RAM
+	uint8_t hram[0x7F];		//! High memory
+	uint8_t wram[8][0x1000];	//! Work RAM banks (1-7 GBC only)
+	uint_fast32_t wram_bank;	//! current WRAM bank
+
 	uint8_t *cart_data;		//! Cartridge data
 	const char *save_path;		//! Save file
-
-	mbc_state mbc;
-
-	register_state registers;	//! Registers
 
 	bool halt;			//! waiting for interrupt
 	bool stop;			//! deep sleep state (disable LCDC)
 
-	uint_fast16_t dma_wait;		//! Clocks left on DMA membar
+	uint_fast32_t dma_wait;		//! Clocks left on DMA membar
 
-	uint_fast32_t wait;		//! number of clocks
+	uint_fast32_t wait;		//! number of clocks to wait
 
-	uint_fast8_t ram_bank;		//! current RAM bank
-
-	uint_fast32_t cycles;		//! Present cycle count
-	uint64_t start_time;		//! Time started
-	uint64_t last_vblank_time;	//! Last time since a million cycles
+	uint_fast64_t cycles;		//! Present cycle count
+	uint_fast64_t start_time;	//! Time started
+	uint_fast64_t last_vblank_time;	//! Last time since vblank
 
 	system_types system;		//! Present emulation mode
-	cpu_freq freq;			//! CPU frequency
 
+	// CPU state
+	cpu_freq freq;			//! CPU frequency
 	interrupt_state interrupts;
+	register_state registers;	//! Registers
 
 	// hardware
+	mbc_state mbc;
 	lcdc_state lcdc;
 	snd_state snd;
 	timer_state timer;

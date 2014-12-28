@@ -114,12 +114,6 @@ static mem_read_fn hw_reg_read[0x80] =
 	no_hardware, no_hardware, no_hardware, no_hardware  // 0x7F
 };
 
-//! directly read from a location in memory
-static inline uint8_t direct_read(emu_state *restrict state, uint16_t location)
-{
-	return state->memory[location];
-}
-
 /*!
  * @brief	Read a byte (8 bits) out of memory.
  * @param	state		The emulator state to use when reading.
@@ -155,52 +149,56 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	case 0x9:
 		// video memory - 0x8000..0x9FFF
 		return vram_read(state, location);
+	case 0xC:
+		// Work RAM - 0xC000..0xCFFF
+		return state->wram[0][location - 0xC000];
+	case 0xD:
+		// Work RAM banks 1-7 - 0xD000.0xDFFF
+		if(state->system == SYSTEM_CGB)
+		{
+			return state->wram[state->wram_bank][location - 0xD000];
+		}
+		else
+		{
+			return state->wram[1][location - 0xD000];
+		}
 	case 0xE:
 	case 0xF:
-		switch(location >> 8)
+		if(unlikely(location <= 0xFDFF))
 		{
-		case 0xFE:
-			if(location < 0xFEA0)
-			{
-				// FIXME I'm feeling lazy
-				return state->lcdc.oam_ram[location - 0xFE00];
-			}
-			else if(location < 0xFF00)
-			{
-				// Unusable memory - would warn but too noisy
-				return 0xFF;
-			}
-
-			break;
-		case 0xFF:
-			if(location < 0xFF80)
-			{
-				return hw_reg_read[location - 0xFF00](state, location);
-			}
-			else if(location == 0xFFFF)
-			{
-				return int_mask_flag_read(state, location);
-			}
-
-			break;
-		default:
-			// who knows? the SHADOW knows! - 0xE000..0xFDFF
-			location -= 0x2000;
-			break;
+			// Echo RAM - 0xE000..0xFDFF
+			return mem_read8(state, location - 0x2000);
 		}
-		break;
+		else if(location <= 0xFE9F)
+		{
+			// OAM RAM - 0xFE00..0xFE9F
+			return state->lcdc.oam_ram[location - 0xFE00];
+		}
+		else if(unlikely(location <= 0xFEFF))
+		{
+			// Unusable RAM - 0xFEA0..0xFEFF
+			return 0xFF;
+		}
+		else if(location <= 0xFF7F)
+		{
+			// Hardware - 0xFF00..0xFF7F
+			return hw_reg_read[location - 0xFF00](state, location);
+		}
+		else if(location <= 0xFFFE)
+		{
+			// High RAM - 0xFF80..FFFE
+			return state->hram[location - 0xFF80];
+		}
+		else
+		{
+			// Interrupt mask flag - 0xFFFF
+			return int_mask_flag_read(state, location);
+		}
 	}
 
-#ifndef NDEBUG
-	if((location < 0xC000 || location > 0xCFFF) &&
-		(location < 0xD000 || location > 0xDFFF) &&
-		(location < 0xFF80 || location > 0xFFFE))
-	{
-		warning(state, "Memory read outside of real RAM at %04X",
-			location);
-	}
-#endif
-	return direct_read(state, location);
+	warning(state, "Memory read outside of real RAM at %04X",
+		location);
+	return 0xFF;
 }
 
 /*!
@@ -389,55 +387,57 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		// VRAM
 		vram_write(state, location, data);
 		return;
+	case 0xC:
+		state->wram[0][location - 0xC000] = data;
+		return;
+	case 0xD:
+		if(state->system == SYSTEM_CGB)
+		{
+			state->wram[state->wram_bank][location - 0xD000] = data;
+		}
+		else
+		{
+			state->wram[1][location - 0xD000] = data;
+			return;
+		}
+		return;
 	case 0xE:
 	case 0xF:
-		switch(location >> 8)
+		if(unlikely(location <= 0xFDFF))
 		{
-		case 0xFE:
-			if(location < 0xFEA0)
-			{
-				// FIXME I'm feeling lazy
-				state->lcdc.oam_ram[location - 0xFE00] = data;
-				return;
-			}
-			else if(location < 0xFF00)
-			{
-				// Unusable memory - would warn but too noisy
-				return;
-			}
-
-			break;
-		case 0xFF:
-			if(location < 0xFF80)
-			{
-				hw_reg_write[location - 0xFF00](state, location, data);
-				return;
-			}
-			else if(location == 0xFFFF)
-			{
-				int_mask_flag_write(state, data);
-				return;
-			}
-
-			break;
-		default:
-			// Shadow RAM
-			location -= 0x2000;
-			break;
+			// Echo RAM - 0xE000..0xFDFF
+			mem_write8(state, location - 0x2000, data);
 		}
-		break;
+		else if(location <= 0xFE9F)
+		{
+			// OAM RAM - 0xFE00..0xFE9F
+			state->lcdc.oam_ram[location - 0xFE00] = data;
+		}
+		else if(unlikely(location <= 0xFEFF))
+		{
+			// Unusable RAM - 0xFEA0..0xFEFF
+			return;
+		}
+		else if(location <= 0xFF7F)
+		{
+			// Hardware - 0xFF00..0xFF7F
+			hw_reg_write[location - 0xFF00](state, location, data);
+		}
+		else if(location <= 0xFFFE)
+		{
+			// High RAM - 0xFF80..FFFE
+			state->hram[location - 0xFF80] = data;
+		}
+		else
+		{
+			// Interrupt mask flag - 0xFFFF
+			int_mask_flag_write(state, data);
+		}
+		return;
 	}
-#ifndef NDEBUG
-	if((location < 0xC000 || location > 0xCFFF) &&
-		(location < 0xD000 || location > 0xDFFF) &&
-		(location < 0xFF80 || location > 0xFFFE))
-	{
-		warning(state, "Memory write outside of real RAM at %04X",
-			location);
-	}
-#endif
 
-	state->memory[location] = data;
+	warning(state, "Memory write outside of real RAM at %04X",
+		location);
 }
 
 void mem_write16(emu_state *restrict state, uint16_t location, uint16_t data)
