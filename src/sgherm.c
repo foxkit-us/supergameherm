@@ -25,7 +25,7 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
 
-	if(strcmp(rom_path, save_path) == 0)
+	if(rom_path && save_path && strcmp(rom_path, save_path) == 0)
 	{
 		error(state, "ROM path can't be the same as the save path!");
 		return NULL;
