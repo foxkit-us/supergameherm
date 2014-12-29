@@ -6,6 +6,7 @@
 #include <stdlib.h>	// malloc
 #include <string.h>	// strerror
 #include <errno.h>	// errno
+#include <assert.h>	// assert
 
 
 #ifdef HAVE_MMAP
@@ -19,33 +20,85 @@
 typedef struct memmap_state_t
 {
 	char *path;
-	size_t size;
+	size_t size, f_size;
 	int flags;
 } memmap_state;
 
 static inline int _open_map(const char *path, size_t size)
 {
 	int fd;
+	int64_t filesize;
 
-	if((fd = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) < 0)
+	assert(size > 0);
+
+	if((filesize = get_file_size(path)) < 0)
 	{
 		return -1;
 	}
 
-	if(ftruncate(fd, size) < 0)
+	if((fd = open(path, O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR)) < 0)
 	{
 		return -1;
 	}
+
+	if((size_t)filesize < size)
+	{
+		// Pad out remaining size by writing 0's (to avoid fragmentation)
+		unsigned i;
+		char ch = '\0';
+
+		debug(NULL, "pad: %d", size - filesize);
+
+		for(i = 0; i < (size - filesize); i++)
+		{
+			int ret;
+			if((ret = write(fd, &ch, 1)) < 0)
+			{
+				close(fd);
+				return -1;
+			}
+			else if(ret == 0)
+			{
+				// write again
+				i--;
+			}
+		}
+	}
+	else if((size_t)filesize > size && ftruncate(fd, size) < 0)
+	{
+		// Truncate the fie or fail
+		return -1;
+	}
+
+	lseek(fd, 0, SEEK_SET);
 
 	return fd;
 }
 
+static inline uint64_t _round_nearest(uint64_t num, uint32_t multiple)
+{
+	uint64_t rem;
+
+	if(!multiple || ((rem = num % multiple) == 0))
+	{
+		return num;
+	}
+
+	return num + multiple - rem;
+}
 
 void * memmap_open(emu_state *restrict state, const char *path, size_t size, memmap_state **data)
 {
 	memmap_state *m_state = malloc(sizeof(memmap_state));
 	int fd;
 	void *map;
+
+	if(!size)
+	{
+		free(m_state);
+		*data = NULL;
+		return NULL;
+	}
 
 	if(path)
 	{
@@ -68,6 +121,10 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 		m_state->path = NULL;
 		m_state->flags = MAP_PRIVATE|MAP_ANONYMOUS;
 	}
+
+	// Round up to nearest page size
+	m_state->f_size = size;
+	size = _round_nearest(size, sysconf(_SC_PAGESIZE));
 
 	if((map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)) == NULL)
 	{
@@ -99,6 +156,17 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 	memmap_state *m_state = *data;
 	void *map_new;
 
+	assert(*data != NULL);
+
+	if(size == 0)
+	{
+		memmap_close(state, map, data);
+		return;
+	}
+
+	m_state->f_size = size;
+	size = _round_nearest(size, sysconf(_SC_PAGESIZE));
+
 	if(!(map_new = mremap(map, m_state->size, size, MREMAP_MAYMOVE)))
 	{
 		error(state, "Could not remap file: %s", strerror(errno));
@@ -117,6 +185,14 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 	void *map_new;
 	int fd = -1;
 
+	assert(*data != NULL);
+
+	if(size == 0)
+	{
+		memmap_close(state, map, data);
+		return NULL;
+	}
+
 	if(m_state->path)
 	{
 		if((fd = _open_map(m_state->path, m_state->size)) < 0)
@@ -125,6 +201,9 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 			return NULL;
 		}
 	}
+
+	m_state->f_size = size;
+	size = _round_nearest(size, sysconf(_SC_PAGESIZE));
 
 	if((map_new = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)) == NULL)
 	{
@@ -146,6 +225,9 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **data)
 {
 	memmap_state *m_state = *data;
+	int ret;
+
+	assert(*data != NULL);
 
 	if(!map)
 	{
@@ -153,6 +235,10 @@ void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **da
 	}
 
 	munmap(map, m_state->size);
+
+	// Truncate if possible
+	ret = truncate(m_state->path, m_state->f_size);
+	(void)ret;
 
 	free(m_state->path);
 	free(m_state);
@@ -162,6 +248,8 @@ void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **da
 void memmap_sync(emu_state *restrict state UNUSED, void *map, memmap_state **data)
 {
 	memmap_state *m_state = *data;
+
+	assert(*data != NULL);
 
 	msync(map, m_state->size, MS_ASYNC);
 }

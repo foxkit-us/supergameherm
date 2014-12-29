@@ -92,11 +92,19 @@ static inline bool nombc_init(emu_state *restrict state UNUSED)
 		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
 		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
 		state->mbc.ram_total = s;
-		state->mbc.cart_ram = memmap_open(state, state->save_path, s,
-			&(state->mbc.cart_mm_data));
-		if(!(state->mbc.cart_ram))
+		if(state->mbc.ram_total)
 		{
-			return false;
+			state->mbc.cart_ram = memmap_open(state, state->save_path,
+				state->mbc.ram_total, &(state->mbc.cart_mm_data));
+
+			if(!(state->mbc.cart_ram))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			state->mbc.cart_ram = NULL;
 		}
 	}
 	else
@@ -166,11 +174,18 @@ static inline bool mbc1_init(emu_state *restrict state)
 		state->mbc.ram_bank_size = (s >= 8192) ? 8192 : s;
 		state->mbc.ram_bank_count = s / state->mbc.ram_bank_size;
 		state->mbc.ram_total = s;
-		state->mbc.cart_ram = memmap_open(state, state->save_path, s,
-			&(state->mbc.cart_mm_data));
-		if(!(state->mbc.cart_ram))
+		if(state->mbc.ram_total)
 		{
-			return false;
+			state->mbc.cart_ram = memmap_open(state, state->save_path,
+				state->mbc.ram_total, &(state->mbc.cart_mm_data));
+			if(!(state->mbc.cart_ram))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			state->mbc.cart_ram = NULL;
 		}
 	}
 	else
