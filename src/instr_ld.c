@@ -955,8 +955,7 @@ static inline void ld_d16_a(emu_state *restrict state, uint8_t data[])
  */
 static inline void ldh_a_d8(emu_state *restrict state, uint8_t data[])
 {
-	uint8_t loc = data[0];
-	REG_A(state) = mem_read8(state, 0xFF00 + loc);
+	REG_A(state) = mem_read8(state, 0xFF00 + data[0]);
 
 	state->wait = 12;
 }
