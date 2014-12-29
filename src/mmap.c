@@ -29,8 +29,6 @@ static inline int _open_map(const char *path, size_t size)
 	int fd;
 	int64_t filesize;
 
-	assert(size > 0);
-
 	if((filesize = get_file_size(path)) < 0)
 	{
 		return -1;
@@ -46,8 +44,6 @@ static inline int _open_map(const char *path, size_t size)
 		// Pad out remaining size by writing 0's (to avoid fragmentation)
 		unsigned i;
 		char ch = '\0';
-
-		debug(NULL, "pad: %d", size - filesize);
 
 		for(i = 0; i < (size - filesize); i++)
 		{
@@ -79,7 +75,9 @@ static inline uint64_t _round_nearest(uint64_t num, uint32_t multiple)
 {
 	uint64_t rem;
 
-	if(!multiple || ((rem = num % multiple) == 0))
+	assert(multiple);
+
+	if((rem = num % multiple) == 0)
 	{
 		return num;
 	}
@@ -104,7 +102,7 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	{
 		m_state->path = strdup(path);
 
-		if((fd = _open_map(m_state->path, m_state->size)) < 0)
+		if((fd = _open_map(m_state->path, size)) < 0)
 		{
 			error(state, "Could not open file for mmap: %s", strerror(errno));
 			free(m_state);
@@ -124,9 +122,9 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 
 	// Round up to nearest page size
 	m_state->f_size = size;
-	size = _round_nearest(size, sysconf(_SC_PAGESIZE));
+	m_state->size = size = _round_nearest(size, sysconf(_SC_PAGESIZE));
 
-	if((map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)) == NULL)
+	if(!(map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)))
 	{
 		error(state, "Could not mmap file: %s", strerror(errno));
 		free(m_state);
@@ -138,6 +136,8 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	close(fd);
 
 	madvise(map, size, MADV_RANDOM);
+
+	debug(state, "Allocated %ld bytes", size);
 
 	m_state->size = size;
 	*data = m_state;
