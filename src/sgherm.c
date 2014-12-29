@@ -17,8 +17,8 @@
 #include <errno.h>	// errno
 #include <assert.h>	// assert
 
-// This is probably wrong but it seems to be smooth enough
-#define NSEC_PER_VBLANK 16680567L
+#define NSEC_PER_SECOND 1000000000L
+#define NSEC_PER_VBLANK NSEC_PER_SECOND / 60
 
 emu_state * init_emulator(const char *rom_path, const char *save_path)
 {

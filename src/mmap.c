@@ -156,7 +156,7 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 	memmap_state *m_state = *data;
 	void *map_new;
 
-	assert(*data != NULL);
+	assert(m_state);
 
 	if(size == 0)
 	{
@@ -185,7 +185,7 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 	void *map_new;
 	int fd = -1;
 
-	assert(*data != NULL);
+	assert(m_state);
 
 	if(size == 0)
 	{
@@ -227,7 +227,7 @@ void memmap_close(emu_state *restrict state UNUSED, void *map, memmap_state **da
 	memmap_state *m_state = *data;
 	int ret;
 
-	assert(*data != NULL);
+	assert(m_state);
 
 	if(!map)
 	{
@@ -249,7 +249,7 @@ void memmap_sync(emu_state *restrict state UNUSED, void *map, memmap_state **dat
 {
 	memmap_state *m_state = *data;
 
-	assert(*data != NULL);
+	assert(m_state);
 
 	msync(map, m_state->size, MS_ASYNC);
 }
