@@ -38,7 +38,7 @@ const char *friendly_cart_names[0x20] =
 bool read_rom_data(emu_state *restrict state, const char *rom_path,
 		cart_header *restrict *restrict header)
 {
-	long size_in_bytes, actual_size;
+	long size_in_bytes, cart_size;
 	int8_t checksum = 0;
 	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
 	const cart_offsets begin = OFF_GRAPHIC_BEGIN;
@@ -62,13 +62,15 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 		goto close_rom;
 	}
 
-	if(unlikely((actual_size = ftell(rom)) < 0x8000))
+	if(unlikely((cart_size = ftell(rom)) < 0x8000))
 	{
 		error(state, "ROM is too small");
 		goto close_rom;
 	}
 
-	if(unlikely((state->cart_data = (uint8_t *)malloc(actual_size)) == NULL))
+	state->cart_size = cart_size;
+
+	if(unlikely((state->cart_data = (uint8_t *)malloc(cart_size)) == NULL))
 	{
 		error(state, "Could not allocate RAM for ROM");
 		goto close_rom;
@@ -80,7 +82,7 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 		goto close_rom;
 	}
 
-	if(unlikely(fread(state->cart_data, actual_size, 1, rom) == 0))
+	if(unlikely(fread(state->cart_data, cart_size, 1, rom) == 0))
 	{
 		error(state, "Could not read ROM: %s", strerror(errno));
 		goto close_rom;
@@ -144,10 +146,10 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	debug(state, "Header size is %d\n", (*header)->rom_size);
 	size_in_bytes = 0x8000 << (*header)->rom_size;
 
-	if(actual_size != size_in_bytes)
+	if(cart_size != size_in_bytes)
 	{
 		fatal(state, "ROM size %ld is not the expected %ld bytes",
-		      actual_size, size_in_bytes);
+		      cart_size, size_in_bytes);
 		goto close_rom;
 	}
 

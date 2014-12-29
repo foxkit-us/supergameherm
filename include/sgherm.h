@@ -58,6 +58,7 @@ struct emu_state_t
 	uint_fast32_t wram_bank;	//! current WRAM bank
 
 	uint8_t *cart_data;		//! Cartridge data
+	uint_fast32_t cart_size;	//! Size of cartridge data
 	const char *save_path;		//! Save file
 
 	bool halt;			//! waiting for interrupt
