@@ -18,6 +18,8 @@ static inline uint8_t rom_bank_read(emu_state *restrict state, uint16_t location
 	if(unlikely(addr > state->cart_size))
 	{
 		// Out of bounds
+		warning(state, "Game read out-of-bounds in ROM bank %02X (location %04X)",
+			state->mbc.rom_bank, location);
 		return 0xFF;
 	}
 
