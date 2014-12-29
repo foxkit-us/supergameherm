@@ -530,10 +530,6 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 #endif
 
-	// FIXME this isn't working right
-	debug(state, "Opcode: %02X data: %02X %02X", state->debug.last_opcode,
-		state->debug.last_param[0], state->debug.last_param[1]);
-
 	state->lcdc.vram[bank][reg - 0x8000] = data;
 }
 

@@ -335,3 +335,15 @@ void dump_all_state(emu_state *restrict state)
 		mem_read8(state, REG_SP(state)+2),
 		mem_read8(state, REG_SP(state)+3));
 }
+
+void dump_state_pc(emu_state *restrict state, uint16_t pc)
+{
+	// This hack is crap but it works
+	uint16_t old_pc = REG_PC(state);
+
+	REG_PC(state) = pc;
+
+	dump_all_state(state);
+
+	REG_PC(state) = old_pc;
+}

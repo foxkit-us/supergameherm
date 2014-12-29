@@ -142,7 +142,10 @@ static inline void nombc_write(emu_state *restrict state, uint16_t location, uin
 
 static inline void nombc_finish(emu_state *restrict state)
 {
-	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	if(state->mbc.cart_ram)
+	{
+		memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	}
 }
 
 const mbc_func nombc_func =
@@ -283,7 +286,10 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc1_finish(emu_state *restrict state)
 {
-	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	if(state->mbc.cart_ram)
+	{
+		memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	}
 }
 
 const mbc_func mbc1_func =
@@ -384,7 +390,10 @@ static inline void mbc2_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc2_finish(emu_state *restrict state)
 {
-	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	if(state->mbc.cart_ram)
+	{
+		memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	}
 }
 
 const mbc_func mbc2_func =
@@ -650,7 +659,10 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 static inline void mbc3_finish(emu_state *restrict state)
 {
 	rtc_save(state);
-	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	if(state->mbc.cart_ram)
+	{
+		memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	}
 }
 
 const mbc_func mbc3_func =
@@ -739,7 +751,10 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 
 static inline void mbc5_finish(emu_state *restrict state)
 {
-	memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	if(state->mbc.cart_ram)
+	{
+		memmap_close(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
+	}
 }
 
 const mbc_func mbc5_func =
