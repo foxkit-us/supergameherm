@@ -7,7 +7,12 @@
 
 struct debug_state_t
 {
+	bool debug;		//! Enable debugging
+
 	bool instr_dump;	//! Dump instructions
+
+	bool last_opcode;	//! Store last opcode
+	uint8_t last_param[2];	//! Last parameters
 };
 
 extern const char * const mnemonics[0x100];
