@@ -373,13 +373,14 @@ inline uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 {
-	uint8_t curr_mode = LCDC_STAT_MODE_FLAG(state);
 	uint8_t bank = state->lcdc.vram_bank;
+	/*
+	uint8_t curr_mode = LCDC_STAT_MODE_FLAG(state);
 	if(curr_mode > 2)
 	{
 		// Every freaking game seems to do this.
-		//warning(state, "read from VRAM while not in h/v-blank");
-	}
+		warning(state, "read from VRAM while not in h/v-blank");
+	}*/
 
 	return state->lcdc.vram[bank][reg - 0x8000];
 }
@@ -433,7 +434,6 @@ inline uint8_t lcdc_objp_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)
 {
-	debug(state, "Window y/x read %d", reg);
 	if(reg == 0xFF4A)
 	{
 		return state->lcdc.window_y;

@@ -15,7 +15,7 @@
 static inline uint8_t rom_bank_read(emu_state *restrict state, uint16_t location)
 {
 	uint32_t addr = (state->mbc.rom_bank - 1) * 0x4000;
-	if(addr > state->cart_size)
+	if(unlikely(addr > state->cart_size))
 	{
 		// Out of bounds
 		return 0xFF;
