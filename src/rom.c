@@ -11,6 +11,7 @@
 #include "rom.h"	// constants, cart_header, etc.
 #include "util.h"	// likely/unlikely
 #include "mmap.h"	// memmap_*
+#include "platform/swap.h"	// letoh32, htole32
 
 
 static const unsigned char graphic_expected[] =
