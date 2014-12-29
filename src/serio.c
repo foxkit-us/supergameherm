@@ -91,7 +91,7 @@ void serial_tick(emu_state *restrict state)
 		// TODO put out a bit.
 		// TODO take in a bit.
 		// sockets?  IPC?  something else?  all three?
-		if(state->ser.cur_bit == -1)
+		if(state->ser.cur_bit-- == -1)
 		{
 			state->ser.enabled = false;
 			signal_interrupt(state, INT_SERIAL);
