@@ -535,7 +535,16 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 
 inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
+	bool is_off = LCDC_ENABLE(state) == 0;
+
 	state->lcdc.lcd_control = data;
+
+	if(is_off & LCDC_ENABLE(state))
+	{
+		// Restart LY clock
+		state->lcdc.ly = 0;
+		lcdc_mode_change(state, 2);
+	}
 }
 
 inline void lcdc_stat_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
