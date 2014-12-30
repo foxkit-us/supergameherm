@@ -163,6 +163,7 @@ static inline bool mbc1_init(emu_state *restrict state)
 	int s = state->cart_data[OFF_RAM_SIZE];
 
 	state->mbc.rom_bank = 1;
+	state->mbc.rom_bank_count = state->cart_size / 0x4000;
 	state->mbc.use_4bit = false;
 	state->mbc.mbc_common.rom_select = false;
 	state->mbc.mbc_common.ram_enable = 1;
@@ -247,8 +248,10 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 			value = 1;
 		}
 
-		state->mbc.rom_bank = (value & 0x1F) |
-			(state->mbc.rom_bank & 0x60);
+		state->mbc.rom_bank = ((value & 0x1F) |
+			(state->mbc.rom_bank & 0x60)) %
+			state->mbc.rom_bank_count;
+
 		break;
 	case 0x4:
 	case 0x5:
@@ -260,8 +263,8 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 		else
 		{
 			// ROM banking mode
-			state->mbc.rom_bank = (state->mbc.rom_bank & 0x1F) |
-				((value & 0x3) << 5);
+			state->mbc.rom_bank = ((state->mbc.rom_bank & 0x1F) |
+				((value & 0x3) << 5)) % state->mbc.rom_bank_count;
 		}
 
 		break;
@@ -305,6 +308,7 @@ const mbc_func mbc1_func =
 static inline bool mbc2_init(emu_state *restrict state)
 {
 	state->mbc.rom_bank = 1;
+	state->mbc.rom_bank_count = state->cart_size / 0x4000;
 	state->mbc.mbc_common.rom_select = false;
 	state->mbc.mbc_common.ram_enable = 0;
 
@@ -466,6 +470,7 @@ static inline bool mbc3_init(emu_state *restrict state)
 	int s = state->cart_data[OFF_RAM_SIZE];
 
 	state->mbc.rom_bank = 1;
+	state->mbc.rom_bank_count = state->cart_size / 0x4000;
 	state->mbc.use_4bit = false;
 	state->mbc.mbc_common.rom_select = false;
 	state->mbc.mbc_common.ram_enable = 1;
@@ -575,7 +580,7 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 	case 0x2:
 	case 0x3:
 		// Bank switch
-		state->mbc.rom_bank = value & 0x7F;
+		state->mbc.rom_bank = (value & 0x7F) % state->mbc.rom_bank_count;
 		break;
 	case 0x4:
 	case 0x5:
@@ -725,10 +730,13 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 		state->mbc.mbc_common.ram_enable = value;
 		break;
 	case 0x2:
-		state->mbc.rom_bank = (state->mbc.rom_bank & 0x100) | value;
+		state->mbc.rom_bank = ((state->mbc.rom_bank & 0x100) | value) %
+			state->mbc.rom_bank_count;
 		break;
 	case 0x3:
-		state->mbc.rom_bank |= (value & 0x1) << 8;
+		state->mbc.rom_bank = ((state->mbc.rom_bank & 0x7f) |
+			((value & 0x1) << 8)) %
+			state->mbc.rom_bank_count;
 		break;
 	case 0x4:
 	case 0x5:

@@ -80,21 +80,22 @@ struct mbc_func_t
 
 struct mbc_state_t
 {
-	const mbc_func *func;	//! MBC controlling functions
+	const mbc_func *func;		//! MBC controlling functions
 
-	cart_types cart;	//! Cartridge in use
+	cart_types cart;		//! Cartridge in use
 
-	uint8_t *cart_ram;	//! Cartridge RAM
+	uint8_t *cart_ram;		//! Cartridge RAM
 	memmap_state *cart_mm_data;	//! Opaque data for cart RAM
-	bool dirty;		//! Whether data needs to be written back
+	bool dirty;			//! Whether data needs to be written back
 
-	unsigned ram_bank_size;	//! Size of each bank
-	uint8_t ram_bank_count;	//! Number of banks
-	unsigned ram_total;	//! Total on-cart RAM
-	bool use_4bit;		//! Use 4-bit values (MBC2 only!)
+	unsigned ram_bank;		//! Current RAM bank
+	unsigned ram_bank_size;		//! Size of each bank
+	unsigned ram_bank_count;	//! Number of banks
+	unsigned ram_total;		//! Total on-cart RAM
+	bool use_4bit;			//! Use 4-bit values (MBC2 only!)
 
-	uint_fast16_t ram_bank;	//! Current RAM bank
-	uint_fast16_t rom_bank;	//! Current ROM bank
+	unsigned rom_bank;		//! Current ROM bank
+	unsigned rom_bank_count;	//! Number of ROM banks
 
 	union
 	{
