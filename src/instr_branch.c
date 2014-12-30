@@ -93,7 +93,7 @@ static inline void jp_nz_d16(emu_state *restrict state, uint8_t data[])
 
 	if(!IS_FLAG(state, FLAG_Z))
 	{
-		REG_PC(state) = (data[1]<<8)|data[0];
+		REG_PC(state) = (data[1]<<8) | data[0];
 
 		state->wait += 4;
 	}

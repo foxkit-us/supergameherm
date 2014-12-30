@@ -226,7 +226,7 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 bool execute(emu_state *restrict state)
 {
 	uint8_t opcode;
-	uint8_t op_data[2] = {0xFF, 0xFF};
+	uint8_t op_data[2] = {0xBE, 0xEF};
 	int op_len;
 	opcode_t handler;
 #ifndef NDEBUG
@@ -299,6 +299,11 @@ bool execute(emu_state *restrict state)
 		if(state->debug.instr_dump)
 		{
 			dump_state_pc(state, REG_PC(state) - op_len);
+			debug(state, "INSTR: [%04X] %s\t\t[%02X %02X] (af=%04X bc=%04X de=%04X hl=%04X sp=%04X)",
+				REG_PC(state) - op_len,
+				opcode == 0xCB ? mnemonics_cb[opcode] : mnemonics[opcode],
+				op_data[1], op_data[0],
+				REG_AF(state), REG_BC(state), REG_DE(state), REG_HL(state), REG_SP(state));
 		}
 	}
 

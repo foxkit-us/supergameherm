@@ -310,8 +310,9 @@ void print_flags(emu_state *restrict state)
 
 void dump_all_state(emu_state *restrict state)
 {
-	debug(state, "\n==== %04X ====", REG_PC(state));
-	debug(state, "Dumping state");
+	debug(state, "");
+	debug(state, "===========");
+	debug(state, "State dump:");
 	debug(state, "pc=%04X\tsp=%04X\tbk=%04X",
 		REG_PC(state),
 		REG_SP(state),
@@ -321,8 +322,9 @@ void dump_all_state(emu_state *restrict state)
 		REG_BC(state),
 		REG_DE(state),
 		REG_HL(state));
-	debug(state, "interrupts are %s",
-	      (state->interrupts.enabled ? "ENABLED" : "DISABLED"));
+	debug(state, "interrupts are %s (IME %04X)",
+	      (state->interrupts.enabled ? "ENABLED" : "DISABLED"),
+	      state->interrupts.mask);
 	print_flags(state);
 	debug(state, "bytes at pc: %02X %02X %02X %02X",
 		mem_read8(state, REG_PC(state)),
