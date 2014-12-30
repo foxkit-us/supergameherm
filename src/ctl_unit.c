@@ -8,6 +8,7 @@
 
 #include <assert.h>		// assert
 #include <stdlib.h>		// NULL
+#include <string.h>		// memcpy
 
 
 void compute_irq(emu_state *restrict state)
@@ -141,6 +142,8 @@ void init_ctl(emu_state *restrict state)
 	REG_H(state) = 0x01;
 	REG_L(state) = 0x4D;
 	REG_SP(state) = 0xFFFE;
+
+	state->debug.debug = true;
 }
 
 
@@ -287,14 +290,16 @@ bool execute(emu_state *restrict state)
 		}
 	}
 
-	if(unlikely(state->debug.instr_dump))
+	// Copy last instructions
+	if(state->debug.debug)
 	{
-		const char * const *m_table = (opcode != 0xCB) ? mnemonics : mnemonics_cb;
-		debug(state, "INSTR DUMP: [PC=%04X] %s [%02X %02X] " \
-			"(AF=%04X BC=%04X DE=%04X HL=%04X SP=%04X)",
-			REG_PC(state), m_table[opcode], op_data[0], op_data[1],
-			REG_AF(state), REG_BC(state), REG_DE(state),
-			REG_HL(state), REG_SP(state));
+		state->debug.last_opcode = opcode;
+		memcpy(state->debug.last_param, op_data, sizeof(op_data));
+
+		if(state->debug.instr_dump)
+		{
+			dump_state_pc(state, REG_PC(state) - op_len);
+		}
 	}
 
 #ifndef NDEBUG

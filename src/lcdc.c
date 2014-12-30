@@ -373,15 +373,15 @@ inline uint8_t lcdc_read(emu_state *restrict state, uint16_t reg)
 
 inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 {
-	uint8_t bank = state->lcdc.vram_bank;
-	/*
+	const uint8_t bank = state->lcdc.vram_bank;
+#if 0
 	uint8_t curr_mode = LCDC_STAT_MODE_FLAG(state);
 	if(curr_mode > 2)
 	{
 		// Every freaking game seems to do this.
 		warning(state, "read from VRAM while not in h/v-blank");
-	}*/
-
+	}
+#endif
 	return state->lcdc.vram[bank][reg - 0x8000];
 }
 
@@ -520,13 +520,15 @@ inline void lcdc_write(emu_state *restrict state, uint16_t reg, uint8_t data UNU
 
 inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
+	const uint8_t bank = state->lcdc.vram_bank;
+#if 0
 	uint8_t curr_mode = LCDC_STAT_MODE_FLAG(state);
-	uint8_t bank = state->lcdc.vram_bank;
 	if(curr_mode > 2)
 	{
 		// Every freaking game seems to do this
-		//warning(state, "write to VRAM while not in h/v-blank");
+		warning(state, "write to VRAM while not in h/v-blank");
 	}
+#endif
 
 	state->lcdc.vram[bank][reg - 0x8000] = data;
 }

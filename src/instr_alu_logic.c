@@ -698,3 +698,4 @@ static inline void cp_d8(emu_state *restrict state, uint8_t data[])
 	// cp_common already adds 4
 	state->wait += 4;
 }
+

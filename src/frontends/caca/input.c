@@ -89,6 +89,19 @@ void libcaca_get_key(emu_state *state, frontend_input_return *ret)
 		do_exit = true;
 		ret->key = 0;
 	}
+	else if(ev_type & CACA_EVENT_RESIZE)
+	{
+		const int wid = caca_get_event_resize_width(&ev);
+		const int height = caca_get_event_resize_height(&ev);
+		libcaca_video_data *video = state->front.video.data;
+
+		caca_set_canvas_size(video->canvas, wid, height);
+
+		// Replot bitmap
+		caca_dither_bitmap(video->canvas, 0, 0, wid, height, video->dither,
+			state->lcdc.out);
+		caca_refresh_display(video->display);
+	}
 }
 
 
