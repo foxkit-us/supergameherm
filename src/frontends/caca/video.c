@@ -96,8 +96,8 @@ void libcaca_finish_video(emu_state *state)
 void libcaca_blit_canvas(emu_state *state)
 {
 	libcaca_video_data *video = state->front.video.data;
-	int wid = caca_get_canvas_width(video->canvas);
-	int height = caca_get_canvas_height(video->canvas);
+	const int wid = caca_get_canvas_width(video->canvas);
+	const int height = caca_get_canvas_height(video->canvas);
 
 	caca_dither_bitmap(video->canvas, 0, 0, wid, height, video->dither,
 			state->lcdc.out);
