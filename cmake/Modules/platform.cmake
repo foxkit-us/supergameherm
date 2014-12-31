@@ -43,16 +43,8 @@ macro(clock_check)
 		check_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
 
 		if(NOT(HAVE_CLOCK_GETTIME))
-			# XXX hack to make this check work
-			set(CMAKE_REQUIRED_DEFINITIONS -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
-			check_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
-			if(HAVE_CLOCK_GETTIME)
-				# Needed to see it
-				add_definitions(-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_VERSION=700)
-			else()
-				# OS X check
-				check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
-			endif()
+			# OS X check
+			check_include_files("mach/mach.h;mach/clock.h" HAVE_MACH_CLOCK_H)
 		endif()
 
 		check_symbol_exists(nanosleep time.h HAVE_NANOSLEEP)
@@ -73,6 +65,24 @@ macro(platform_checks)
 	posix_check()
 	if(NOT HAVE_POSIX)
 		windows_check()
+	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+		# now this is a story all about how
+		# my flags got twisted upside down
+		# and I'd like to take a minute just sit right there
+		# I'll tell why glibc sucks and smells like derriere.
+		#
+		# in man page feature_test_macros(7), of course
+		# they lie and say you only need _XOPEN_SOURCE
+		# cleaning all the flags, and relaxing all cool
+		# and making clean CMakeLists outside the school
+		#
+		# then gcc and cmake spewed a bunch of remarks
+		# about missing prototypes and unknown marks
+		# I read in one little bug that red hat was swine
+		# and said "You're missing the whole point of using #define."
+		set(GLIBC_SUCKS "-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700")
+		set(CMAKE_REQUIRED_DEFINITIONS ${GLIBC_SUCKS})
+		add_definitions(${GLIBC_SUCKS})
 	endif()
 
 	test_big_endian(BIG_ENDIAN)
