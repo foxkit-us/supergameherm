@@ -4,7 +4,7 @@ endif()
 
 macro(libcaca_check)
 	find_package(libcaca)
-	if(HAVE_libcaca)
+	if(libcaca_FOUND)
 		option(LIBCACA_ENABLE "Enable libcaca frontend" on)
 	endif()
 	if(LIBCACA_ENABLE)
@@ -20,7 +20,7 @@ endmacro()
 
 macro(sdl2_check)
 	find_package(SDL2)
-	if(HAVE_SDL2)
+	if(SDL2_FOUND)
 		option(SDL2_ENABLE "Enable SDL2 frontend" on)
 	endif()
 
