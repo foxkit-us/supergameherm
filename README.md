@@ -44,7 +44,7 @@ Platforms we have tested SuperGameHerm with:
 * Windows 7 (x64)
 * Windows 10 (x64)
 * NetBSD 6 (i386)
-* OpenBSD 5.4 (amd64)
+* OpenBSD 5.6 (amd64)
 
 Currently supported frontends (they work wherever the given frontends
 work):
