@@ -8,6 +8,7 @@ macro(libcaca_check)
 		option(LIBCACA_ENABLE "Enable libcaca frontend" on)
 	endif()
 	if(LIBCACA_ENABLE)
+		set(HAVE_LIBCACA 1)
 		include_directories(${libcaca_INCLUDE_DIR})
 		
 		file(GLOB LIBCACA_FRONTEND_SOURCES src/frontends/caca/*.c)
