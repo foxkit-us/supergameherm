@@ -16,7 +16,7 @@ static inline void sleep_nsec(uint64_t nsec)
 	ts.tv_sec = nsec / NSEC_SEC;
 	ts.tv_nsec = nsec % NSEC_SEC;
 
-#ifndef HAVE_CLOCK_GETTIME
+#ifndef HAVE_CLOCK_NANOSLEEP
 	if(nanosleep(&ts, &ret))
 #else
 	if(clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ret))
