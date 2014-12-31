@@ -50,6 +50,7 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 
 	// Start the clock
 	state->start_time = get_time();
+	state->next_vblank_time = state->start_time + NSEC_PER_VBLANK;
 
 	return state;
 }
@@ -86,14 +87,15 @@ bool step_emulator(emu_state *restrict state)
 		state->lcdc.curr_clk == 0))
 	{
 		uint64_t t = get_time();
-		uint64_t wait = t - state->last_vblank_time;
+		int64_t wait = (int64_t)state->next_vblank_time - (int64_t)t;
 
-		state->last_vblank_time = t;
-
-		if(wait < NSEC_PER_VBLANK)
+		if(wait > 0)
 		{
-			sleep_nsec(NSEC_PER_VBLANK - wait);
+			sleep_nsec(wait);
 		}
+
+		state->next_vblank_time += NSEC_PER_VBLANK;
+
 	}
 #endif
 

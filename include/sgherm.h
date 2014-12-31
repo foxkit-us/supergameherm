@@ -70,7 +70,7 @@ struct emu_state_t
 
 	uint_fast64_t cycles;		//! Present cycle count
 	uint_fast64_t start_time;	//! Time started
-	uint_fast64_t last_vblank_time;	//! Last time since vblank
+	uint_fast64_t next_vblank_time;	//! Timestamp for next vblank
 
 	system_types system;		//! Present emulation mode
 
