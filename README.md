@@ -15,8 +15,15 @@ Well, most Gameboy emulators suck horribly:
 Our emulator's a herm. Deal with it.
 
 ## Who made this?
-[awilfox](http://github.com/awilfox) and [Elizafox](http://github.com/Elizafox)
-are the principal authors.
+The authors are, in alphabetical order:
+* [awilfox](http://github.com/awilfox)
+* [Elizafox](http://github.com/Elizafox)
+* [GreaseMonkey](http://github.com/iamgreaser)
+
+They've done as follows:
+* awilfox - CPU core, serial, timer, some graphics, Windows frontend, initial MBC implementation, memory mapper
+* Elizafox - a lot of the graphics, CPU flags compliance, interrupts, SDL/caca frontends, frontend framework, debugging/instrumenting doodads, save files, debugging
+* GreaseMonkey - misc. fixes, optimisations, frontend testing, accuracy fixes
 
 You can find us on IRC at irc.interlinked.me in #supergameherm. Those who act
 like they're 12 will be promptly given a boot to the head. All others are
