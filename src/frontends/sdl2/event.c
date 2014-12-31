@@ -62,45 +62,42 @@ int sdl2_event_loop(emu_state *state)
 
 	do
 	{
-		uint8_t mode = LCDC_STAT_MODE_FLAG(state);
-		uint_fast16_t clock = state->lcdc.curr_clk;
+		const uint8_t mode = LCDC_STAT_MODE_FLAG(state);
+		const uint_fast16_t clock = state->lcdc.curr_clk;
 		SDL_Event ev;
 
 		step_emulator(state);
 
-		if(unlikely(mode == 1 && clock == 1 && state->input.col))
-		{
-			if(SDL_PollEvent(&ev) == 0)
-			{
-				continue;
-			}
-		}
-		else
+		if(unlikely(mode != 1 && clock != 0))
 		{
 			continue;
 		}
 
-		if(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+		// Exhaust events
+		while(SDL_PollEvent(&ev))
 		{
-			bool pressed = (ev.type = SDL_KEYDOWN);
-			input_key key = get_key(state, &ev);
-
-			if(!key)
+			if(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
 			{
-				continue;
-			}
+				bool pressed = (ev.type == SDL_KEYDOWN);
+				input_key key = get_key(state, &ev);
 
-			joypad_signal(state, key, pressed);
-		}
-		else if(unlikely(ev.type == SDL_WINDOWEVENT_RESIZED))
-		{
-			sdl2_video_data *video = state->front.video.data;
-			SDL_RenderClear(video->render);
-			BLIT_CANVAS(state);
-		}
-		else if(unlikely(ev.type == SDL_QUIT))
-		{
-			do_exit = true;
+				if(!key)
+				{
+					continue;
+				}
+
+				joypad_signal(state, key, pressed);
+			}
+			else if(unlikely(ev.type == SDL_WINDOWEVENT_RESIZED))
+			{
+				sdl2_video_data *video = state->front.video.data;
+				SDL_RenderClear(video->render);
+				BLIT_CANVAS(state);
+			}
+			else if(unlikely(ev.type == SDL_QUIT))
+			{
+				do_exit = true;
+			}
 		}
 	} while(!do_exit);
 
