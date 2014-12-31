@@ -12,10 +12,10 @@
 #ifdef HAVE_MMAP
 
 #include <sys/mman.h>	// mmap/munmap/msync
-#include <sys/stat.h>	// open
+#include <unistd.h>	// open/close
+#include <sys/stat.h>	// open flags (some systems)
 #include <sys/types.h>	// open flags (some systems)
 #include <fcntl.h>	// open flags (some systems)
-
 
 typedef struct memmap_state_t
 {
