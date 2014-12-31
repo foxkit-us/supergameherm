@@ -1,3 +1,14 @@
+// need strdup
+// this must be called before windows.h is
+#ifdef __STRICT_ANSI__
+#define OLD_STRICT_ANSI __STRICT_ANSI__
+#undef __STRICT_ANSI__
+#include <string.h>
+#define __STRICT_ANSI__ OLD_STRICT_ANSI
+#else
+#include <string.h>
+#endif
+
 #include <windows.h>
 #include "sgherm.h"
 
@@ -126,7 +137,7 @@ uint32_t *GetPixelsForTiles(emu_state *state)
 	uint16_t start = (LCDC_BG_CODE_SEL(state)) ? 0x0 : 0x800;
 	uint32_t val[4] = { 0x00FFFFFF, 0x00AAAAAA, 0x00777777, 0x00000000 };
 	uint8_t curr_tile = 0;
-	uint8_t iter = 0, col = 0, row = 0, skip = 0;
+	uint8_t iter = 0, col = 0, row = 0; //, skip = 0;
 
 	for (; row < 0xF; row++)
 	{
@@ -235,9 +246,9 @@ void StepEmulator(emu_state *state)
 	step_emulator(state);
 }
 
-int w32_event_loop(emu_state *state)
+int w32_event_loop(emu_state *state UNUSED)
 {
-	video_state *s = (video_state *)state->front.video.data;
+	//video_state *s = (video_state *)state->front.video.data;
 	MSG msg;
 
 	while(!do_exit)
@@ -286,7 +297,7 @@ char *AskUserForROMPath(void)
 	}
 	else
 	{
-		return strdup(szROMName);
+		return _strdup(szROMName);
 	}
 }
 
@@ -303,7 +314,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 	}
 	else
 	{
-		rom_path = strdup(szCmdLine);
+		rom_path = _strdup(szCmdLine);
 	}
 
 	if(rom_path == NULL)
