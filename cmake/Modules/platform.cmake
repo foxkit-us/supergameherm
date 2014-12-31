@@ -66,23 +66,9 @@ macro(platform_checks)
 	if(NOT HAVE_POSIX)
 		windows_check()
 	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-		# now this is a story all about how
-		# my flags got twisted upside down
-		# and I'd like to take a minute just sit right there
-		# I'll tell why glibc sucks and smells like derriere.
-		#
-		# in man page feature_test_macros(7), of course
-		# they lie and say you only need _XOPEN_SOURCE
-		# cleaning all the flags, and relaxing all cool
-		# and making clean CMakeLists outside the school
-		#
-		# then gcc and cmake spewed a bunch of remarks
-		# about missing prototypes and unknown marks
-		# I read in one little bug that red hat was swine
-		# and said "You're missing the whole point of using #define."
-		set(GLIBC_SUCKS "-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700")
-		set(CMAKE_REQUIRED_DEFINITIONS ${GLIBC_SUCKS})
-		add_definitions(${GLIBC_SUCKS})
+		set(GLIBC_FEATURE "-D_XOPEN_SOURCE=700")
+		set(CMAKE_REQUIRED_DEFINITIONS ${GLIBC_FEATURE})
+		add_definitions(${GLIBC_FEATURE})
 	endif()
 
 	test_big_endian(BIG_ENDIAN)
