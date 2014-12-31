@@ -176,17 +176,6 @@ void w32_blit_canvas(emu_state *state)
 	}
 }
 
-bool w32_init_input(emu_state *state UNUSED)
-{
-	// nothing to init
-	return true;
-}
-
-void w32_finish_input(emu_state *state UNUSED)
-{
-	// nothing to deinit
-}
-
 void ShowVRAMViewer(emu_state *state)
 {
 	HDC hdc;
@@ -204,7 +193,7 @@ void ShowVRAMViewer(emu_state *state)
 	ReleaseDC(s->vramWindow, hdc);
 }
 
-void TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam UNUSED)
+input_key TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam UNUSED)
 {
 	switch(wParam)
 	{
@@ -213,44 +202,30 @@ void TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam UNUSED
 		video_state *s = (video_state *)state->front.video.data;
 		ShowVRAMViewer(state);
 		s->vramViewerIsActive = true;
-		return;
+		return 0;
 	}
 	case VK_ESCAPE:
 		PostQuitMessage(0);
-		return;
+		return 0;
 	case VK_DOWN:
-		state->front.input.data = (void *)INPUT_DOWN;
-		return;
+		return INPUT_DOWN;
 	case VK_UP:
-		state->front.input.data = (void *)INPUT_UP;
-		return;
+		return INPUT_UP;
 	case VK_LEFT:
-		state->front.input.data = (void *)INPUT_LEFT;
-		return;
+		return INPUT_LEFT;
 	case VK_RIGHT:
-		state->front.input.data = (void *)INPUT_RIGHT;
-		return;
+		return INPUT_RIGHT;
 	case 'A':
 	case 'Z':
-		state->front.input.data = (void *)INPUT_A;
-		return;
+		return INPUT_A;
 	case 'S':
 	case 'X':
-		state->front.input.data = (void *)INPUT_B;
-		return;
+		return INPUT_B;
 	case VK_RETURN:
-		state->front.input.data = (void *)INPUT_START;
-		return;
+		return INPUT_START;
 	case VK_BACK:
-		state->front.input.data = (void *)INPUT_SELECT;
-		return;
+		return INPUT_SELECT;
 	}
-}
-
-void w32_get_key(emu_state *state, frontend_input_return *ret)
-{
-	ret->key = (input_key)(state->front.input.data);
-	ret->press = true;
 }
 
 void StepEmulator(emu_state *state)
@@ -285,13 +260,6 @@ const frontend_video w32_frontend_video = {
 	&w32_init_video,
 	&w32_finish_video,
 	&w32_blit_canvas,
-	NULL
-};
-
-const frontend_input w32_frontend_input = {
-	&w32_init_input,
-	&w32_finish_input,
-	&w32_get_key,
 	NULL
 };
 
@@ -348,8 +316,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 
 	free(rom_path);
 
-	if(!select_frontend_all(g_state, WIN32_INPUT, WIN32_AUDIO, WIN32_VIDEO,
-				WIN32_LOOP))
+	if(!select_frontend_all(g_state, WIN32_AUDIO, WIN32_VIDEO, WIN32_LOOP))
 	{
 		return -1;
 	}
@@ -409,13 +376,21 @@ LRESULT CALLBACK VViewProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK HermProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
+	input_key key;
+	BOOL pressed;
+
 	switch(iMsg)
 	{
 	case WM_KEYDOWN:
-		TranslateKeyToGameBoy(g_state, wParam, lParam);
-		return 0;
 	case WM_KEYUP:
-		g_state->front.input.data = NULL;
+		pressed = (iMsg == WM_KEYDOWN);
+		key = TranslateKeyToGameBoy(g_state, wParam, lParam);
+
+		if(key)
+		{
+			joypad_signal(g_state, key, pressed);
+		}
+
 		return 0;
 	case WM_CLOSE:
 		do_exit = true;

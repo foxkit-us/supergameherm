@@ -4,8 +4,6 @@
 typedef struct frontend_t frontend;
 typedef struct frontend_audio_t frontend_audio;
 typedef struct frontend_video_t frontend_video;
-typedef struct frontend_input_t frontend_input;
-typedef struct frontend_input_return_t frontend_input_return;
 
 typedef struct oam_t oam;
 typedef struct cps_t cps;

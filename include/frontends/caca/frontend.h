@@ -4,9 +4,10 @@
 #include <stdio.h>	// FILE
 #include <caca.h>	// caca_*
 
-extern const frontend_input libcaca_frontend_input;
+
 extern const frontend_video libcaca_frontend_video;
 int libcaca_event_loop(emu_state *);
+
 
 typedef struct libcaca_video_data_t
 {

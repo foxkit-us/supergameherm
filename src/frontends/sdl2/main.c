@@ -38,8 +38,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if(!select_frontend_all(state, SDL2_INPUT, SDL2_AUDIO, SDL2_VIDEO,
-				SDL2_LOOP))
+	if(!select_frontend_all(state, SDL2_AUDIO, SDL2_VIDEO, SDL2_LOOP))
 	{
 		fatal(state, "Could not initalise SDL2 frontend");
 		return EXIT_FAILURE;

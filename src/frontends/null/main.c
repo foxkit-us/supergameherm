@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	to_stdout = stdout;
 	to_stderr = stderr;
 
-	fprintf(to_stdout, "Super Game Herm (libcaca frontend)!\n");
+	fprintf(to_stdout, "Super Game Herm (null frontend)!\n");
 	fprintf(to_stdout, "Beta version!\n\n");
 
 	if(argc < 2)
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	}
 
 	// This never fails for the NULL frontend
-	select_frontend_all(state, NULL_INPUT, NULL_AUDIO, NULL_VIDEO, NULL_LOOP);
+	select_frontend_all(state, NULL_AUDIO, NULL_VIDEO, NULL_LOOP);
 
 	if((val = EVENT_LOOP(state)))
 	{
