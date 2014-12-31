@@ -41,7 +41,8 @@ bool w32_init_video(emu_state *state)
 	HDC hdc;
 	video_state *s;
 
-	s = (video_state *)state->front.video.data = calloc(sizeof(video_state), 1);
+	s =  calloc(sizeof(video_state), 1);
+	state->front.video.data = s;
 
 	ZeroMemory(&wndcl, sizeof(wndcl));
 	wndcl.cbSize = sizeof(wndcl);
