@@ -164,7 +164,9 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 #ifdef NDEBUG
 		error(state, "invalid header checksum (don't care)");
 #else
-		fatal(state, "invalid header checksum!");
+		fatal(state, "invalid header checksum! expected %02X, got %02X"
+			, (1 + state->cart_data[0x14D] - checksum) & 0xFF
+			, state->cart_data[0x14D]);
 		goto close_rom;
 #endif
 	}
