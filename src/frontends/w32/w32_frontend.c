@@ -225,6 +225,8 @@ input_key TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam U
 		return INPUT_START;
 	case VK_BACK:
 		return INPUT_SELECT;
+	default:
+		return 0;
 	}
 }
 
