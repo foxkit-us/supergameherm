@@ -38,7 +38,7 @@ your mileage may vary):
 * [MSVC](http://www.visualstudio.com/downloads/download-visual-studio-vs)
 
 Platforms we have tested SuperGameHerm with:
-* Linux ~3.13 kernel (x86, amd64, and PowerPC)
+* Linux ~3.13 kernel (x86, amd64, armv6l and PowerPC)
 * FreeBSD 10 (i386 and amd64)
 * Windows NT 4 (x86, but we've seen snails run faster)
 * Windows 7 (x64)
