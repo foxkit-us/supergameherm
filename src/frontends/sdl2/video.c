@@ -19,14 +19,6 @@
 #define ALPHA	0xff000000
 
 
-typedef struct sdl2_video_data_t
-{
-	SDL_Window *window;
-	SDL_Renderer *render;
-	SDL_Texture *texture;
-} sdl2_video_data;
-
-
 bool sdl2_init_video(emu_state *state)
 {
 	sdl2_video_data *video;
@@ -103,9 +95,18 @@ void sdl2_finish_video(emu_state *state)
 void sdl2_blit_canvas(emu_state *state)
 {
 	sdl2_video_data *video = state->front.video.data;
+	int pitch = PITCH;
+	void *data;
 
-	SDL_UpdateTexture(video->texture, NULL, state->lcdc.out,
-			PITCH);
+	if(unlikely(SDL_LockTexture(video->texture, NULL, &data, &pitch) < 0))
+	{
+		error(state, "Failed to lock texture: %s", SDL_GetError());
+		return;
+	}
+
+	memcpy(data, state->lcdc.out, pitch * LEN);
+
+	SDL_UnlockTexture(video->texture);
 
 	SDL_RenderCopy(video->render, video->texture, NULL, NULL);
 	SDL_RenderPresent(video->render);

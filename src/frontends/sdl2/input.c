@@ -34,7 +34,7 @@ void sdl2_get_key(emu_state *state UNUSED, frontend_input_return *ret)
 		return;
 	}
 
-	if(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+	if(likely(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP))
 	{
 		ret->press = (ev.type == SDL_KEYDOWN ? true : false);
 
@@ -88,7 +88,13 @@ void sdl2_get_key(emu_state *state UNUSED, frontend_input_return *ret)
 			break;
 		}
 	}
-	else if(ev.type == SDL_QUIT)
+	else if(ev.type == SDL_WINDOWEVENT_RESIZED)
+	{
+		sdl2_video_data *video = state->front.video.data;
+		SDL_RenderClear(video->render);
+		BLIT_CANVAS(state);
+	}
+	else if(unlikely(ev.type == SDL_QUIT))
 	{
 		ret->key = 0;
 		do_exit = true;
