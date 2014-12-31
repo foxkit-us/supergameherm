@@ -66,8 +66,7 @@ The emulator should run without issue.
 Windows 7 (Visual Studio 2010)
 ==============================
 
-No special build steps are required.  This compiler supports enough C99 to
-build SuperGameHerm in C mode, instead of C++.
+No special build steps are required.
 
 The emulator should run without issue with both SDL 2 and GDI.
 
@@ -122,8 +121,8 @@ an incompatibility with NetBSD's X.Org distribution.
 OpenBSD
 =======
 
-The libcaca and SDL 2 frontends work on amd64.  Other architectures have
-not been tested.
+The libcaca and SDL 2 frontends work on 5.6/amd64.
+Other versions and architectures have not been tested.
 
 
 *****
