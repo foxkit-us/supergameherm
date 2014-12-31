@@ -31,9 +31,7 @@ static inline uint16_t be16toh(uint16_t big_endian_16bits)
 #elif defined(HAVE_BYTESWAP_USHORT)
 	return _byteswap_ushort(big_endian_16bits);
 #else
-	// TODO make our own builtins
-	return 0;
-#error "Your platform has no sensible builtins for endianness-swapping"
+	return (uint16_t)(big_endian_16bits >> 8) | (uint16_t)(big_endian_16bits << 8);
 #endif /*BIG_ENDIAN*/
 }
 
@@ -46,9 +44,7 @@ static inline uint16_t le16toh(uint16_t little_endian_16bits)
 #elif defined(HAVE_BYTESWAP_USHORT)
 	return _byteswap_ushort(little_endian_16bits);
 #else
-	// TODO make our own builtins
-	return 0;
-#error "Your platform has no sensible builtins for endianness-swapping"
+	return (uint16_t)(little_endian_16bits >> 8) | (uint16_t)(little_endian_16bits << 8);
 #endif /*LITTLE_ENDIAN*/
 }
 
@@ -80,9 +76,7 @@ static inline uint32_t be32toh(uint32_t big_endian_32bits)
 #elif defined(HAVE_BYTESWAP_ULONG)
 	return _byteswap_ulong(big_endian_32bits);
 #else
-	// TODO make our own builtins
-	return 0;
-#error "Your platform has no sensible builtins for endianness-swapping"
+	return (((uint32_t)be16toh(big_endian_32bits)) << 16) | (uint32_t)(be16toh(big_endian_32bits >> 16));
 #endif /*BIG_ENDIAN*/
 }
 
@@ -95,9 +89,7 @@ static inline uint32_t le32toh(uint32_t little_endian_32bits)
 #elif defined(HAVE_BYTESWAP_ULONG)
 	return _byteswap_ulong(little_endian_32bits);
 #else
-	// TODO make our own builtins
-	return 0;
-#error "Your platform has no sensible builtins for endianness-swapping"
+	return (((uint32_t)le16toh(little_endian_32bits)) << 16) | (uint32_t)(le16toh(little_endian_32bits >> 16));
 #endif /*LITTLE_ENDIAN*/
 }
 
