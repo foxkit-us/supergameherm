@@ -311,16 +311,38 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 {
 	char *rom_path;
 
-	if(!(to_stdout = freopen("stdout.log", "a", stdout)))
+	if(stdout)
 	{
-		error(NULL, "Could not open stdout.log: %s", strerror(errno));
-		return -1;
+		if(!(to_stdout = freopen("stdout.log", "a", stdout)))
+		{
+			error(state, "Could not open stdout.log: %s", strerror(errno));
+			return -1;
+		}
+	}
+	else
+	{
+		if(!(to_stdout = fopen("stdout.log", "a")))
+		{
+			error(state, "Could not open stdout.log: %s", strerror(errno));
+			return -1;
+		}
 	}
 
-	if(!(to_stderr = freopen("stderr.log", "a", stderr)))
+	if(stderr)
 	{
-		error(NULL, "Could not open stderr.log: %s", strerror(errno));
-		return -1;
+		if(!(to_stderr = freopen("stderr.log", "a", stderr)))
+		{
+			error(state, "Could not open stderr.log: %s", strerror(errno));
+			return -1;
+		}
+	}
+	else
+	{
+		if(!(to_stderr = fopen("stderr.log", "a")))
+		{
+			error(state, "Could not open stderr.log: %s", strerror(errno));
+			return -1;
+		}
 	}
 
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
