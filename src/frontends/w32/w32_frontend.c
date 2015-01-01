@@ -138,6 +138,7 @@ bool w32_init_audio(emu_state *state)
 	WAVEFORMATEX wfex;
 	int woerr;
 	int i;
+	audio_state *ad;
 
 	// Create wave format header
 	wfex.wFormatTag = WAVE_FORMAT_PCM;
@@ -150,7 +151,7 @@ bool w32_init_audio(emu_state *state)
 	state->snd.freq = wfex.nSamplesPerSec;
 
 	// Allocate audio state
-	audio_state *ad = calloc(sizeof(audio_state), 1);
+	ad = calloc(sizeof(audio_state), 1);
 	state->front.audio.data = ad;
 
 	// Open waveout
