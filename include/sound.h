@@ -7,61 +7,53 @@
 
 struct snd_state_t
 {
+	int per_env; // Counter for envelope update period
+
 	struct _ch1
 	{
-		//! channel enabled?
-		bool enabled;
-		//! this/128Hz = sweep
-		uint8_t sweep_time;
-		/*! if true, sweep decreases frequency.
-		 *  otherwise, sweep increases frequency. */
+		bool enabled; //! channel enabled?
+		uint8_t sweep_time; //! this/128Hz = sweep
+		/*! if true, sweep increases period.
+		 *  otherwise, sweep decreases period. */
 		bool sweep_dec;
-		//! number of shift
-		uint8_t shift;
-		//! wave pattern duty: 1=12.5%,2=25%,3=50%,4=75%
-		uint8_t wave_duty;
-		//! sound length
-		uint8_t length;
-		//! initial envelope volume
-		int8_t envelope_volume;
+		uint8_t sweep_shift; //! number of shift
+		uint8_t wave_duty; //! wave pattern duty: 1=12.5%,2=25%,3=50%,4=75%
+		uint8_t length; //! sound length
+		int8_t envelope_volume; //! initial envelope volume
 		/*! if true, envelope amplifies.
 		 *  otherwise, envelope attenuates. */
 		bool envelope_amp;
-		//! number of sweeps (0 = stop)
-		uint8_t sweep;
-		//! if true, one-shot.  otherwise, loop
-		bool counter;
-		//! 11-bit frequency (higher 5 = nothing)
-		uint16_t frequency;
-		//! output to S01
-		bool s01;
-		//! output to S02
-		bool s02;
+		uint8_t envelope_speed; //! speed of envelope
+		bool counter; //! if true, one-shot.  otherwise, loop
+		uint16_t period; //! 11-bit period (higher 5 = nothing)
+		bool s01; //! output to S01
+		bool s02; //! output to S02
+
+		// Audio runtime values
+		uint16_t per_remain; //! Counter for period
+		uint8_t outseq; //! Output sequence number for wave duty
 	} ch1;
+
 	struct _ch2
 	{
-		//! channel enabled?
-		bool enabled;
-		//! wave pattern duty: 1=12.5%,2=25%,3=50%,4=75%
-		uint8_t wave_duty;
-		//! sound length
-		uint8_t length;
-		//! initial envelope volume
-		int8_t envelope_volume;
+		bool enabled; //! channel enabled?
+		uint8_t wave_duty; //! wave pattern duty: 1=12.5%,2=25%,3=50%,4=75%
+		uint8_t length; //! sound length
+		int8_t envelope_volume; //! initial envelope volume
 		/*! if true, envelope amplifies.
 		 *  otherwise, envelope attenuates. */
 		bool envelope_amp;
-		//! number of sweeps (0 = stop)
-		uint8_t sweep;
-		//! if true, one-shot.  otherwise, loop
-		bool counter;
-		//! 11-bit frequency (higher 5 = nothing)
-		uint16_t frequency;
-		//! output to S01
-		bool s01;
-		//! output to S02
-		bool s02;
+		uint8_t envelope_speed; //! speed of envelope
+		bool counter; //! if true, one-shot.  otherwise, loop
+		uint16_t period; //! 11-bit period (higher 5 = nothing)
+		bool s01; //! output to S01
+		bool s02; //! output to S02
+
+		// Audio runtime values
+		uint16_t per_remain; //! Counter for period
+		uint8_t outseq; //! Output sequence number for wave duty
 	} ch2;
+
 	struct _ch3
 	{
 		bool enabled;		//! channel enabled?
@@ -69,12 +61,14 @@ struct snd_state_t
 		bool s01;		//! output to S01
 		bool s02;		//! output to S02
 	} ch3;
+
 	struct _ch4
 	{
 		bool enabled;		//! channel enabled?
 		bool s01;		//! output to S01
 		bool s02;		//! output to S02
 	} ch4;
+
 	bool enabled;			//! sound active?
 	bool s01;			//! S01 enabled?
 	uint8_t s01_volume;		//! S01 volume

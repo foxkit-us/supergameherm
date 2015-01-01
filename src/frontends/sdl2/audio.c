@@ -26,71 +26,59 @@ static void sdl2_audio_callback(void *userdata, Uint8 *stream, int len)
 
 		// Calculate period increment
 		// TODO: drop the divide, use shift instead - ARMv6 does div in software!
-		int32_t pinc = ((1<<20) + ad->freq_rem) / ad->freq;
-		ad->freq_rem = ((1<<20) + ad->freq_rem) % ad->freq;
+		int32_t pinc = ((1<<(22-2)) + ad->freq_rem) / ad->freq;
+		ad->freq_rem = ((1<<(22-2)) + ad->freq_rem) % ad->freq;
 
 		// Update envelopes
-		ad->per_env += pinc;
-		if(ad->per_env >= (1<<(20-5)))
+		snd->per_env += pinc;
+		while(snd->per_env >= (1<<(22-6)))
 		{
-			ad->per_env -= (1<<(20-5));
-			// TODO: get correct behaviour
-			//if(snd->ch1.length != 0)
-			/*
-			{
-				//printf("%i %i\n", snd->ch1.length, snd->ch1.envelope_amp?1:0);
-				//snd->ch1.len_wait++;
+			snd->per_env -= (1<<(22-6));
 
-				if(snd->ch1.envelope_amp) snd->ch1.envelope_volume += 1;
-				else snd->ch1.envelope_volume -= 1;
-				if(snd->ch1.envelope_volume < 0) snd->ch1.envelope_volume = 0;
-				else if(snd->ch1.envelope_volume > 15) snd->ch1.envelope_volume = 15;
+			// CH1 env
+			if(snd->ch1.envelope_amp) snd->ch1.envelope_volume += snd->ch1.envelope_speed;
+			else snd->ch1.envelope_volume -= snd->ch1.envelope_speed;
+			if(snd->ch1.envelope_volume < 0) snd->ch1.envelope_volume = 0;
+			else if(snd->ch1.envelope_volume > 15) snd->ch1.envelope_volume = 15;
 
-			}
-
-			//if(snd->ch2.length != 0)
-			{
-				if(snd->ch2.envelope_amp) snd->ch2.envelope_volume += 1;
-				else snd->ch2.envelope_volume -= 1;
-				if(snd->ch2.envelope_volume < 0) snd->ch2.envelope_volume = 0;
-				else if(snd->ch2.envelope_volume > 15) snd->ch2.envelope_volume = 15;
-			}
-			*/
+			// CH2 env
+			if(snd->ch2.envelope_amp) snd->ch2.envelope_volume += snd->ch2.envelope_speed;
+			else snd->ch2.envelope_volume -= snd->ch2.envelope_speed;
+			if(snd->ch2.envelope_volume < 0) snd->ch2.envelope_volume = 0;
+			else if(snd->ch2.envelope_volume > 15) snd->ch2.envelope_volume = 15;
 		}
 
 		// TODO: shift some of this stuff out
 		// TODO: once we've done that, make this more accurate
 		// Update period
-		if(1 || snd->ch1.enabled) ad->ch1.per_remain += pinc;
-		if(1 || snd->ch2.enabled) ad->ch2.per_remain += pinc;
-		if(1 || snd->ch3.enabled) ad->ch3.per_remain += pinc;
-		if(1 || snd->ch4.enabled) ad->ch4.per_remain += pinc;
+		if(1 || snd->ch1.enabled) snd->ch1.per_remain += pinc;
+		if(1 || snd->ch2.enabled) snd->ch2.per_remain += pinc;
 
-		if(snd->ch1.frequency > 0)
-		while(ad->ch1.per_remain >= 0x0800)
+		if(snd->ch1.period > 0)
+		while(snd->ch1.per_remain >= 0x0800)
 		{
-			ad->ch1.per_remain += snd->ch1.frequency - 0x0800;
-			ad->ch1.outseq += 1;
-			ad->ch1.outseq &= 7;
+			snd->ch1.per_remain += snd->ch1.period - 0x0800;
+			snd->ch1.outseq += 1;
+			snd->ch1.outseq &= 7;
 		}
 
-		if(snd->ch2.frequency > 0)
-		while(ad->ch2.per_remain >= 0x0800)
+		if(snd->ch2.period > 0)
+		while(snd->ch2.per_remain >= 0x0800)
 		{
-			ad->ch2.per_remain += snd->ch2.frequency - 0x0800;
-			ad->ch2.outseq += 1;
-			ad->ch2.outseq &= 7;
+			snd->ch2.per_remain += snd->ch2.period - 0x0800;
+			snd->ch2.outseq += 1;
+			snd->ch2.outseq &= 7;
 		}
 
 		// TODO: other channels
 
-		if((au_pulses[snd->ch1.wave_duty] >> ad->ch1.outseq) & 1)
+		if((au_pulses[snd->ch1.wave_duty] >> snd->ch1.outseq) & 1)
 		{
 			if(snd->ch1.s01) vl += snd->ch1.envelope_volume;
 			if(snd->ch1.s02) vr += snd->ch1.envelope_volume;
 		}
 
-		if((au_pulses[snd->ch2.wave_duty] >> ad->ch2.outseq) & 1)
+		if((au_pulses[snd->ch2.wave_duty] >> snd->ch2.outseq) & 1)
 		{
 			if(snd->ch2.s01) vl += snd->ch2.envelope_volume;
 			if(snd->ch2.s02) vr += snd->ch2.envelope_volume;
