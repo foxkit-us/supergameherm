@@ -4,7 +4,7 @@
 A GB emulator that aims to not suck so bad.
 
 ## What do you mean "not suck so bad"?
-Well, most Gameboy emulators suck horriblsouy:
+Well, most Gameboy emulators suck horribly:
 * Most have terrible compatibility (there are exceptions of course)
 * They're riced in wrong/bad ways or use invalid/outdated assumptions
 * They're horrible on the inside and impossible to maintain and fix
