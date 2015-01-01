@@ -7,7 +7,9 @@
 
 struct snd_state_t
 {
-	int per_env; // Counter for envelope update period
+	int per_env; //! Counter for envelope update period
+	int freq; //! Audio output frequency
+	int freq_rem; //! Counter for period skip calculation
 
 	struct _ch1
 	{
@@ -79,6 +81,7 @@ struct snd_state_t
 
 uint8_t sound_read(emu_state *restrict, uint16_t);
 void sound_write(emu_state *restrict, uint16_t, uint8_t);
+void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size_t len_samples);
 void sound_tick(emu_state *restrict);
 
 #endif /*!__SOUND_H_*/

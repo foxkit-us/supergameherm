@@ -13,8 +13,7 @@ typedef struct sdl2_video_data_t
 
 typedef struct sdl2_audio_data_t
 {
-	int freq;
-	int freq_rem;
+	int dummy;
 } sdl2_audio_data;
 
 

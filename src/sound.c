@@ -221,6 +221,92 @@ void sound_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 }
 
+const uint8_t au_pulses[4] = { 0x80, 0xC0, 0xF0, 0x3F, };
+
+void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size_t len_samples)
+{
+	size_t i;
+
+	snd_state *snd = &state->snd;
+
+	for(i = 0; i < len_samples; i++)
+	{
+		// Initialise
+		int16_t vl = 0;
+		int16_t vr = 0;
+
+		// Calculate period increment
+		// TODO: drop the divide, use shift instead - ARMv6 does div in software!
+		int32_t pinc = ((1<<(22-2)) + snd->freq_rem) / snd->freq;
+		snd->freq_rem = ((1<<(22-2)) + snd->freq_rem) % snd->freq;
+
+		// Update envelopes
+		snd->per_env += pinc;
+		while(snd->per_env >= (1<<(22-6)))
+		{
+			snd->per_env -= (1<<(22-6));
+
+			// CH1 env
+			if(snd->ch1.envelope_amp) snd->ch1.envelope_volume += snd->ch1.envelope_speed;
+			else snd->ch1.envelope_volume -= snd->ch1.envelope_speed;
+			if(snd->ch1.envelope_volume < 0) snd->ch1.envelope_volume = 0;
+			else if(snd->ch1.envelope_volume > 15) snd->ch1.envelope_volume = 15;
+
+			// CH2 env
+			if(snd->ch2.envelope_amp) snd->ch2.envelope_volume += snd->ch2.envelope_speed;
+			else snd->ch2.envelope_volume -= snd->ch2.envelope_speed;
+			if(snd->ch2.envelope_volume < 0) snd->ch2.envelope_volume = 0;
+			else if(snd->ch2.envelope_volume > 15) snd->ch2.envelope_volume = 15;
+		}
+
+		// TODO: shift some of this stuff out
+		// TODO: once we've done that, make this more accurate
+		// Update period
+		if(1 || snd->ch1.enabled) snd->ch1.per_remain += pinc;
+		if(1 || snd->ch2.enabled) snd->ch2.per_remain += pinc;
+
+		if(snd->ch1.period > 0)
+		while(snd->ch1.per_remain >= 0x0800)
+		{
+			snd->ch1.per_remain += snd->ch1.period - 0x0800;
+			snd->ch1.outseq += 1;
+			snd->ch1.outseq &= 7;
+		}
+
+		if(snd->ch2.period > 0)
+		while(snd->ch2.per_remain >= 0x0800)
+		{
+			snd->ch2.per_remain += snd->ch2.period - 0x0800;
+			snd->ch2.outseq += 1;
+			snd->ch2.outseq &= 7;
+		}
+
+		// TODO: other channels
+
+		if((au_pulses[snd->ch1.wave_duty] >> snd->ch1.outseq) & 1)
+		{
+			if(snd->ch1.s01) vl += snd->ch1.envelope_volume;
+			if(snd->ch1.s02) vr += snd->ch1.envelope_volume;
+		}
+
+		if((au_pulses[snd->ch2.wave_duty] >> snd->ch2.outseq) & 1)
+		{
+			if(snd->ch2.s01) vl += snd->ch2.envelope_volume;
+			if(snd->ch2.s02) vr += snd->ch2.envelope_volume;
+		}
+
+		// Amplify
+		vl <<= 6;
+		vr <<= 6;
+		vl *= (snd->s01 ? 0 : snd->s01_volume);
+		vr *= (snd->s02 ? 0 : snd->s02_volume);
+
+		// Write
+		*(outbuf++) = vl;
+		*(outbuf++) = vr;
+	}
+}
+
 void sound_tick(emu_state *restrict state)
 {
 	// no point if we're disabled.
