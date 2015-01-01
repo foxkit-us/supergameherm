@@ -438,20 +438,24 @@ const frontend_audio w32_frontend_audio = {
 	NULL
 };
 
-char *AskUserForROMPath(void)
+char *AskUserForFilePath(const char *title, const char *filter, BOOL open)
 {
-	char szROMName[MAX_PATH];
+	char szFileName[MAX_PATH];
 
 	OPENFILENAME ofn;
-	ZeroMemory(&szROMName, sizeof(szROMName));
+	ZeroMemory(&szFileName, sizeof(szFileName));
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER;
+	ofn.Flags = OFN_EXPLORER;
+	if(open)
+	{
+		ofn.Flags |= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	}
 	//ofn.hwndOwner = hwnd;
-	ofn.lpstrFile = szROMName;
-	ofn.lpstrFilter = "All Game Boy ROMs\0*.gb;*.gbc\0Original Game Boy (DMG) ROMs\0*.gb\0";
-	ofn.lpstrTitle = "Open Game!";
-	ofn.nMaxFile = sizeof(szROMName);
+	ofn.lpstrFile = szFileName;
+	ofn.lpstrTitle = title;
+	ofn.lpstrFilter = filter;
+	ofn.nMaxFile = sizeof(szFileName);
 
 	if(!GetOpenFileName(&ofn))
 	{
@@ -459,18 +463,20 @@ char *AskUserForROMPath(void)
 	}
 	else
 	{
-		return _strdup(szROMName);
+		return _strdup(szFileName);
 	}
 }
 
 int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, char *szCmdLine, int iCmdShow UNUSED)
 {
-	char *rom_path;
+	char *rom_path, *save_path;
 
 	if(!stdout)
 	{
 		to_stdout = fopen("stdout.log", "a");
-	} else {
+	}
+	else
+	{
 		to_stdout = freopen("stdout.log", "a", stdout);
 	}
 
@@ -483,7 +489,9 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 	if(!stderr)
 	{
 		to_stderr = fopen("stderr.log", "a");
-	} else {
+	}
+	else
+	{
 		to_stderr = freopen("stderr.log", "a", stderr);
 	}
 
@@ -495,11 +503,17 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
-		rom_path = AskUserForROMPath();
+		rom_path = AskUserForFilePath("Open Game!",
+			"All Game Boy ROMs\0*.gb;*.gbc\0Original Game Boy (DMG) ROMs\0*.gb\0",
+			TRUE);
+		save_path = AskUserForFilePath("Save file",
+			"All Game Boy SAV files\0*.sav;*.save;*.gbsav\0",
+			TRUE);
 	}
 	else
 	{
 		rom_path = _strdup(szCmdLine);
+		save_path = NULL;
 	}
 
 	if(rom_path == NULL)
@@ -507,7 +521,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
-	if((g_state = init_emulator(rom_path, NULL)) == NULL)
+	if((g_state = init_emulator(rom_path, save_path)) == NULL)
 	{
 		return -1;
 	}

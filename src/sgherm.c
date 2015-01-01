@@ -17,8 +17,10 @@
 #include <errno.h>	// errno
 #include <assert.h>	// assert
 
+
 #define NSEC_PER_SECOND 1000000000L
 #define NSEC_PER_VBLANK NSEC_PER_SECOND / 60
+
 
 emu_state * init_emulator(const char *rom_path, const char *save_path)
 {
@@ -31,7 +33,7 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 		return NULL;
 	}
 
-	state->save_path = save_path;
+	state->save_path = strdup(save_path);
 
 	state->interrupts.enabled = true;
 	state->wait = 1;
@@ -61,6 +63,7 @@ void finish_emulator(emu_state *restrict state)
 
 	MBC_FINISH(state);
 	free(state->cart_data);
+	free((void *)state->save_path);
 	free(state);
 }
 
@@ -102,7 +105,6 @@ bool step_emulator(emu_state *restrict state)
 			printf("Throttle reduced\n");
 			state->next_vblank_time = t - (int64_t)(NSEC_PER_VBLANK*5);
 		}
-
 	}
 #endif
 
