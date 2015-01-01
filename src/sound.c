@@ -314,4 +314,8 @@ void sound_tick(emu_state *restrict state)
 	{
 		return;
 	}
+
+	// Call output_sample
+	OUTPUT_SAMPLE(state);
+
 }

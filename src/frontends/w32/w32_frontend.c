@@ -19,6 +19,10 @@
 #include "print.h"	// debug
 #include "frontend.h"	// frontend
 
+/*! buffer count (must be power of two) */
+#define WHD_COUNT 4
+/*! buffer length */
+#define WHD_BUF_LEN 2048
 
 LRESULT CALLBACK VViewProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK HermProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
@@ -49,7 +53,9 @@ typedef struct video_state
 typedef struct audio_state
 {
 	HWAVEOUT waveout; /*! the waveout device */
-	WAVEHDR whd; /*! wave header */
+	WAVEHDR whd[WHD_COUNT]; /*! wave header */
+	volatile int whd_read; /*! wave header read index */
+	volatile int whd_write; /*! wave header write index */
 } audio_state;
 
 void CALLBACK KillAfter30(HWND hWnd UNUSED, UINT iMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
@@ -57,27 +63,58 @@ void CALLBACK KillAfter30(HWND hWnd UNUSED, UINT iMsg UNUSED, UINT_PTR idEvent U
 	do_exit = true;
 }
 
-void w32_post_audio(emu_state *state)
+void w32_put_audio(emu_state *state)
 {
 	int woerr;
 	audio_state *ad = (audio_state *)(state->front.audio.data);
 
-	sound_fetch_s16ne(state, (int16_t *)(ad->whd.lpData), (size_t)(ad->whd.dwBufferLength/4));
+	// Get buffer index
+	int idx = ad->whd_write;
+	if((idx-ad->whd_read) >= WHD_COUNT)
+	{
+		// Skip if we don't have audio
+		//printf("SKIP\n");
+		return;
+	}
+	//printf("WWW write %i read %i\n", ad->whd_write, ad->whd_read);
+	ad->whd_write++;
+	idx &= (WHD_COUNT-1);
+
+	// Fill buffer
+	sound_fetch_s16ne(state, (int16_t *)(ad->whd[idx].lpData), (size_t)(ad->whd[idx].dwBufferLength/4));
 
 	// TODO: fix stutter by using several buffers
-	woerr = waveOutPrepareHeader(ad->waveout, &(ad->whd), sizeof(WAVEHDR));
+	woerr = waveOutPrepareHeader(ad->waveout, &(ad->whd[idx]), sizeof(WAVEHDR));
 	if(woerr != MMSYSERR_NOERROR)
 	{
 		error(state, "waveOutPrepareHeader: %04X\n", woerr);
 	}
 
-	woerr = waveOutWrite(ad->waveout, &(ad->whd), sizeof(WAVEHDR));
+	// Write buffer
+	woerr = waveOutWrite(ad->waveout, &(ad->whd[idx]), sizeof(WAVEHDR));
 	if(woerr != MMSYSERR_NOERROR)
 	{
 		error(state, "waveOutWrite: %04X\n", woerr);
 	//} else {
 		//printf("written!\n");
 	}
+}
+
+void w32_pull_audio(emu_state *state)
+{
+	int woerr;
+	audio_state *ad = (audio_state *)(state->front.audio.data);
+
+	// Get a buffer
+	int idx = ad->whd_read;
+	//printf("RRR write %i read %i\n", ad->whd_write, ad->whd_read);
+	if((ad->whd_write-idx) <= 0)
+	{
+		error(state, "buffer underflow!\n");
+		return;
+	}
+	idx &= (WHD_COUNT-1);
+	ad->whd_read++;
 }
 
 void CALLBACK w32_audio_callback(HWAVEOUT waveout UNUSED, UINT uMsg, DWORD_PTR dwInstance,
@@ -89,9 +126,9 @@ void CALLBACK w32_audio_callback(HWAVEOUT waveout UNUSED, UINT uMsg, DWORD_PTR d
 	{
 		//case WOM_OPEN:
 		case WOM_DONE:
-			// Post next chunk!
+			// Grab next chunk!
 			//printf("POST CHUNK\n");
-			w32_post_audio(state);
+			w32_pull_audio(state);
 			break;
 	}
 }
@@ -100,6 +137,7 @@ bool w32_init_audio(emu_state *state)
 {
 	WAVEFORMATEX wfex;
 	int woerr;
+	int i;
 
 	// Create wave format header
 	wfex.wFormatTag = WAVE_FORMAT_PCM;
@@ -126,17 +164,21 @@ bool w32_init_audio(emu_state *state)
 		return false;
 	}
 
-	// Create wave header
-	ad->whd.dwBufferLength = 2048*2*2;
-	ad->whd.lpData = malloc(ad->whd.dwBufferLength);
-	ad->whd.dwFlags = 0;
-	woerr = waveOutPrepareHeader(ad->waveout, &ad->whd, sizeof(WAVEHDR));
-	if(woerr != MMSYSERR_NOERROR)
+	// Create wave headers
+	for(i = 0; i < WHD_COUNT; i++)
 	{
-		error(state, "waveOutPrepareHeader: %04X\n", woerr);
+		ad->whd[i].dwBufferLength = WHD_BUF_LEN*2*2;
+		ad->whd[i].lpData = malloc(ad->whd[i].dwBufferLength);
+		ad->whd[i].dwFlags = 0;
+		woerr = waveOutPrepareHeader(ad->waveout, &(ad->whd[i]), sizeof(WAVEHDR));
+		if(woerr != MMSYSERR_NOERROR)
+		{
+			error(state, "waveOutPrepareHeader (%i): %4i\n", i, woerr);
+		}
 	}
 
-	w32_post_audio(state);
+	ad->whd_read = 0;
+	ad->whd_write = 0;
 
 	return true;
 }
@@ -153,7 +195,8 @@ void w32_finish_audio(emu_state *state)
 
 void w32_output_sample(emu_state *state UNUSED)
 {
-	// TODO
+	//printf("PUT\n");
+	w32_put_audio(state);
 	return;
 }
 
