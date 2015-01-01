@@ -102,7 +102,6 @@ void w32_put_audio(emu_state *state)
 
 void w32_pull_audio(emu_state *state)
 {
-	int woerr;
 	audio_state *ad = (audio_state *)(state->front.audio.data);
 
 	// Get a buffer
