@@ -313,13 +313,13 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 
 	if(!(to_stdout = freopen("stdout.log", "a", stdout)))
 	{
-		error(state, "Could not open stdout.log: %s", strerror(errno));
+		error(NULL, "Could not open stdout.log: %s", strerror(errno));
 		return -1;
 	}
 
 	if(!(to_stderr = freopen("stderr.log", "a", stderr)))
 	{
-		error(state, "Could not open stderr.log: %s", strerror(errno));
+		error(NULL, "Could not open stderr.log: %s", strerror(errno));
 		return -1;
 	}
 
