@@ -526,6 +526,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
+	free(save_path);
 	free(rom_path);
 
 	if(!select_frontend_all(g_state, WIN32_AUDIO, WIN32_VIDEO, WIN32_LOOP))
