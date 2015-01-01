@@ -18,9 +18,7 @@ static inline uint8_t rom_bank_read(emu_state *restrict state, uint16_t location
 	if(unlikely(addr > state->cart_size))
 	{
 		// Out of bounds
-		warning(state, "Read out-of-bounds in ROM bank %02X (location %04X)",
-			state->mbc.rom_bank, location);
-		return 0xFF;
+		addr %= state->mbc.ram_total;
 	}
 
 	return state->cart_data[addr + location];
@@ -35,9 +33,8 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
 
 	if(unlikely(pos > state->mbc.ram_total))
 	{
-		warning(state, "Attempt to read from nonexistent cart RAM at %d!",
-			location);
-		return 0xFF;
+		// Out of bounds
+		addr %= state->mbc.ram_total;
 	}
 
 	value = state->mbc.cart_ram[pos];
