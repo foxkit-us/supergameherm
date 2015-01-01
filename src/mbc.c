@@ -14,14 +14,9 @@
 //! read from the switchable ROM bank space
 static inline uint8_t rom_bank_read(emu_state *restrict state, uint16_t location)
 {
-	uint32_t addr = (state->mbc.rom_bank - 1) * 0x4000;
-	if(unlikely(addr > state->cart_size))
-	{
-		// Out of bounds
-		addr %= state->mbc.ram_total;
-	}
-
-	return state->cart_data[addr + location];
+	uint32_t pos = (state->mbc.rom_bank - 1) * 0x4000;
+	assert((pos + location) < state->cart_size);
+	return state->cart_data[pos + location];
 }
 
 //! read from the switchable RAM bank space
@@ -34,7 +29,7 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
 	if(unlikely(pos > state->mbc.ram_total))
 	{
 		// Out of bounds
-		addr %= state->mbc.ram_total;
+		pos %= state->mbc.ram_total;
 	}
 
 	value = state->mbc.cart_ram[pos];
@@ -245,9 +240,11 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 			value = 1;
 		}
 
-		state->mbc.rom_bank = ((value & 0x1F) |
-			(state->mbc.rom_bank & 0x60)) %
-			state->mbc.rom_bank_count;
+		state->mbc.rom_bank_lower = value & 0x1F;
+		state->mbc.rom_bank = state->mbc.rom_bank_lower |
+			state->mbc.rom_bank_upper;
+
+		assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 
 		break;
 	case 0x4:
@@ -260,8 +257,11 @@ static inline void mbc1_write(emu_state *restrict state, uint16_t location, uint
 		else
 		{
 			// ROM banking mode
-			state->mbc.rom_bank = ((state->mbc.rom_bank & 0x1F) |
-				((value & 0x3) << 5)) % state->mbc.rom_bank_count;
+			state->mbc.rom_bank_upper = (value & 0x3) << 5;
+			state->mbc.rom_bank = state->mbc.rom_bank_lower |
+				state->mbc.rom_bank_upper;
+
+			assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 		}
 
 		break;
@@ -304,7 +304,8 @@ const mbc_func mbc1_func =
 
 static inline bool mbc2_init(emu_state *restrict state)
 {
-	state->mbc.rom_bank = 1;
+	state->mbc.rom_bank_lower = state->mbc.rom_bank = 1;
+	state->mbc.rom_bank_upper = 0;
 	state->mbc.rom_bank_count = state->cart_size / 0x4000;
 	state->mbc.mbc_common.rom_select = false;
 	state->mbc.mbc_common.ram_enable = 0;
@@ -371,6 +372,11 @@ static inline void mbc2_write(emu_state *restrict state, uint16_t location, uint
 	case 0x3:
 		if(location & 0x100)
 		{
+			if(value == 0)
+			{
+				value++;
+			}
+
 			state->mbc.rom_bank = value & 0x1F;
 		}
 		break;
@@ -577,7 +583,13 @@ static inline void mbc3_write(emu_state *restrict state, uint16_t location, uint
 	case 0x2:
 	case 0x3:
 		// Bank switch
-		state->mbc.rom_bank = (value & 0x7F) % state->mbc.rom_bank_count;
+		state->mbc.rom_bank = value & 0x7F;
+		if(state->mbc.rom_bank == 0)
+		{
+			state->mbc.rom_bank++;
+		}
+
+		assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 		break;
 	case 0x4:
 	case 0x5:
@@ -727,13 +739,18 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 		state->mbc.mbc_common.ram_enable = value;
 		break;
 	case 0x2:
-		state->mbc.rom_bank = ((state->mbc.rom_bank & 0x100) | value) %
-			state->mbc.rom_bank_count;
+		state->mbc.rom_bank_lower = value;
+		state->mbc.rom_bank = state->mbc.rom_bank_lower |
+			(uint16_t)(state->mbc.rom_bank_upper << 9);
+
+		assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 		break;
 	case 0x3:
-		state->mbc.rom_bank = ((state->mbc.rom_bank & 0x7f) |
-			((value & 0x1) << 8)) %
-			state->mbc.rom_bank_count;
+		state->mbc.rom_bank_upper = value & 0x1;
+		state->mbc.rom_bank = state->mbc.rom_bank_lower |
+			(uint16_t)(state->mbc.rom_bank_upper << 9);
+
+		assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 		break;
 	case 0x4:
 	case 0x5:

@@ -96,6 +96,8 @@ struct mbc_state_t
 
 	unsigned rom_bank;		//! Current ROM bank
 	unsigned rom_bank_count;	//! Number of ROM banks
+	uint8_t rom_bank_upper;		//! Upper bits of ROM bank
+	uint8_t rom_bank_lower;		//! Lower bits of ROM bank
 
 	union
 	{
