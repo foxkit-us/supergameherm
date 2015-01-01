@@ -9,18 +9,24 @@
 #include <string.h>
 #endif
 
+#include <stdio.h>
+#include <errno.h>
+
 #include <windows.h>
+
+#include "config.h"
 #include "sgherm.h"
+#include "print.h"	// debug
+#include "frontend.h"	// frontend
+
 
 LRESULT CALLBACK VViewProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK HermProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 emu_state *g_state;
 
-#include "print.h"	// debug
-#include "frontend.h"	// frontend
-
 extern bool do_exit;
+
 
 typedef struct video_state
 {
@@ -305,8 +311,17 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 {
 	char *rom_path;
 
-	to_stdout = freopen("stdout.log", "a", stdout);
-	to_stderr = freopen("stderr.log", "a", stderr);
+	if(!(to_stdout = freopen("stdout.log", "a", stdout)))
+	{
+		error(state, "Could not open stdout.log: %s", strerror(errno));
+		return -1;
+	}
+
+	if(!(to_stderr = freopen("stderr.log", "a", stderr)))
+	{
+		error(state, "Could not open stderr.log: %s", strerror(errno));
+		return -1;
+	}
 
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
 	{
