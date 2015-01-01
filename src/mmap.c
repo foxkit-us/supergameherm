@@ -274,6 +274,8 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	memmap_state *m_state = (memmap_state *)malloc(sizeof(memmap_state));
 	void *map = malloc(size);
 
+	*data = m_state;
+
 	if(path)
 	{
 		m_state->anonymous = false;
