@@ -46,9 +46,115 @@ typedef struct video_state
 	HBITMAP vramBM;
 } video_state;
 
+typedef struct audio_state
+{
+	HWAVEOUT waveout; /*! the waveout device */
+	WAVEHDR whd; /*! wave header */
+} audio_state;
+
 void CALLBACK KillAfter30(HWND hWnd UNUSED, UINT iMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
 {
 	do_exit = true;
+}
+
+void w32_post_audio(emu_state *state)
+{
+	int woerr;
+	audio_state *ad = (audio_state *)(state->front.audio.data);
+
+	sound_fetch_s16ne(state, (int16_t *)(ad->whd.lpData), (size_t)(ad->whd.dwBufferLength/4));
+
+	// TODO: fix stutter by using several buffers
+	woerr = waveOutPrepareHeader(ad->waveout, &(ad->whd), sizeof(WAVEHDR));
+	if(woerr != MMSYSERR_NOERROR)
+	{
+		error(state, "waveOutPrepareHeader: %04X\n", woerr);
+	}
+
+	woerr = waveOutWrite(ad->waveout, &(ad->whd), sizeof(WAVEHDR));
+	if(woerr != MMSYSERR_NOERROR)
+	{
+		error(state, "waveOutWrite: %04X\n", woerr);
+	//} else {
+		//printf("written!\n");
+	}
+}
+
+void CALLBACK w32_audio_callback(HWAVEOUT waveout UNUSED, UINT uMsg, DWORD_PTR dwInstance,
+	DWORD_PTR dwParam1 UNUSED, DWORD_PTR dwParam2 UNUSED)
+{
+	emu_state *state = (emu_state *)dwInstance;
+
+	switch(uMsg)
+	{
+		//case WOM_OPEN:
+		case WOM_DONE:
+			// Post next chunk!
+			//printf("POST CHUNK\n");
+			w32_post_audio(state);
+			break;
+	}
+}
+
+bool w32_init_audio(emu_state *state)
+{
+	WAVEFORMATEX wfex;
+	int woerr;
+
+	// Create wave format header
+	wfex.wFormatTag = WAVE_FORMAT_PCM;
+	wfex.nChannels = 2;
+	wfex.nSamplesPerSec = 44100;
+	wfex.nAvgBytesPerSec = wfex.nSamplesPerSec*2*2;
+	wfex.nBlockAlign = 2*2;
+	wfex.wBitsPerSample = 16;
+	wfex.cbSize = 0;
+	state->snd.freq = wfex.nSamplesPerSec;
+
+	// Allocate audio state
+	audio_state *ad = calloc(sizeof(audio_state), 1);
+	state->front.audio.data = ad;
+
+	// Open waveout
+	woerr = waveOutOpen(&(ad->waveout), WAVE_MAPPER, &wfex, (DWORD_PTR)w32_audio_callback,
+		(DWORD_PTR)state, CALLBACK_FUNCTION);
+	if(woerr != MMSYSERR_NOERROR)
+	{
+		error(state, "waveOutOpen: %04X\n", GetLastError());
+		free(ad);
+		state->front.audio.data = NULL;
+		return false;
+	}
+
+	// Create wave header
+	ad->whd.dwBufferLength = 2048*2*2;
+	ad->whd.lpData = malloc(ad->whd.dwBufferLength);
+	ad->whd.dwFlags = 0;
+	woerr = waveOutPrepareHeader(ad->waveout, &ad->whd, sizeof(WAVEHDR));
+	if(woerr != MMSYSERR_NOERROR)
+	{
+		error(state, "waveOutPrepareHeader: %04X\n", woerr);
+	}
+
+	w32_post_audio(state);
+
+	return true;
+}
+
+void w32_finish_audio(emu_state *state)
+{
+	audio_state *ad = (audio_state *)state->front.audio.data;
+
+	waveOutClose(ad->waveout);
+
+	free(ad);
+	state->front.audio.data = NULL;
+}
+
+void w32_output_sample(emu_state *state UNUSED)
+{
+	// TODO
+	return;
 }
 
 bool w32_init_video(emu_state *state)
@@ -279,6 +385,13 @@ const frontend_video w32_frontend_video = {
 	&w32_init_video,
 	&w32_finish_video,
 	&w32_blit_canvas,
+	NULL
+};
+
+const frontend_audio w32_frontend_audio = {
+	&w32_init_audio,
+	&w32_finish_audio,
+	&w32_output_sample,
 	NULL
 };
 

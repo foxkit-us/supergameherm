@@ -57,6 +57,8 @@ macro(win32_check)
 			set_target_properties("sgherm-gdi" PROPERTIES LINKER_LANGUAGE CXX)
 		endif()
 
+		target_link_libraries("sgherm-gdi" winmm)
+
 		set(HAVE_FRONTEND on)
 	endif()
 endmacro()

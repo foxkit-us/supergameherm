@@ -90,7 +90,7 @@ int null_event_loop(emu_state *);
 //! Win32 frontend
 #ifdef HAVE_WINDOWS
 #	include "frontends/w32/frontend.h"
-#	define WIN32_AUDIO &null_frontend_audio
+#	define WIN32_AUDIO &w32_frontend_audio
 #	define WIN32_VIDEO &w32_frontend_video
 #	define WIN32_LOOP &w32_event_loop
 #else
