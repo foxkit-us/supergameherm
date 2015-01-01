@@ -1,5 +1,5 @@
 /*!
- * @brief STOP (0x10
+ * @brief STOP (0x10)
  * @result puts the system to sleep until any button is pressed
  * @note also has CGB side effect of changing speed potentially
  */
@@ -7,11 +7,11 @@ static inline void stop(emu_state *restrict state, uint8_t data[] UNUSED)
 {
 	if(state->system == SYSTEM_CGB)
 	{
-		uint8_t speed_reg = mem_read8(state, 0xFF4D);
-
-		if(speed_reg & 0x1)
+		if(state->key1)
 		{
-			state->freq = ((speed_reg & 0x40) ? CPU_FREQ_DMG : CPU_FREQ_CGB);
+			//state->freq = ((speed_reg & 0x40) ? CPU_FREQ_DMG : CPU_FREQ_CGB);
+			state->freq = (state->freq == CPU_FREQ_CGB ? CPU_FREQ_DMG : CPU_FREQ_CGB);
+			state->key1 = false;
 		}
 		else
 		{

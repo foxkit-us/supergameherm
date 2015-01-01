@@ -54,7 +54,7 @@ struct registers_t
 struct emu_state_t
 {
 	uint8_t hram[0x7F];		//! High memory
-	uint8_t wram[8][0x1000];	//! Work RAM banks (1-7 GBC only)
+	uint8_t wram[8][0x1000];	//! Work RAM banks (1-7 CGB only)
 	uint_fast32_t wram_bank;	//! current WRAM bank
 
 	uint8_t *cart_data;		//! Cartridge data
@@ -63,6 +63,7 @@ struct emu_state_t
 
 	bool halt;			//! waiting for interrupt
 	bool stop;			//! deep sleep state (disable LCDC)
+	bool key1;			//! CGB speed switch
 
 	uint_fast32_t dma_wait;		//! Clocks left on DMA membar
 

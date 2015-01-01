@@ -23,7 +23,7 @@ struct snd_state_t
 		//! sound length
 		uint8_t length;
 		//! initial envelope volume
-		uint8_t envelope_volume;
+		int8_t envelope_volume;
 		/*! if true, envelope amplifies.
 		 *  otherwise, envelope attenuates. */
 		bool envelope_amp;
@@ -47,7 +47,7 @@ struct snd_state_t
 		//! sound length
 		uint8_t length;
 		//! initial envelope volume
-		uint8_t envelope_volume;
+		int8_t envelope_volume;
 		/*! if true, envelope amplifies.
 		 *  otherwise, envelope attenuates. */
 		bool envelope_amp;

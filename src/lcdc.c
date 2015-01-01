@@ -284,6 +284,7 @@ void lcdc_tick(emu_state *restrict state)
 			case SYSTEM_MGL:
 			case SYSTEM_SGB:
 			case SYSTEM_SGB2:
+			case SYSTEM_CGB: // TODO: give it its own rendering stuff
 				if(LCDC_DMG_BG(state))
 				{
 					dmg_bg_render(state);
@@ -304,7 +305,7 @@ void lcdc_tick(emu_state *restrict state)
 					dmg_oam_render(state);
 				}
 				break;
-			case SYSTEM_CGB:
+			//case SYSTEM_CGB:
 			default:
 				fatal(state, "No CGB support yet, sorry!");
 				break;

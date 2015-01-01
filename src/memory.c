@@ -32,8 +32,28 @@ uint8_t no_hardware(emu_state *restrict state UNUSED, uint16_t location)
 
 static inline uint8_t vram_bank_switch_read(emu_state *restrict state, uint16_t location UNUSED)
 {
+	if(state->system != SYSTEM_CGB)
+	{
+		return no_hardware(state, location);
+	}
+
 	return state->lcdc.vram_bank;
 }
+
+static inline uint8_t key1_read(emu_state *restrict state, uint16_t location)
+{
+	if(state->system != SYSTEM_CGB)
+	{
+		return no_hardware(state, location);
+	}
+
+	// TODO: get the unused bits
+	return 0x3E
+		| (state->freq == CPU_FREQ_CGB ? 0x80 : 0x00)
+		| (state->key1 ? 0x01 : 0x00)
+		;
+}
+
 
 //! a table of hardware register read methods
 static mem_read_fn hw_reg_read[0x80] =
@@ -89,10 +109,16 @@ static mem_read_fn hw_reg_read[0x80] =
 	lcdc_bgp_read, lcdc_objp_read, lcdc_objp_read,
 	lcdc_window_read, lcdc_window_read,
 
-	// 4C..4E - NO HARDWARE
-	no_hardware, no_hardware, no_hardware,
+	// 4C - NO HARDWARE
+	no_hardware,
 
-	// 4F - switch VRAM bank (GBC only)
+	// 4D - KEY1 - switch clock rate (CGB only)
+	key1_read,
+
+	// 4E - NO HARDWARE
+	no_hardware,
+
+	// 4F - switch VRAM bank (CGB only)
 	vram_bank_switch_read,
 
 	// 50..67 - NO HARDWARE
@@ -103,7 +129,7 @@ static mem_read_fn hw_reg_read[0x80] =
 	no_hardware, no_hardware, no_hardware, no_hardware, // 0x63
 	no_hardware, no_hardware, no_hardware, no_hardware, // 0x67
 
-	// 68..6B - GBC palette stuff (nothing on GB)
+	// 68..6B - CGB palette stuff (nothing on GB)
 	bg_pal_ind_read, bg_pal_data_read, sprite_pal_ind_read, sprite_pal_data_read,
 
 	// 6C..7F - NO HARDWARE
@@ -261,10 +287,33 @@ static inline void dma_write(emu_state *restrict state, uint16_t location UNUSED
 	state->dma_wait = 640;
 }
 
-static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
+static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
+	if(state->system != SYSTEM_CGB)
+	{
+		doofus_write(state, location, data);
+		return;
+	}
+
 	state->lcdc.vram_bank = data;
 }
+
+static inline void wram_bank_switch_write(emu_state *restrict state, uint16_t location, uint8_t data)
+{
+	if(state->system != SYSTEM_CGB)
+	{
+		doofus_write(state, location, data);
+		return;
+	}
+
+	state->wram_bank = data;
+}
+
+static inline void key1_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
+{
+	state->key1 = (data & 1 ? true : false);
+}
+
 
 static mem_write8_fn hw_reg_write[0x80] =
 {
@@ -325,10 +374,16 @@ static mem_write8_fn hw_reg_write[0x80] =
 	lcdc_bgp_write, lcdc_objp_write, lcdc_objp_write,
 	lcdc_window_write, lcdc_window_write,
 
-	// 4C..4E - NO HARDWARE
-	doofus_write, doofus_write, doofus_write,
+	// 4C - NO HARDWARE
+	doofus_write,
 
-	// 4F - VRAM bank switch
+	// 4D - KEY1 - switch clock rate (CGB only)
+	key1_write,
+
+	// 4E - NO HARDWARE
+	doofus_write,
+
+	// 4F - VRAM bank switch (CGB only)
 	vram_bank_switch_write,
 
 	// 50..67 - NO HARDWARE
@@ -339,12 +394,17 @@ static mem_write8_fn hw_reg_write[0x80] =
 	doofus_write, doofus_write, doofus_write, doofus_write, // 0x63
 	doofus_write, doofus_write, doofus_write, doofus_write, // 0x67
 
-	// 68..6B - GBC palette stuff (nothing on GB)
+	// 68..6B - CGB palette stuff (nothing on GB)
 	bg_pal_ind_write, bg_pal_data_write, sprite_pal_ind_write, sprite_pal_data_write,
 
-	// 6C..7F - NO HARDWARE
+	// 6C..6F - NO HARDWARE
 	doofus_write, doofus_write, doofus_write, doofus_write, // 0x6F
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x73
+
+	// 70 - WRAM bank switch (CGB only)
+	wram_bank_switch_write,
+
+	// 71..7F - NO HARDWARE
+	doofus_write, doofus_write, doofus_write, // 0x73
 	doofus_write, doofus_write, doofus_write, doofus_write, // 0x77
 	doofus_write, doofus_write, doofus_write, doofus_write, // 0x7B
 	doofus_write, doofus_write, doofus_write, doofus_write, // 0x7F
