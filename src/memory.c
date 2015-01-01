@@ -295,7 +295,7 @@ static inline void vram_bank_switch_write(emu_state *restrict state, uint16_t lo
 		return;
 	}
 
-	state->lcdc.vram_bank = data;
+	state->lcdc.vram_bank = data & 1;
 }
 
 static inline void wram_bank_switch_write(emu_state *restrict state, uint16_t location, uint8_t data)
@@ -306,6 +306,8 @@ static inline void wram_bank_switch_write(emu_state *restrict state, uint16_t lo
 		return;
 	}
 
+	data &= 7;
+	if(data == 0) data = 1;
 	state->wram_bank = data;
 }
 
