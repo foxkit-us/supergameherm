@@ -4,7 +4,7 @@
 A GB emulator that aims to not suck so bad.
 
 ## What do you mean "not suck so bad"?
-Well, most Gameboy emulators suck horribly:
+Well, most Gameboy emulators suck horriblsouy:
 * Most have terrible compatibility (there are exceptions of course)
 * They're riced in wrong/bad ways or use invalid/outdated assumptions
 * They're horrible on the inside and impossible to maintain and fix
@@ -96,8 +96,11 @@ anything should be able to compile supergameherm. We aim to avoid conflicts
 with C++ identifiers in our code to ensure compatibility with older MSVC.
 
 ## Does this work as a practical emulator?
-Not yet. There's no sound, and graphics support is rough around the edges.
-We're working on it.
+Depends. Sound support is incomplete, and graphics support is rough around the
+edges. Some games aren't really playable yet. We're working on it.
+
+If all you want is Pokémon, Tetris, and Super Mario Land (and nothing any more
+complex than that), it will likely work with minimal problems.
 
 Interestingly, we do pass all of Blargg's CPU tests. Many emulators can't
 manage to do that. :)
