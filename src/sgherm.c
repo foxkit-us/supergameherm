@@ -64,8 +64,12 @@ void finish_emulator(emu_state *restrict state)
 	print_cycles(state);
 
 	MBC_FINISH(state);
+
 	free(state->cart_data);
-	free((void *)state->save_path);
+	if(state->save_path != NULL)
+	{
+		free((void *)state->save_path);
+	}
 	free(state);
 }
 

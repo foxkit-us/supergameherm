@@ -128,17 +128,17 @@ int64_t get_file_size(const char *path)
 	FILE *f;
 	int64_t ret;
 
-	if((f = fopen(save_path, "rb")) == NULL)
+	if((f = fopen(path, "rb")) == NULL)
 	{
 		return -1;
 	}
 
-	if(unlikely(fseek(save, 0, SEEK_END)))
+	if(unlikely(fseek(f, 0, SEEK_END)))
 	{
 		return -1;
 	}
 
-	ret = ftell(save);
+	ret = ftell(f);
 
 	fclose(f);
 
