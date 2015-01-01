@@ -311,38 +311,30 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 {
 	char *rom_path;
 
-	if(stdout)
+	if(!stdout)
 	{
-		if(!(to_stdout = freopen("stdout.log", "a", stdout)))
-		{
-			error(state, "Could not open stdout.log: %s", strerror(errno));
-			return -1;
-		}
-	}
-	else
-	{
-		if(!(to_stdout = fopen("stdout.log", "a")))
-		{
-			error(state, "Could not open stdout.log: %s", strerror(errno));
-			return -1;
-		}
+		to_stdout = fopen("stdout.log", "a");
+	} else {
+		to_stdout = freopen("stdout.log", "a", stdout);
 	}
 
-	if(stderr)
+	if(!to_stdout)
 	{
-		if(!(to_stderr = freopen("stderr.log", "a", stderr)))
-		{
-			error(state, "Could not open stderr.log: %s", strerror(errno));
-			return -1;
-		}
+		error(NULL, "Could not open stdout.log: %s", strerror(errno));
+		return -1;
 	}
-	else
+
+	if(!stderr)
 	{
-		if(!(to_stderr = fopen("stderr.log", "a")))
-		{
-			error(state, "Could not open stderr.log: %s", strerror(errno));
-			return -1;
-		}
+		to_stderr = fopen("stderr.log", "a");
+	} else {
+		to_stderr = freopen("stderr.log", "a", stderr);
+	}
+
+	if(!to_stderr)
+	{
+		error(NULL, "Could not open stderr.log: %s", strerror(errno));
+		return -1;
 	}
 
 	if(szCmdLine == NULL || strlen(szCmdLine) == 0)
