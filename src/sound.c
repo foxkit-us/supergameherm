@@ -196,6 +196,13 @@ void sound_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	case 0xFF1A:
 	{
 		state->snd.ch3.enabled = (data & 0x80) != 0;
+
+		if(!state->snd.ch3.enabled)
+		{
+			state->snd.ch3.per_remain = 0;
+			state->snd.ch3.outseq = 31;
+		}
+
 		break;
 	}
 	//! NR 31 - ch 3 - length
