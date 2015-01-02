@@ -239,7 +239,6 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 	assert(mode < 4);
 #endif
 
-	state->lcdc.curr_clk = 0;
 	state->lcdc.stat = (state->lcdc.stat & ~0x3) | mode;
 	if(mode < 3 && state->lcdc.stat & (1 << (mode + 3)))
 	{
@@ -267,15 +266,34 @@ void lcdc_tick(emu_state *restrict state)
 		}
 		break;
 	case 3:
+	{
+		uint8_t clocks = 167;
+
+		clocks += state->lcdc.scroll_x % 7;
+
+		if(LCDC_WIN(state))
+		{
+			if(state->lcdc.window_x == 0)
+			{
+				clocks += 7;
+			}
+			clocks += 6;
+		}
+		else
+		{
+			clocks += 7;
+		}
+
 		// second mode - reading VRAM for h scan line
-		if(state->lcdc.curr_clk >= 172)
+		if(state->lcdc.curr_clk >= 80 + clocks)
 		{
 			lcdc_mode_change(state, 0);
 		}
 		break;
+	}
 	case 0:
 		// third mode - h-blank
-		if(state->lcdc.curr_clk >= 204)
+		if(state->lcdc.curr_clk >= 456)
 		{
 			switch(state->system)
 			{
@@ -314,11 +332,13 @@ void lcdc_tick(emu_state *restrict state)
 			if((++state->lcdc.ly) == 144)
 			{
 				// going to v-blank
+				state->lcdc.curr_clk = 0;
 				lcdc_mode_change(state, 1);
 			}
 			else
 			{
 				// start another scan line
+				state->lcdc.curr_clk = 0;
 				lcdc_mode_change(state, 2);
 			}
 		}
@@ -337,13 +357,20 @@ void lcdc_tick(emu_state *restrict state)
 
 		if(state->lcdc.curr_clk % 456 == 0)
 		{
-			state->lcdc.ly++;
+			if(state->lcdc.ly == 0)
+			{
+				state->lcdc.curr_clk = 0;
+				lcdc_mode_change(state, 2);
+			}
+			else
+			{
+				state->lcdc.ly++;
+			}
 		};
 
-		if(state->lcdc.ly == 153)
+		if(state->lcdc.ly == 153 && state->lcdc.curr_clk >= 56)
 		{
 			state->lcdc.ly = 0;
-			lcdc_mode_change(state, 2);
 		}
 
 		break;
@@ -536,7 +563,7 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 
 inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
 {
-	bool is_off = LCDC_ENABLE(state) == 0;
+	bool is_off = (LCDC_ENABLE(state)) == 0;
 
 	state->lcdc.lcd_control = data;
 
@@ -545,6 +572,14 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 		// Restart LY clock
 		state->lcdc.ly = 0;
 		lcdc_mode_change(state, 2);
+	}
+	else if(!is_off & !LCDC_ENABLE(state))
+	{
+		// hardware sets mode to 1 when disabling
+		// source: http://www.codeslinger.co.uk/pages/projects/gameboy/lcd.html
+		// source: https://code.google.com/p/megaboy/wiki/Interrupts
+		state->lcdc.ly = 0;
+		state->lcdc.stat = (state->lcdc.stat & ~0x3) | 1;
 	}
 }
 
