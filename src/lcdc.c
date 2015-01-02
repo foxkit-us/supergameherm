@@ -145,6 +145,22 @@ static inline void dmg_window_render(emu_state *restrict state)
 	}
 }
 
+static inline void copy_oam(emu_state *state, uint8_t tile, oam *obj)
+{
+	uint8_t *mem = state->lcdc.oam_ram + (4 * tile);
+
+	obj->y         = mem[0];
+	obj->x         = mem[1];
+	obj->chr       = mem[2];
+
+	obj->pal_cgb   = (mem[3] & 0x07);
+	obj->char_bank = (mem[3] & 0x08) >> 3;
+	obj->pal_dmg   = (mem[3] & 0x10) >> 4;
+	obj->hflip     = (mem[3] & 0x20) >> 5;
+	obj->vflip     = (mem[3] & 0x40) >> 6;
+	obj->priority  = (mem[3] & 0x80) >> 7;
+}
+
 static inline void dmg_oam_render(emu_state *restrict state)
 {
 	int curr_tile;
@@ -160,15 +176,16 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 	for(curr_tile = 39; curr_tile >= 0; curr_tile -= 1)
 	{
-		oam *obj = (oam *)(state->lcdc.oam_ram + (4 * curr_tile));
-		uint8_t tile = obj->chr;
-		const int16_t obj_x = obj->x - 8, obj_y = obj->y - 16;
+		oam obj;
+		copy_oam(state, curr_tile, &obj);
+		uint8_t tile = obj.chr;
+		const int16_t obj_x = obj.x - 8, obj_y = obj.y - 16;
 
 		uint8_t *mem;
 		uint16_t pixel_temp;
 
 		// Adjusted for offsets
-		if(!(obj->x && obj->y && obj->x < 168 && obj->y < 160))
+		if(!(obj.x && obj.y && obj.x < 168 && obj.y < 160))
 		{
 			// Off-screen
 			continue;
@@ -181,7 +198,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 			continue;
 		}
 
-		if(obj->vflip)
+		if(obj.vflip)
 		{
 			pixel_y_offset = y_len - 1 - pixel_y_offset;
 		}
@@ -203,7 +220,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		// Interleave bits and reverse
 		pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
 
-		if(!(obj->hflip))
+		if(!(obj.hflip))
 		{
 			// XXX
 			pixel_temp = rotl_16(pixel_temp, 2);
@@ -212,16 +229,16 @@ static inline void dmg_oam_render(emu_state *restrict state)
 		for(tx = 0; tx < 8; tx++)
 		{
 			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) &&
-				((obj_x + tx) >= 0) && (!obj->priority ||
-				(obj->priority && row[obj_x + tx] ==
+				((obj_x + tx) >= 0) && (!obj.priority ||
+				(obj.priority && row[obj_x + tx] ==
 				 dmg_palette[0])))
 			{
-				const uint8_t pal = state->lcdc.obj_pal[-obj->pal_dmg];
+				const uint8_t pal = state->lcdc.obj_pal[obj.pal_dmg];
 				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
 				row[obj_x + tx] = dmg_palette[pixel];
 			}
 
-			if(obj->hflip)
+			if(obj.hflip)
 			{
 				pixel_temp >>= 2;
 			}

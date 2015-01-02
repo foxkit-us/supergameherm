@@ -9,38 +9,29 @@ struct oam_t
 {
 	uint8_t y;
 	uint8_t x;
-	uint8_t chr;	//! CHR code
-#ifdef LITTLE_ENDIAN
-	unsigned int pal_cgb:3;		//! Palette selection CGB only)
-	unsigned int char_bank:1;	//! Character bank (CGB only)
-	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
-	unsigned int hflip:1;		//! Horizontal flip
-	unsigned int vflip:1;		//! Vertical flip flag
-	unsigned int priority:1;	//! Priority to obj/bg
-#else
-	unsigned int priority:1;	//! Priority to obj/bg
-	unsigned int vflip:1;		//! Vertical flip flag
-	unsigned int hflip:1;		//! Horizontal flip
-	unsigned int pal_dmg:1;		//! Palette selection (DMG only)
-	unsigned int char_bank:1;	//! Character bank (CGB only)
-	unsigned int pal_cgb:3;		//! Palette selection CGB only)
-#endif
+	uint8_t chr;			//! CHR code
+	uint8_t priority;		//! Priority to obj/bg
+	uint8_t vflip;			//! Vertical flip flag
+	uint8_t hflip;			//! Horizontal flip
+	uint8_t pal_dmg;		//! Palette selection (DMG only)
+	uint8_t char_bank;		//! Character bank (CGB only)
+	uint8_t pal_cgb;		//! Palette selection (CGB only)
 };
 
 struct cps_t
 {
 #ifdef LITTLE_ENDIAN
-	unsigned int pal_sel:1;		//! Palette changes on next write
-	unsigned int notused:1;		//! Not used
-	unsigned int pal_num:3;		//! Select palette number
-	unsigned int pal_data_num:2;	//! Select palette data number
-	unsigned int hl:1;		//! Specify H/L
+	unsigned pal_sel:1;		//! Palette changes on next write
+	unsigned notused:1;		//! Not used
+	unsigned pal_num:3;		//! Select palette number
+	unsigned pal_data_num:2;	//! Select palette data number
+	unsigned hl:1;			//! Specify H/L
 #else
-	unsigned int hl:1;		//! Specify H/L
-	unsigned int pal_data_num:2;	//! Select palette data number
-	unsigned int pal_num:3;		//! Select palette number
-	unsigned int notused:1;		//! Not used
-	unsigned int pal_sel:1;		//! Palette changes on next write
+	unsigned hl:1;			//! Specify H/L
+	unsigned pal_data_num:2;	//! Select palette data number
+	unsigned pal_num:3;		//! Select palette number
+	unsigned notused:1;		//! Not used
+	unsigned pal_sel:1;		//! Palette changes on next write
 #endif
 };
 
