@@ -32,7 +32,7 @@
 #	define SWAP32(n) (((uint32_t)(n) >> 16) | ((uint32_t)(n) << 16))
 #endif /*defined(HAVE_BSWAP_16) || defined(HAVE_BYTESWAP_USHORT)*/
 
-uint16_t be16toh(uint16_t big_endian_16bits)
+static inline uint16_t be16toh(uint16_t big_endian_16bits)
 {
 #if defined(BIG_ENDIAN)
 	return big_endian_16bits;
@@ -41,7 +41,7 @@ uint16_t be16toh(uint16_t big_endian_16bits)
 #endif /*BIG_ENDIAN*/
 }
 
-uint16_t le16toh(uint16_t little_endian_16bits)
+static inline uint16_t le16toh(uint16_t little_endian_16bits)
 {
 #if defined(LITTLE_ENDIAN)
 	return little_endian_16bits;
@@ -50,7 +50,7 @@ uint16_t le16toh(uint16_t little_endian_16bits)
 #endif /*LITTLE_ENDIAN*/
 }
 
-uint16_t htole16(uint16_t host_16bits)
+static inline uint16_t htole16(uint16_t host_16bits)
 {
 #if defined(LITTLE_ENDIAN)
 	return host_16bits;
@@ -59,7 +59,7 @@ uint16_t htole16(uint16_t host_16bits)
 #endif /*LITTLE_ENDIAN*/
 }
 
-uint16_t htobe16(uint16_t host_16bits)
+static inline uint16_t htobe16(uint16_t host_16bits)
 {
 #if defined(BIG_ENDIAN)
 	return host_16bits;
@@ -68,7 +68,7 @@ uint16_t htobe16(uint16_t host_16bits)
 #endif /*BIG_ENDIAN*/
 }
 
-uint32_t be32toh(uint32_t big_endian_32bits)
+static inline uint32_t be32toh(uint32_t big_endian_32bits)
 {
 #if defined(BIG_ENDIAN)
 	return big_endian_32bits;
@@ -77,7 +77,7 @@ uint32_t be32toh(uint32_t big_endian_32bits)
 #endif /*BIG_ENDIAN*/
 }
 
-uint32_t le32toh(uint32_t little_endian_32bits)
+static inline uint32_t le32toh(uint32_t little_endian_32bits)
 {
 #if defined(LITTLE_ENDIAN)
 	return little_endian_32bits;
@@ -86,7 +86,7 @@ uint32_t le32toh(uint32_t little_endian_32bits)
 #endif /*LITTLE_ENDIAN*/
 }
 
-uint32_t htole32(uint32_t host_32bits)
+static inline uint32_t htole32(uint32_t host_32bits)
 {
 #if defined(LITTLE_ENDIAN)
 	return host_32bits;
@@ -95,7 +95,7 @@ uint32_t htole32(uint32_t host_32bits)
 #endif /*LITTLE_ENDIAN*/
 }
 
-uint32_t htobe32(uint32_t host_32bits)
+static inline uint32_t htobe32(uint32_t host_32bits)
 {
 #if defined(BIG_ENDIAN)
 	return host_32bits;
