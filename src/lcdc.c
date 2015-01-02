@@ -411,10 +411,12 @@ void lcdc_tick(emu_state *restrict state, int count)
 			fatal(state, "somehow wound up in an unknown impossible video mode");
 		}
 
-		if(state->lcdc.ly == state->lcdc.lyc)
+		// FIXME: find out when this really fires
+		if(state->lcdc.ly == state->lcdc.lyc && state->lcdc.curr_clk == 0)
 		{
 			// Set LYC flag
 			state->lcdc.stat |= 0x4;
+
 			if(LCDC_STAT_LYC(state))
 			{
 				signal_interrupt(state, INT_LCD_STAT);
