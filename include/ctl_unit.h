@@ -75,7 +75,7 @@ typedef void (*opcode_t)(emu_state *restrict state, uint8_t data[]);
 
 
 void init_ctl(emu_state *restrict state);
-bool execute(emu_state *restrict);
+bool execute(emu_state *restrict, int count);
 
 uint8_t int_flag_read(emu_state *restrict, uint16_t);
 void int_flag_write(emu_state *restrict, uint16_t, uint8_t);

@@ -98,12 +98,17 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 }
 
-void timer_tick(emu_state *restrict state)
+void timer_tick(emu_state *restrict state, int count)
 {
+	int i;
+
 	// DIV increases even if the timer is disabled
-	if(++state->timer.curr_clk % 128 == 0)
+	for(i = 0; i < count; i++)
 	{
-		state->timer.div++;
+		if(++state->timer.curr_clk % 128 == 0)
+		{
+			state->timer.div++;
+		}
 	}
 
 	// but nothing else does.
@@ -112,12 +117,15 @@ void timer_tick(emu_state *restrict state)
 		return;
 	}
 
-	if(state->timer.curr_clk % state->timer.ticks_per_tima == 0)
+	for(i = 0; i < count; i++)
 	{
-		if(++state->timer.tima == 0)	// overflow!
+		if(state->timer.curr_clk % state->timer.ticks_per_tima == 0)
 		{
-			state->timer.rounds++;
-			signal_interrupt(state, INT_TIMER);
+			if(++state->timer.tima == 0)	// overflow!
+			{
+				state->timer.rounds++;
+				signal_interrupt(state, INT_TIMER);
+			}
 		}
 	}
 }

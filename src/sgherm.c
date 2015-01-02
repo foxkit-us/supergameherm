@@ -73,13 +73,15 @@ void finish_emulator(emu_state *restrict state)
 
 bool step_emulator(emu_state *restrict state)
 {
-	lcdc_tick(state);
-	execute(state);
-	serial_tick(state);
-	timer_tick(state);
-	sound_tick(state);
+	const int count_per_step = 1;
 
-	state->cycles++;
+	lcdc_tick(state, count_per_step);
+	execute(state, count_per_step);
+	serial_tick(state, count_per_step);
+	timer_tick(state, count_per_step);
+	sound_tick(state, count_per_step);
+
+	state->cycles += count_per_step;
 
 	if(state->mbc.dirty && (state->cycles % state->freq) == 0)
 	{

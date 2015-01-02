@@ -223,231 +223,235 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 #endif
 
 //! the emulated CU for the 'z80-ish' CPU
-bool execute(emu_state *restrict state)
+bool execute(emu_state *restrict state, int count)
 {
 	uint8_t opcode;
-	uint8_t op_data[2] = {0xBE, 0xEF};
+	uint8_t op_data[8] = {0xBE, 0xEF, 0x1E};
 	int op_len;
 	opcode_t handler;
+
+	for(; count > 0; count--)
+	{
 #ifndef NDEBUG
-	uint16_t pc_prev = REG_PC(state);
-	uint8_t flags_prev = REG_F(state);
-	uint8_t cb = 0;
-	const char *flag_req;
+		uint16_t pc_prev = REG_PC(state);
+		uint8_t flags_prev = REG_F(state);
+		uint8_t cb = 0;
+		const char *flag_req;
 #endif
 
-	if(state->wait)
-	{
-		state->wait--;
-		return true;
-	}
+		if(state->wait)
+		{
+			state->wait--;
+			continue;
+		}
 
-	if(unlikely(state->dma_wait))
-	{
-		state->dma_wait--;
-
-		// Double speed
-		if(state->freq == CPU_FREQ_CGB)
+		if(unlikely(state->dma_wait))
 		{
 			state->dma_wait--;
+
+			// Double speed
+			if(state->freq == CPU_FREQ_CGB)
+			{
+				state->dma_wait--;
+			}
 		}
-	}
 
-	// Check for interrupts
-	if(state->interrupts.irq)
-	{
-		call_interrupt(state);
-	}
-
-
-	switch(state->interrupts.enable_ctr)
-	{
-	case 2:
-		state->interrupts.enable_ctr--;
-		break;
-	case 1:
-		state->interrupts.enable_ctr = 0;
-		state->interrupts.enabled = true;
-		compute_irq(state);
-		break;
-	}
-
-	if(state->halt || state->stop)
-	{
-		// Waiting for an interrupt
-		return true;
-	}
-
-	opcode = mem_read8(state, REG_PC(state)++);
-	op_len = instr_len[opcode] - 1;
-
-	if(op_len > 0)
-	{
-		int i = 0;
-		for(; i < op_len; i++)
+		// Check for interrupts
+		if(state->interrupts.irq)
 		{
-			op_data[i] = mem_read8(state, REG_PC(state)++);
+			call_interrupt(state);
 		}
-	}
 
-	// Copy last instructions
-	if(state->debug.debug)
-	{
-		state->debug.last_opcode = opcode;
-		memcpy(state->debug.last_param, op_data, sizeof(op_data));
 
-		if(state->debug.instr_dump)
+		switch(state->interrupts.enable_ctr)
 		{
-			dump_state_pc(state, REG_PC(state) - op_len);
-			debug(state, "INSTR: [%04X] %s\t\t[%02X %02X] (af=%04X bc=%04X de=%04X hl=%04X sp=%04X)",
-				REG_PC(state) - op_len,
-				opcode == 0xCB ? mnemonics_cb[opcode] : mnemonics[opcode],
-				op_data[1], op_data[0],
-				REG_AF(state), REG_BC(state), REG_DE(state), REG_HL(state), REG_SP(state));
+		case 2:
+			state->interrupts.enable_ctr--;
+			break;
+		case 1:
+			state->interrupts.enable_ctr = 0;
+			state->interrupts.enabled = true;
+			compute_irq(state);
+			break;
 		}
-	}
+
+		if(state->halt || state->stop)
+		{
+			// Waiting for an interrupt
+			return true;
+		}
+
+		opcode = mem_read8(state, REG_PC(state)++);
+		op_len = instr_len[opcode] - 1;
+
+		if(op_len > 0)
+		{
+			int i = 0;
+			for(; i < op_len; i++)
+			{
+				op_data[i] = mem_read8(state, REG_PC(state)++);
+			}
+		}
+
+		// Copy last instructions
+		if(state->debug.debug)
+		{
+			state->debug.last_opcode = opcode;
+			memcpy(state->debug.last_param, op_data, sizeof(op_data));
+
+			if(state->debug.instr_dump)
+			{
+				dump_state_pc(state, REG_PC(state) - op_len);
+				debug(state, "INSTR: [%04X] %s\t\t[%02X %02X] (af=%04X bc=%04X de=%04X hl=%04X sp=%04X)",
+					REG_PC(state) - op_len,
+					opcode == 0xCB ? mnemonics_cb[opcode] : mnemonics[opcode],
+					op_data[1], op_data[0],
+					REG_AF(state), REG_BC(state), REG_DE(state), REG_HL(state), REG_SP(state));
+			}
+		}
 
 #ifndef NDEBUG
-	if(opcode == 0xCB)
-	{
-		cb = op_data[0];
-		flag_req = flags_cb_expect[cb];
-	}
-	else
-	{
-		flag_req = flags_expect[opcode];
-	}
+		if(opcode == 0xCB)
+		{
+			cb = op_data[0];
+			flag_req = flags_cb_expect[cb];
+		}
+		else
+		{
+			flag_req = flags_expect[opcode];
+		}
 #endif /*NDEBUG*/
 
-	handler = handlers[opcode];
-	handler(state, op_data);
+		handler = handlers[opcode];
+		handler(state, op_data);
 
 #ifndef NDEBUG
-	// Flag assertions
-	switch(flag_req[0])
-	{
-	case '-':
-		// Check to see if it has changed
-		if((REG_F(state) ^ flags_prev) & FLAG_Z)
+		// Flag assertions
+		switch(flag_req[0])
 		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag Z changed when it wasn't supposed to");
+		case '-':
+			// Check to see if it has changed
+			if((REG_F(state) ^ flags_prev) & FLAG_Z)
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag Z changed when it wasn't supposed to");
+			}
+
+			break;
+		case '0':
+			// Check to ensure the flag has been cleared
+			if(IS_FLAG(state, FLAG_Z))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag Z is set when it is NOT supposed to be");
+			}
+
+			break;
+		case '1':
+			// Check to ensure the flag has been set
+			if(!IS_FLAG(state, FLAG_Z))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag Z is NOT set when it is supposed to be");
+			}
+
+			break;
 		}
 
-		break;
-	case '0':
-		// Check to ensure the flag has been cleared
-		if(IS_FLAG(state, FLAG_Z))
+		switch(flag_req[1])
 		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag Z is set when it is NOT supposed to be");
+		case '-':
+			// Check to see if it has changed
+			if((REG_F(state) ^ flags_prev) & FLAG_N)
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag N changed when it wasn't supposed to");
+			}
+
+			break;
+		case '0':
+			// Check to ensure the flag has been cleared
+			if(IS_FLAG(state, FLAG_N))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag N is set when it is NOT supposed to be");
+			}
+
+			break;
+		case '1':
+			// Check to ensure the flag has been set
+			if(!IS_FLAG(state, FLAG_N))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag N is NOT set when it is supposed to be");
+			}
+
+			break;
 		}
 
-		break;
-	case '1':
-		// Check to ensure the flag has been set
-		if(!IS_FLAG(state, FLAG_Z))
+		switch(flag_req[2])
 		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag Z is NOT set when it is supposed to be");
+		case '-':
+			// Check to see if it has changed
+			if((REG_F(state) ^ flags_prev) & FLAG_H)
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag H changed when it wasn't supposed to");
+			}
+
+			break;
+		case '0':
+			// Check to ensure the flag has been cleared
+			if(IS_FLAG(state, FLAG_H))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag H is set when it is NOT supposed to be");
+			}
+
+			break;
+		case '1':
+			// Check to ensure the flag has been set
+			if(!IS_FLAG(state, FLAG_H))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag H is NOT set when it is supposed to be");
+			}
+
+			break;
 		}
 
-		break;
-	}
-
-	switch(flag_req[1])
-	{
-	case '-':
-		// Check to see if it has changed
-		if((REG_F(state) ^ flags_prev) & FLAG_N)
+		switch(flag_req[3])
 		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag N changed when it wasn't supposed to");
+		case '-':
+			// Check to see if it has changed
+			if((REG_F(state) ^ flags_prev) & FLAG_C)
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag C changed when it wasn't supposed to");
+			}
+
+			break;
+		case '0':
+			// Check to ensure the flag has been cleared
+			if(IS_FLAG(state, FLAG_C))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag C is set when it is NOT supposed to be");
+			}
+
+			break;
+		case '1':
+			// Check to ensure the flag has been set
+			if(!IS_FLAG(state, FLAG_C))
+			{
+				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
+				fatal(state, "Flag C is NOT set when it is supposed to be");
+			}
+
+			break;
 		}
-
-		break;
-	case '0':
-		// Check to ensure the flag has been cleared
-		if(IS_FLAG(state, FLAG_N))
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag N is set when it is NOT supposed to be");
-		}
-
-		break;
-	case '1':
-		// Check to ensure the flag has been set
-		if(!IS_FLAG(state, FLAG_N))
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag N is NOT set when it is supposed to be");
-		}
-
-		break;
-	}
-
-	switch(flag_req[2])
-	{
-	case '-':
-		// Check to see if it has changed
-		if((REG_F(state) ^ flags_prev) & FLAG_H)
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag H changed when it wasn't supposed to");
-		}
-
-		break;
-	case '0':
-		// Check to ensure the flag has been cleared
-		if(IS_FLAG(state, FLAG_H))
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag H is set when it is NOT supposed to be");
-		}
-
-		break;
-	case '1':
-		// Check to ensure the flag has been set
-		if(!IS_FLAG(state, FLAG_H))
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag H is NOT set when it is supposed to be");
-		}
-
-		break;
-	}
-
-	switch(flag_req[3])
-	{
-	case '-':
-		// Check to see if it has changed
-		if((REG_F(state) ^ flags_prev) & FLAG_C)
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag C changed when it wasn't supposed to");
-		}
-
-		break;
-	case '0':
-		// Check to ensure the flag has been cleared
-		if(IS_FLAG(state, FLAG_C))
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag C is set when it is NOT supposed to be");
-		}
-
-		break;
-	case '1':
-		// Check to ensure the flag has been set
-		if(!IS_FLAG(state, FLAG_C))
-		{
-			dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-			fatal(state, "Flag C is NOT set when it is supposed to be");
-		}
-
-		break;
-	}
 #endif /*NDEBUG*/
+	}
 
 	return true;
 }

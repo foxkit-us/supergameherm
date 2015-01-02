@@ -457,7 +457,7 @@ void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size
 	}
 }
 
-void sound_tick(emu_state *restrict state)
+void sound_tick(emu_state *restrict state, int count UNUSED)
 {
 	// no point if we're disabled.
 	if(!state->snd.enabled)
@@ -466,6 +466,7 @@ void sound_tick(emu_state *restrict state)
 	}
 
 	// Call output_sample
+	// TODO: respect count argument
 	OUTPUT_SAMPLE(state);
 
 }
