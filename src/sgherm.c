@@ -73,8 +73,8 @@ void finish_emulator(emu_state *restrict state)
 
 bool step_emulator(emu_state *restrict state)
 {
-	execute(state);
 	lcdc_tick(state);
+	execute(state);
 	serial_tick(state);
 	timer_tick(state);
 	sound_tick(state);

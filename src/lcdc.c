@@ -255,9 +255,26 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 	assert(mode < 4);
 
 	state->lcdc.stat = (state->lcdc.stat & ~0x3) | mode;
-	if(mode < 3 && state->lcdc.stat & (1 << (mode + 3)))
+	switch(mode)
 	{
-		signal_interrupt(state, INT_LCD_STAT);
+		case 0:
+			if(LCDC_STAT_MODE0(state))
+			{
+				signal_interrupt(state, INT_LCD_STAT);
+			}
+			break;
+		case 1:
+			if(LCDC_STAT_MODE1(state) || LCDC_STAT_MODE2(state))
+			{
+				signal_interrupt(state, INT_LCD_STAT);
+			}
+			break;
+		case 2:
+			if(LCDC_STAT_MODE2(state))
+			{
+				signal_interrupt(state, INT_LCD_STAT);
+			}
+			break;
 	}
 }
 
