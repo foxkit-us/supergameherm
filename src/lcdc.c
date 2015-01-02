@@ -257,24 +257,24 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 	state->lcdc.stat = (state->lcdc.stat & ~0x3) | mode;
 	switch(mode)
 	{
-		case 0:
-			if(LCDC_STAT_MODE0(state))
-			{
-				signal_interrupt(state, INT_LCD_STAT);
-			}
-			break;
-		case 1:
-			if(LCDC_STAT_MODE1(state) || LCDC_STAT_MODE2(state))
-			{
-				signal_interrupt(state, INT_LCD_STAT);
-			}
-			break;
-		case 2:
-			if(LCDC_STAT_MODE2(state))
-			{
-				signal_interrupt(state, INT_LCD_STAT);
-			}
-			break;
+	case 0:
+		if(LCDC_STAT_MODE0(state))
+		{
+			signal_interrupt(state, INT_LCD_STAT);
+		}
+		break;
+	case 1:
+		if(LCDC_STAT_MODE1(state) || LCDC_STAT_MODE2(state))
+		{
+			signal_interrupt(state, INT_LCD_STAT);
+		}
+		break;
+	case 2:
+		if(LCDC_STAT_MODE2(state))
+		{
+			signal_interrupt(state, INT_LCD_STAT);
+		}
+		break;
 	}
 }
 
