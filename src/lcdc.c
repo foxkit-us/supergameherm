@@ -252,9 +252,7 @@ static inline void dmg_oam_render(emu_state *restrict state)
 
 static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 {
-#ifndef NDEBUG
 	assert(mode < 4);
-#endif
 
 	state->lcdc.stat = (state->lcdc.stat & ~0x3) | mode;
 	if(mode < 3 && state->lcdc.stat & (1 << (mode + 3)))
