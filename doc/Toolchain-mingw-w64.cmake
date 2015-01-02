@@ -4,14 +4,14 @@
 # To use this file, do the following:
 #
 #    $ rm -rf CMakeCache.txt CMakeFiles
-#    $ cmake -DCMAKE_TOOLCHAIN_FILE=doc/Toolchain-mingw-w64.cmake
+#    $ cmake /path/to/CMakeLists.txt -DCMAKE_TOOLCHAIN_FILE=doc/Toolchain-mingw-w64.cmake
 
 
-# Set this to either i686 or x86_64
+# Set this to either x86_64 or i686
 set(WIN_ARCH x86_64)
 
 # Set this to where you want your local libs/headers
-set(LOCAL_MINGW_PATH "/home/elizabeth/mingw")
+set(LOCAL_MINGW_PATH "/home/elizabeth/mingw/${WIN_ARCH}-w64-mingw32/")
 
 # the name of the target operating system
 SET(CMAKE_SYSTEM_NAME Windows)
