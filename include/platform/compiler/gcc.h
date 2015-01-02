@@ -11,13 +11,18 @@
 #ifdef unlikely
 #	undef unlikely
 #endif
-#ifdef alignment
-#	undef alignment
+#ifdef NORETURN
+#	undef NORETURN
 #endif
 
 #define UNUSED __attribute__((__unused__))
 #define unlikely(x) (!!__builtin_expect((x), 0))
 #define likely(x) (!!__builtin_expect((x), 1))
-#define alignment(x) __attribute__((aligned(x)))
+
+#if __STDC_VERSION__ >= 201112L
+#	define NORETURN _Noreturn
+#else
+#	define NORETURN __attribute__((noreturn))
+#endif
 
 #endif /*__PLATFORM_COMPILER_GCC_H__*/

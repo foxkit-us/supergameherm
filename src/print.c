@@ -10,7 +10,7 @@
 FILE *to_stdout;
 FILE *to_stderr;
 
-void fatal(emu_state *state UNUSED, const char *str, ...)
+NORETURN void fatal(emu_state *state UNUSED, const char *str, ...)
 {
 	va_list argp;
 	va_start(argp, str);
@@ -22,7 +22,6 @@ void fatal(emu_state *state UNUSED, const char *str, ...)
 	va_end(argp);
 
 	exit(EXIT_FAILURE);
-	// NOTREACHED
 }
 
 void error(emu_state *state UNUSED, const char *str, ...)

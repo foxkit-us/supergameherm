@@ -10,13 +10,14 @@
 #ifdef unlikely
 #	undef unlikely
 #endif
-#ifdef alignment
-#	undef alignment
+#ifdef NORETURN
+#	undef NORETURN
 #endif
 
 #define unlikely(x) (x)
 #define likely(x) (x)
-#define alignment(x) __declspec(align(x))
+
+#define NORETURN __declspec(noreturn)
 
 #if (_MSC_VER >= 1300)
 #	define UNUSED __pragma(warning(disable:4100))

@@ -2,8 +2,9 @@
 #define __PRINT_H_
 
 #include "config.h"	// config
-#include <stdio.h>	// FILE *
 #include "sgherm.h"	// emu_state
+
+#include <stdio.h>	// FILE *
 
 /*!
  * @brief	Display an error and quit fast.
@@ -14,7 +15,7 @@
  * 		(atexit() methods are still run - use abort if you don't
  * 		like it.)
  */
-void fatal(emu_state *state, const char *str, ...);
+NORETURN void fatal(emu_state *state, const char *str, ...);
 
 /*!
  * @brief	Report an error condition to the user.
