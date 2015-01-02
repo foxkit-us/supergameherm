@@ -226,24 +226,24 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 bool execute(emu_state *restrict state, int count)
 {
 	uint8_t opcode;
-	uint8_t op_data[8] = {0xBE, 0xEF, 0x1E};
+	uint8_t op_data[2] = {0xBE, 0xEF};
 	int op_len;
 	opcode_t handler;
 
 	for(; count > 0; count--)
 	{
+		if(state->wait)
+		{
+			state->wait--;
+			continue;
+		}
+
 #ifndef NDEBUG
 		uint16_t pc_prev = REG_PC(state);
 		uint8_t flags_prev = REG_F(state);
 		uint8_t cb = 0;
 		const char *flag_req;
 #endif
-
-		if(state->wait)
-		{
-			state->wait--;
-			continue;
-		}
 
 		if(unlikely(state->dma_wait))
 		{
@@ -304,7 +304,7 @@ bool execute(emu_state *restrict state, int count)
 				dump_state_pc(state, REG_PC(state) - op_len);
 				debug(state, "INSTR: [%04X] %s\t\t[%02X %02X] (af=%04X bc=%04X de=%04X hl=%04X sp=%04X)",
 					REG_PC(state) - op_len,
-					opcode == 0xCB ? mnemonics_cb[opcode] : mnemonics[opcode],
+					opcode == 0xCB ? mnemonics_cb[op_data[0]] : mnemonics[opcode],
 					op_data[1], op_data[0],
 					REG_AF(state), REG_BC(state), REG_DE(state), REG_HL(state), REG_SP(state));
 			}
