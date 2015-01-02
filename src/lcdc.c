@@ -262,30 +262,29 @@ void lcdc_tick(emu_state *restrict state)
 		// first mode - reading OAM for h scan line
 		if(state->lcdc.curr_clk >= 80)
 		{
+			uint8_t clocks = 167;
+			clocks += state->lcdc.scroll_x % 7;
+
+			if(LCDC_WIN(state))
+			{
+				if(state->lcdc.window_x == 0)
+				{
+					clocks += 7;
+				}
+				clocks += 6;
+			}
+			else
+			{
+				clocks += 7;
+			}
+			state->lcdc.curr_m3_clks = clocks;
 			lcdc_mode_change(state, 3);
 		}
 		break;
 	case 3:
 	{
-		uint8_t clocks = 167;
-
-		clocks += state->lcdc.scroll_x % 7;
-
-		if(LCDC_WIN(state))
-		{
-			if(state->lcdc.window_x == 0)
-			{
-				clocks += 7;
-			}
-			clocks += 6;
-		}
-		else
-		{
-			clocks += 7;
-		}
-
 		// second mode - reading VRAM for h scan line
-		if(state->lcdc.curr_clk >= 80 + clocks)
+		if(state->lcdc.curr_clk >= 80 + state->lcdc.curr_m3_clks)
 		{
 			lcdc_mode_change(state, 0);
 		}
@@ -571,6 +570,7 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 	{
 		// Restart LY clock
 		state->lcdc.ly = 0;
+		state->lcdc.curr_clk = 0;
 		lcdc_mode_change(state, 2);
 	}
 	else if(!is_off & !LCDC_ENABLE(state))

@@ -47,6 +47,7 @@ struct cps_t
 struct lcdc_state_t
 {
 	uint_fast16_t curr_clk;		//! current clock
+	uint_fast8_t curr_m3_clks;	//! number of mode 03 clocks for this LY
 	uint_fast8_t curr_h_blk;	//! last H block to be written
 
 	uint_fast8_t vram_bank;		//! Present VRAM bank
