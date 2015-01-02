@@ -12,6 +12,6 @@
 #       undef HAVE_NANOSLEEP
 #endif
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #endif //__FRONTEND_SDL2_SDL_INC_H__
