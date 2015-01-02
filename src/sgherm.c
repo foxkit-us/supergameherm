@@ -33,9 +33,7 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 		return NULL;
 	}
 
-	state->save_path = (save_path == NULL
-		? NULL
-		: strdup(save_path));
+	state->save_path = save_path ? strdup(save_path) : NULL;
 
 	state->interrupts.enabled = true;
 	state->wait = 1;
