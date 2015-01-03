@@ -1,7 +1,7 @@
 #include "sgherm.h"	// emu_state
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
-#include "frontend.h"	// frontend
+#include "frontends/sdl2/frontend.h"	// frontend
 #include "frontends/sdl2/sdl_inc.h"	// SDL
 
 
