@@ -119,7 +119,7 @@ void timer_tick(emu_state *restrict state, int count)
 
 	for(i = 0; i < count; i++)
 	{
-		if(state->timer.curr_clk % state->timer.ticks_per_tima == 0)
+		if(++state->timer.curr_clk % state->timer.ticks_per_tima == 0)
 		{
 			if(++state->timer.tima == 0)	// overflow!
 			{
