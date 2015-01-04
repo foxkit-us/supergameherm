@@ -37,35 +37,37 @@ const char *friendly_cart_names[0x20] =
 };
 
 bool read_rom_data(emu_state *restrict state, const char *rom_path,
-		cart_header *restrict *restrict header)
+	cart_header *restrict *restrict header)
 {
-	long size_in_bytes, cart_size;
+	int64_t i;
+	uint64_t read_size, cart_size;
 	int8_t checksum = 0;
 	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
 	const cart_offsets begin = OFF_GRAPHIC_BEGIN;
 	bool err = true;
-	size_t i;
-	FILE *rom;
+	FILE *rom = NULL;
 
 	// Initalise
 	*header = NULL;
 
-	if((rom = fopen(rom_path, "rb")) == NULL)
-	{
-		error(state, "Could not open ROM: %s", strerror(errno));
-		goto close_rom;
-	}
-
-	// Get the full ROM size
-	if(unlikely(fseek(rom, 0, SEEK_END)))
+	// Get ROM size
+	if((i = get_file_size(rom_path)) < 0)
 	{
 		error(state, "Could not get size of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
-	if(unlikely((cart_size = ftell(rom)) < 0x8000))
+	state->cart_size = cart_size = i;
+
+	if(unlikely(cart_size < 0x8000))
 	{
 		error(state, "ROM is too small");
+		goto close_rom;
+	}
+
+	if((rom = fopen(rom_path, "rb")) == NULL)
+	{
+		error(state, "Could not open ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -74,12 +76,6 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	if(unlikely((state->cart_data = (uint8_t *)malloc(cart_size)) == NULL))
 	{
 		error(state, "Could not allocate RAM for ROM");
-		goto close_rom;
-	}
-
-	if(unlikely(fseek(rom, 0, SEEK_SET)))
-	{
-		error(state, "Could not seek to start of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -145,12 +141,12 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	debug(state, "type: %s", friendly_cart_names[(*header)->cart_type]);
 
 	debug(state, "Header size is %d\n", (*header)->rom_size);
-	size_in_bytes = 0x8000 << (*header)->rom_size;
+	read_size = 0x8000 << (*header)->rom_size;
 
-	if(cart_size != size_in_bytes)
+	if(cart_size != read_size)
 	{
 		fatal(state, "ROM size %ld is not the expected %ld bytes",
-		      cart_size, size_in_bytes);
+		      cart_size, read_size);
 		goto close_rom;
 	}
 
@@ -186,7 +182,10 @@ close_rom:
 		free(state->cart_data);
 	}
 
-	fclose(rom);
+	if(rom)
+	{
+		fclose(rom);
+	}
 
 	return !err;
 }
