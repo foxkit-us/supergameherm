@@ -41,6 +41,8 @@ struct lcdc_state_t
 	uint_fast8_t curr_m3_clks;	//! number of mode 03 clocks for this LY
 	uint_fast8_t curr_h_blk;	//! last H block to be written
 
+	bool initial;			//! if the LCD has just turned on
+
 	uint_fast8_t vram_bank;		//! Present VRAM bank
 	uint8_t vram[0x2][0x2000];	//! VRAM banks (DMG only uses 1)
 

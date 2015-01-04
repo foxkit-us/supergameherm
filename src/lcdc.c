@@ -278,6 +278,43 @@ static inline void lcdc_mode_change(emu_state *restrict state, uint8_t mode)
 	}
 }
 
+static inline void render_scanline(emu_state *restrict state)
+{
+	switch(state->system)
+	{
+		case SYSTEM_DMG:
+		case SYSTEM_MGB:
+		case SYSTEM_MGL:
+		case SYSTEM_SGB:
+		case SYSTEM_SGB2:
+		case SYSTEM_CGB: // TODO: give it its own rendering stuff
+			if(LCDC_DMG_BG(state))
+			{
+				dmg_bg_render(state);
+			}
+			else
+			{
+				memset(state->lcdc.out, dmg_palette[0],
+				       sizeof(state->lcdc.out));
+			}
+
+			if(LCDC_WIN(state))
+			{
+				dmg_window_render(state);
+			}
+
+			if(LCDC_OBJ(state))
+			{
+				dmg_oam_render(state);
+			}
+			break;
+			//case SYSTEM_CGB:
+		default:
+			fatal(state, "No CGB support yet, sorry!");
+			break;
+	}
+}
+
 void lcdc_tick(emu_state *restrict state, int count)
 {
 	if(unlikely(state->stop) ||
@@ -294,7 +331,7 @@ void lcdc_tick(emu_state *restrict state, int count)
 		{
 		case 2:
 			// first mode - reading OAM for h scan line
-			if(state->lcdc.curr_clk >= 80)
+			if(state->lcdc.curr_clk == 80)
 			{
 				uint8_t clocks = 167;
 				clocks += state->lcdc.scroll_x % 7;
@@ -318,51 +355,28 @@ void lcdc_tick(emu_state *restrict state, int count)
 		case 3:
 		{
 			// second mode - reading VRAM for h scan line
-			if(state->lcdc.curr_clk >= 80 + state->lcdc.curr_m3_clks)
+			if(state->lcdc.curr_clk == 80 + state->lcdc.curr_m3_clks)
 			{
+				render_scanline(state);
 				lcdc_mode_change(state, 0);
 			}
 			break;
 		}
 		case 0:
 			// third mode - h-blank
-			if(state->lcdc.curr_clk >= 456)
+			if(state->system < SYSTEM_CGB && state->lcdc.curr_clk == 452)
 			{
-				switch(state->system)
+				++(state->lcdc.ly);
+			}
+			else if(state->lcdc.curr_clk == 456)
+			{
+				if(state->system >= SYSTEM_CGB)
 				{
-				case SYSTEM_DMG:
-				case SYSTEM_MGB:
-				case SYSTEM_MGL:
-				case SYSTEM_SGB:
-				case SYSTEM_SGB2:
-				case SYSTEM_CGB: // TODO: give it its own rendering stuff
-					if(LCDC_DMG_BG(state))
-					{
-						dmg_bg_render(state);
-					}
-					else
-					{
-						memset(state->lcdc.out, dmg_palette[0],
-								sizeof(state->lcdc.out));
-					}
-
-					if(LCDC_WIN(state))
-					{
-						dmg_window_render(state);
-					}
-
-					if(LCDC_OBJ(state))
-					{
-						dmg_oam_render(state);
-					}
-					break;
-				//case SYSTEM_CGB:
-				default:
-					fatal(state, "No CGB support yet, sorry!");
-					break;
+					// NOTE: AGB does this also, if we ever emulate that.
+					++(state->lcdc.ly);
 				}
 
-				if((++state->lcdc.ly) == 144)
+				if(state->lcdc.ly == 144)
 				{
 					// going to v-blank
 					state->lcdc.curr_clk = 0;
@@ -374,6 +388,12 @@ void lcdc_tick(emu_state *restrict state, int count)
 					state->lcdc.curr_clk = 0;
 					lcdc_mode_change(state, 2);
 				}
+			}
+			else if(unlikely(state->lcdc.initial && state->lcdc.ly == 0 && state->lcdc.curr_clk == 80))
+			{
+				state->lcdc.initial = false;
+				state->lcdc.curr_m3_clks = 174 + (state->lcdc.scroll_x % 7);
+				lcdc_mode_change(state, 3);
 			}
 			break;
 		case 1:
@@ -405,7 +425,6 @@ void lcdc_tick(emu_state *restrict state, int count)
 			{
 				state->lcdc.ly = 0;
 			}
-
 			break;
 		default:
 			fatal(state, "somehow wound up in an unknown impossible video mode");
@@ -608,7 +627,8 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 		// Restart LY clock
 		state->lcdc.ly = 0;
 		state->lcdc.curr_clk = 0;
-		lcdc_mode_change(state, 2);
+		state->lcdc.initial = true;
+		lcdc_mode_change(state, 0);
 	}
 	else if(!is_off & !LCDC_ENABLE(state))
 	{
