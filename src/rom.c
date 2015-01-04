@@ -36,6 +36,57 @@ const char *friendly_cart_names[0x20] =
 	"MBC5 Rumble Cart with SRAM (Battery)", "GB Pocket Camera"
 };
 
+bool read_bootrom_data(emu_state *restrict state, const char *bootrom_path)
+{
+	int64_t i;
+	uint64_t read_size;
+	FILE *bootrom;
+
+	state->bootrom_data = NULL;
+
+	if((i = get_file_size(bootrom_path)) < 0)
+	{
+		error(state, "Could not get size of bootrom: %s", strerror(errno));
+		return false;
+	}
+
+	if((read_size = i) > 0x10000)
+	{
+		// Out of bounds
+		error(state, "Bootrom is too large");
+		return false;
+	}
+
+	if(!(bootrom = fopen(bootrom_path, "r")))
+	{
+		error(state, "Could not open bootrom: %s", strerror(errno));
+		return false;
+	}
+
+	if(!(state->bootrom_data = malloc(read_size)))
+	{
+		error(state, "Out of memory");
+		fclose(bootrom);
+		return false;
+	}
+
+	if(fread(state->bootrom_data, read_size, 1, bootrom) < 1)
+	{
+		error(state, "Couldn't read bootrom: %s", strerror(errno));
+		fclose(bootrom);
+		free(state->bootrom_data);
+		return false;
+	}
+
+	state->bootrom_size = read_size;
+
+	fclose(bootrom);
+
+	debug(state, "Read boot ROM (size %ld)", read_size);
+
+	return true;
+}
+
 bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	cart_header *restrict *restrict header)
 {
@@ -53,7 +104,7 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	// Get ROM size
 	if((i = get_file_size(rom_path)) < 0)
 	{
-		error(state, "Could not get size of ROM: %s", strerror(errno));
+		fatal(state, "Could not get size of ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -61,13 +112,13 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 
 	if(unlikely(cart_size < 0x8000))
 	{
-		error(state, "ROM is too small");
+		fatal(state, "ROM is too small");
 		goto close_rom;
 	}
 
 	if((rom = fopen(rom_path, "rb")) == NULL)
 	{
-		error(state, "Could not open ROM: %s", strerror(errno));
+		fatal(state, "Could not open ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 
@@ -75,13 +126,13 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 
 	if(unlikely((state->cart_data = (uint8_t *)malloc(cart_size)) == NULL))
 	{
-		error(state, "Could not allocate RAM for ROM");
+		fatal(state, "Could not allocate RAM for ROM");
 		goto close_rom;
 	}
 
 	if(unlikely(fread(state->cart_data, cart_size, 1, rom) == 0))
 	{
-		error(state, "Could not read ROM: %s", strerror(errno));
+		fatal(state, "Could not read ROM: %s", strerror(errno));
 		goto close_rom;
 	}
 

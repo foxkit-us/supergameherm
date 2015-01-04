@@ -61,6 +61,10 @@ struct emu_state_t
 	uint_fast32_t cart_size;	//! Size of cartridge data
 	const char *save_path;		//! Save file
 
+	uint8_t *bootrom_data;		//! Exactly what it says on the tin
+	bool in_bootrom;		//! Executing in bootrom
+	uint_fast16_t bootrom_size;	//! Size of bootrom
+
 	bool halt;			//! waiting for interrupt
 	bool stop;			//! deep sleep state (disable LCDC)
 	bool key1;			//! CGB speed switch
@@ -119,7 +123,7 @@ struct emu_state_t
 
 #define IS_FLAG(state, flag) ((REG_F(state) & (flag)) == flag)
 
-emu_state * init_emulator(const char *, const char *);
+emu_state * init_emulator(const char *, const char *, const char *);
 void finish_emulator(emu_state * restrict);
 bool step_emulator(emu_state * restrict);
 

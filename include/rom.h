@@ -102,6 +102,7 @@ extern const char *friendly_cart_names[0x20];
 
 bool read_rom_data(emu_state *restrict, const char *restrict,
 	cart_header *restrict *restrict);
+bool read_bootrom_data(emu_state *restrict, const char *);
 void rtc_load(emu_state *);
 void rtc_save(emu_state *);
 

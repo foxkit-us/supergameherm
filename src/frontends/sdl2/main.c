@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 {
 	emu_state *state;
 	const char *save = NULL;
+	const char *bootrom = NULL;
 	int val;
 
 	register_handlers();
@@ -27,12 +28,16 @@ int main(int argc, char *argv[])
 		fatal(NULL, "You must specify a ROM file... -.-");
 		return EXIT_FAILURE;
 	}
-	else if(argc >= 3)
+	else if(argc == 3)
 	{
 		save = argv[2];
 	}
+	else if(argc >= 4)
+	{
+		bootrom = argv[3];
+	}
 
-	if((state = init_emulator(argv[1], save)) == NULL)
+	if((state = init_emulator(bootrom, argv[1], save)) == NULL)
 	{
 		fatal(NULL, "Error initalising the emulator :(");
 		return EXIT_FAILURE;

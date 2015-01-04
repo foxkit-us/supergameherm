@@ -469,7 +469,7 @@ char *AskUserForFilePath(const char *title, const char *filter, BOOL open)
 
 int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, char *szCmdLine, int iCmdShow UNUSED)
 {
-	char *rom_path, *save_path;
+	char *rom_path, *save_path, *bootrom_path;
 
 	if(!stdout)
 	{
@@ -508,12 +508,15 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 			TRUE);
 		save_path = AskUserForFilePath("Save file",
 			"All Game Boy SAV files\0*.sav;*.save;*.gbsav\0",
-			TRUE);
+			FALSE);
+		bootrom_path = AskUserForFilePath("Boot ROM",
+			"All Game Boy boot ROMs\0*.bin\0",
+			FALSE);
 	}
 	else
 	{
 		rom_path = _strdup(szCmdLine);
-		save_path = NULL;
+		bootrom_path = save_path = NULL;
 	}
 
 	if(rom_path == NULL)
@@ -521,7 +524,7 @@ int WINAPI WinMain(HINSTANCE hInstance UNUSED, HINSTANCE hPrevInstance UNUSED, c
 		return -1;
 	}
 
-	if((g_state = init_emulator(rom_path, save_path)) == NULL)
+	if((g_state = init_emulator(bootrom_path, rom_path, save_path)) == NULL)
 	{
 		return -1;
 	}

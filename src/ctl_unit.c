@@ -118,30 +118,38 @@ static const opcode_t handlers[0x100] =
 //! boot up
 void init_ctl(emu_state *restrict state)
 {
-	REG_PC(state) = 0x0100;
-	switch(state->system)
+	if(!(state->in_bootrom))
 	{
-	case SYSTEM_SGB:
-		debug(state, "Super Game Boy emulation");
-		REG_A(state) = 0x01;
-		break;
-	case SYSTEM_CGB:
-		debug(state, "Game Boy Color emulation");
-		REG_A(state) = 0x11;
-		break;
-	default:
-		debug(state, "original Game Boy emulation");
-		REG_A(state) = 0x01;
-		break;
+		REG_PC(state) = 0x0100;
+		switch(state->system)
+		{
+		case SYSTEM_SGB:
+			debug(state, "Super Game Boy emulation");
+			REG_A(state) = 0x01;
+			break;
+		case SYSTEM_CGB:
+			debug(state, "Game Boy Color emulation");
+			REG_A(state) = 0x11;
+			break;
+		default:
+			debug(state, "original Game Boy emulation");
+			REG_A(state) = 0x01;
+			break;
+		}
+		FLAGS_OVERWRITE(state, 0xB0);
+		REG_B(state) = 0x00;
+		REG_C(state) = 0x13;
+		REG_D(state) = 0x00;
+		REG_E(state) = 0xD8;
+		REG_H(state) = 0x01;
+		REG_L(state) = 0x4D;
+		REG_SP(state) = 0xFFFE;
 	}
-	FLAGS_OVERWRITE(state, 0xB0);
-	REG_B(state) = 0x00;
-	REG_C(state) = 0x13;
-	REG_D(state) = 0x00;
-	REG_E(state) = 0xD8;
-	REG_H(state) = 0x01;
-	REG_L(state) = 0x4D;
-	REG_SP(state) = 0xFFFE;
+	else
+	{
+		// Let the boot ROM do initalisation
+		REG_PC(state) = 0x0;
+	}
 
 	state->debug.debug = true;
 }

@@ -156,6 +156,12 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 		return 0xFF;
 	}
 
+	if(unlikely(state->in_bootrom && location < state->bootrom_size))
+	{
+		// Boot ROM overlays normal memory map
+		return state->bootrom_data[location];
+	}
+
 	switch(location >> 12)
 	{
 	case 0x0:
@@ -316,6 +322,22 @@ static inline void key1_write(emu_state *restrict state, uint16_t location UNUSE
 	state->key1 = (data & 1 ? true : false);
 }
 
+static inline void bootrom_exit(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
+{
+	if(!(state->in_bootrom))
+	{
+		return;
+	}
+
+	if(data == 0x01)
+	{
+		debug(state, "Exiting boot ROM");
+		state->in_bootrom = false;
+		state->bootrom_size = 0;
+
+		free(state->bootrom_data);
+	}
+}
 
 static mem_write8_fn hw_reg_write[0x80] =
 {
@@ -388,13 +410,16 @@ static mem_write8_fn hw_reg_write[0x80] =
 	// 4F - VRAM bank switch (CGB only)
 	vram_bank_switch_write,
 
-	// 50..67 - NO HARDWARE
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x53
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x57
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x5B
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x5F
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x63
-	doofus_write, doofus_write, doofus_write, doofus_write, // 0x67
+	// 50 - exit boot ROM
+	bootrom_exit,
+
+	// 51..67 - NO HARDWARE
+	doofus_write, doofus_write, doofus_write,		// 0x53
+	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x57
+	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x5B
+	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x5F
+	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x63
+	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x67
 
 	// 68..6B - CGB palette stuff (nothing on GB)
 	bg_pal_ind_write, bg_pal_data_write, sprite_pal_ind_write, sprite_pal_data_write,

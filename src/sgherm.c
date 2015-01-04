@@ -22,7 +22,7 @@
 #define NSEC_PER_VBLANK NSEC_PER_SECOND / 60
 
 
-emu_state * init_emulator(const char *rom_path, const char *save_path)
+emu_state * init_emulator(const char *bootrom_path, const char *rom_path, const char *save_path)
 {
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
@@ -33,6 +33,13 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 		return NULL;
 	}
 
+	if(bootrom_path && ((save_path && strcmp(bootrom_path, save_path) == 0) ||
+		strcmp(bootrom_path, rom_path) == 0))
+	{
+		warning(state, "Boot ROM path cannot be same as ROM path or save path (ignoring)");
+		bootrom_path = NULL;
+	}
+
 	state->save_path = save_path ? strdup(save_path) : NULL;
 
 	state->interrupts.enabled = true;
@@ -41,9 +48,21 @@ emu_state * init_emulator(const char *rom_path, const char *save_path)
 
 	if(unlikely(!read_rom_data(state, rom_path, &header)))
 	{
-		error(state, "can't read ROM data (ROM is corrupt)?");
+		error(state, "Can't read ROM data (ROM is corrupt)?");
 		free(state);
 		return NULL;
+	}
+
+	if(bootrom_path)
+	{
+		if(!read_bootrom_data(state, bootrom_path))
+		{
+			warning(state, "Can't read boot ROM data, continuing without it");
+		}
+		else
+		{
+			state->in_bootrom = true;
+		}
 	}
 
 	// Initalise state
