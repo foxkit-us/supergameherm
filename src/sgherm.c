@@ -94,8 +94,8 @@ bool step_emulator(emu_state *restrict state)
 {
 	const int count_per_step = 1;
 
-	lcdc_tick(state, count_per_step);
 	execute(state, count_per_step);
+	lcdc_tick(state, count_per_step);
 	serial_tick(state, count_per_step);
 	timer_tick(state, count_per_step);
 	sound_tick(state, count_per_step);
