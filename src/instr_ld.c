@@ -160,6 +160,11 @@ static inline void ld_h_d8(emu_state *restrict state, uint8_t data[])
  */
 static inline void ldi_a_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_HL(state));
+	}
+
 	REG_A(state) = mem_read8(state, REG_HL(state)++);
 
 	state->wait = 8;
@@ -216,6 +221,11 @@ static inline void ld_hl_d8(emu_state *restrict state, uint8_t data[])
  */
 static inline void ldd_a_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_HL(state));
+	}
+
 	REG_A(state) = mem_read8(state, REG_HL(state)--);
 
 	state->wait = 8;

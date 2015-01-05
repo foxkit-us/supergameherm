@@ -48,6 +48,14 @@ void int_mask_flag_write(emu_state *restrict state, uint8_t data)
 	compute_irq(state);
 }
 
+static inline void maybe_corrupt_oam(emu_state *restrict state, uint16_t value)
+{
+	if((LCDC_ENABLE(state)) && value >= 0xFE00 && value < 0xFF00)
+	{
+		memcpy((state->lcdc.oam_ram + 8), "This technique is used in the CPU core and the LCD controller. This should be okay on all of the tested compilers and systems. If it breaks on yours...", 152);
+	}
+}
+
 #include "instr_alu_arith.c"
 #include "instr_alu_logic.c"
 #include "instr_branch.c"

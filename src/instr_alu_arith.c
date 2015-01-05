@@ -4,6 +4,10 @@
  */
 static inline void inc_bc(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_BC(state));
+	}
 	REG_BC(state)++;
 
 	state->wait = 8;
@@ -139,6 +143,10 @@ static inline void add_hl_bc(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void dec_bc(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_BC(state));
+	}
 	REG_BC(state)--;
 
 	state->wait = 8;
@@ -186,6 +194,10 @@ static inline void rrca(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void inc_de(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_DE(state));
+	}
 	REG_DE(state)++;
 
 	state->wait = 8;
@@ -224,6 +236,10 @@ static inline void add_hl_de(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void dec_de(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_DE(state));
+	}
 	REG_DE(state)--;
 
 	state->wait = 8;
@@ -295,6 +311,10 @@ static inline void rra(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void inc_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_HL(state));
+	}
 	REG_HL(state)++;
 
 	state->wait = 8;
@@ -381,6 +401,10 @@ static inline void add_hl_hl(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void dec_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_HL(state));
+	}
 	REG_HL(state)--;
 
 	state->wait = 8;
@@ -410,6 +434,10 @@ static inline void dec_l(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void inc_sp(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state));
+	}
 	REG_SP(state)++;
 
 	state->wait = 8;
@@ -498,6 +526,10 @@ static inline void add_hl_sp(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void dec_sp(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state));
+	}
 	REG_SP(state)--;
 
 	state->wait = 8;

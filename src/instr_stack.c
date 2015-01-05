@@ -7,6 +7,11 @@ static inline void pop_bc(emu_state *restrict state, uint8_t data[] UNUSED)
 	REG_BC(state) = mem_read16(state, REG_SP(state));
 	REG_SP(state) += 2;
 
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state) - 1);
+	}
+
 	state->wait = 12;
 }
 
@@ -16,6 +21,11 @@ static inline void pop_bc(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void push_bc(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state));
+	}
+
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_BC(state));
 
@@ -31,6 +41,11 @@ static inline void pop_de(emu_state *restrict state, uint8_t data[] UNUSED)
 	REG_DE(state) = mem_read16(state, REG_SP(state));
 	REG_SP(state) += 2;
 
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state) - 1);
+	}
+
 	state->wait = 12;
 }
 
@@ -40,6 +55,11 @@ static inline void pop_de(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void push_de(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state));
+	}
+
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_DE(state));
 
@@ -55,6 +75,11 @@ static inline void pop_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 	REG_HL(state) = mem_read16(state, REG_SP(state));
 	REG_SP(state) += 2;
 
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state) - 1);
+	}
+
 	state->wait = 12;
 }
 
@@ -64,6 +89,11 @@ static inline void pop_hl(emu_state *restrict state, uint8_t data[] UNUSED)
  */
 static inline void push_hl(emu_state *restrict state, uint8_t data[] UNUSED)
 {
+	if(state->system < SYSTEM_SGB)
+	{
+		maybe_corrupt_oam(state, REG_SP(state));
+	}
+
 	REG_SP(state) -= 2;
 	mem_write16(state, REG_SP(state), REG_HL(state));
 
