@@ -2,7 +2,7 @@ if(POLICY CMP0054)
 	cmake_policy(SET CMP0054 NEW)
 endif()
 
-function(libcaca_check)
+macro(libcaca_check)
 	find_package(libcaca)
 	if(libcaca_FOUND)
 		option(LIBCACA_ENABLE "Enable libcaca frontend" on)
@@ -17,16 +17,9 @@ function(libcaca_check)
 
 		set(HAVE_FRONTEND on)
 	endif()
+endmacro()
 
-	set(HAVE_LIBCACA ${HAVE_LIBCACA}
-		CACHE INTERNAL "Have libcaca frontend")
-	set(LIBCACA_ENABLE ${LIBCACA_ENABLE}
-		CACHE INTERNAL "Enable libcaca frontend")
-	set(HAVE_FRONTEND ${HAVE_FRONTEND}
-		CACHE INTERNAL "Have a frontend")
-endfunction(libcaca_check)
-
-function(sdl2_check)
+macro(sdl2_check)
 	find_package(SDL2)
 	if(SDL2_FOUND)
 		option(SDL2_ENABLE "Enable SDL2 frontend" on)
@@ -44,16 +37,9 @@ function(sdl2_check)
 
 		set(HAVE_FRONTEND on)
 	endif()
+endmacro()
 
-	set(HAVE_SDL2 ${HAVE_SDL2}
-		CACHE INTERNAL "Have SDL2 frontend")
-	set(SDL2_ENABLE ${SDL2_ENABLE}
-		CACHE INTERNAL "Enable SDL2 frontend")
-	set(HAVE_FRONTEND ${HAVE_FRONTEND}
-		CACHE INTERNAL "Have a frontend")
-endfunction(sdl2_check)
-
-function(win32_check)
+macro(win32_check)
 	if(HAVE_WINDOWS)
 		option(WIN32_ENABLE "Enable the Win32 GDI frontend" on)
 	endif()
@@ -75,16 +61,9 @@ function(win32_check)
 
 		set(HAVE_FRONTEND on)
 	endif()
+endmacro()
 
-	set(HAVE_WIN32 ${HAVE_WIN32}
-		CACHE INTERNAL "Have win32 frontend")
-	set(WIN32_ENABLE ${WIN32_ENABLE}
-		CACHE INTERNAL "Enable win32 frontend")
-	set(HAVE_FRONTEND ${HAVE_FRONTEND}
-		CACHE INTERNAL "Have a frontend")
-endfunction(win32_check)
-
-function(null_check)
+macro(null_check)
 	# Set the default value depending on if we have a frontend
 	if(HAVE_FRONTEND)
 		set(NULL_DEFAULT off)
@@ -98,11 +77,11 @@ function(null_check)
 		file(GLOB NULL_FRONTEND_SOURCES src/frontends/null/*.c)
 		add_executable("sgherm-null" ${NULL_FRONTEND_SOURCES} $<TARGET_OBJECTS:sgherm-core>)
 	endif()
-endfunction(null_check)
+endmacro()
 
 macro(frontend_checks)
 	sdl2_check()
 	libcaca_check()
 	win32_check()
 	null_check()
-endmacro(frontend_checks)
+endmacro()
