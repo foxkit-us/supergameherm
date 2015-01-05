@@ -4,7 +4,7 @@ endif()
 
 include(CheckCCompilerFlag)
 
-macro(test_c11)
+function(test_c11)
 	check_c_compiler_flag("-std=c11" HAVE_C11)
 	if(HAVE_C11)
 		set(SGHERM_C_STANDARD "-std=c11")
@@ -19,7 +19,10 @@ macro(test_c11)
 		endif()
 		message(WARNING "Your compiler does not support C11.  Things may break.")
 	endif()
-endmacro()
+
+	set(SGHERM_C_STANDARD ${SGHERM_C_STANDARD}
+		CACHE INTERNAL "Standard C flags SuperGameHerm will use")
+endfunction(test_c11)
 
 macro(set_cflags)
 	if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
