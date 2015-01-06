@@ -18,8 +18,18 @@ static const uint32_t dmg_palette[4] =
 	0x00000000,
 };
 
+static const uint8_t cgb_ramp[32] = {
+	// TODO: get actual ramping
+	0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70,
+	0x78, 0x80, 0x88, 0x90, 0x98, 0xA0, 0xA8, 0xB0,
+	0xB8, 0xC0, 0xC8, 0xD0, 0xD8, 0xE0, 0xE8, 0xF0,
+	0xF2, 0xF4, 0xF6, 0xF8, 0xFA, 0xFC, 0xFE, 0xFF,
+};
+
 void init_lcdc(emu_state *restrict state)
 {
+	int i;
+
 	// Enable LCD + BG char sel + BG
 	state->lcdc.lcd_control = 0x91;
 
@@ -29,6 +39,19 @@ void init_lcdc(emu_state *restrict state)
 	// Palette init
 	state->lcdc.bg_pal = 0xFC;
 	state->lcdc.obj_pal[0] = state->lcdc.obj_pal[1] = 0xFF;
+
+	// CGB palette init
+	for(i = 0; i < 64; i++)
+	{
+		state->lcdc.bcpd[i] = 0xFF;
+		state->lcdc.ocpd[i] = 0xFF;
+	}
+
+	for(i = 0; i < 32; i++)
+	{
+		state->lcdc.bcpal[i] = 0x00FFFFFF;
+		state->lcdc.ocpal[i] = 0x00FFFFFF;
+	}
 
 	state->lcdc.ly = 0;
 	state->lcdc.lyc = 0;
@@ -89,6 +112,69 @@ static inline void dmg_bg_render(emu_state *restrict state)
 	}
 }
 
+static inline void cgb_bg_render(emu_state *restrict state)
+{
+	// Compute positions in the "virtual" map of tiles
+	const uint8_t sy = state->lcdc.ly + state->lcdc.scroll_y, s_sy = sy / 8;
+	uint8_t x, sx = state->lcdc.scroll_x;
+	uint16_t tile_map_start = 0x1800; // Initial offset
+
+	// Pixel offsets
+	uint16_t pixel_data_start = LCDC_BG_CHAR_SEL(state) ? 0x0 : 0x800;
+	uint8_t pixel_y_offset = (sy & 7) * 2;
+
+	uint16_t pixel_temp = 0;
+
+	if(LCDC_BG_CODE_SEL(state))
+	{
+		tile_map_start += 0x400;
+	}
+
+	for(x = 0; x < 160; x++, sx++)
+	{
+		uint8_t pixel;
+		uint32_t *palette = state->lcdc.bcpd;
+
+		if(x == 0 || (sx & 7) == 0)
+		{
+			const uint16_t tile_index = s_sy * 32 + (sx / 8);
+			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+			uint8_t attr = state->lcdc.vram[0x1][tile_map_start + tile_index];
+			uint8_t *mem;
+
+			// Get attribute information
+			palette = state->lcdc.bcpal + ((attr&7)<<2);
+			int tbank = ((attr&0x08) != 0 ? 1 : 0);
+
+			// TODO: hflip/vflip/prio
+
+			if(!LCDC_BG_CHAR_SEL(state))
+			{
+				tile -= 0x80;
+			}
+
+			// Position in memory
+			mem = state->lcdc.vram[tbank] + pixel_data_start + (tile * 16) + pixel_y_offset;
+
+			// Interleave bits and reverse
+			pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
+
+			// XXX kinda bogus but needed to make it look right
+			pixel_temp = rotl_16(pixel_temp, 2);
+
+			if(x == 0)
+			{
+				// Compensate for off-screen pixels
+				rotl_16(pixel_temp, 2 * (sx & 7));
+			}
+		}
+
+		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
+		state->lcdc.out[state->lcdc.ly][x] = palette[pixel];
+		pixel_temp = rotl_16(pixel_temp, 2);
+	}
+}
+
 static inline void dmg_window_render(emu_state *restrict state)
 {
 	const int16_t y = state->lcdc.ly, wy = y - state->lcdc.window_y;
@@ -145,6 +231,70 @@ static inline void dmg_window_render(emu_state *restrict state)
 	}
 }
 
+static inline void cgb_window_render(emu_state *restrict state)
+{
+	const int16_t y = state->lcdc.ly, wy = y - state->lcdc.window_y;
+	uint16_t x = 0;
+	int16_t wx = state->lcdc.window_x - 7;
+	uint16_t tile_map_start = LCDC_WIN_CODE_SEL(state) ? 0x1c00 : 0x1800;
+
+	// Pixel offsets
+	uint8_t pixel_y_offset = (wy & 7) * 2;
+
+	// Yes, windows use this.
+	uint16_t pixel_data_start = LCDC_BG_CHAR_SEL(state) ? 0x0 : 0x800;
+
+	uint16_t pixel_temp = 0;
+
+	if(wx > 159 || wy > 143 || wy < 0)
+	{
+		// Off-screen
+		return;
+	}
+
+	for(; wx < 159; x++, wx++)
+	{
+		uint8_t pixel;
+		uint32_t *palette = state->lcdc.bcpd;
+
+		if((wx & 7) == 0 || x == 0)
+		{
+			const uint16_t tile_index = (wy / 8) * 32 + (x / 8);
+			uint8_t tile = state->lcdc.vram[0x0][tile_map_start + tile_index];
+			uint8_t attr = state->lcdc.vram[0x1][tile_map_start + tile_index];
+			uint8_t *mem;
+
+			// Get attribute information
+			palette = state->lcdc.bcpal + ((attr&7)<<2);
+			int tbank = ((attr&0x08) != 0 ? 1 : 0);
+
+			// TODO: hflip/vflip/prio
+
+			if(!LCDC_BG_CHAR_SEL(state))
+			{
+				tile -= 0x80;
+			}
+
+			mem = state->lcdc.vram[tbank] + (tile * 16) + pixel_data_start + pixel_y_offset;
+
+			// Interleave bits and reverse
+			pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
+
+			// XXX
+			pixel_temp = rotl_16(pixel_temp, 2);
+		}
+
+		if(wx < 0)
+		{
+			continue;
+		}
+
+		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
+		state->lcdc.out[y][wx] = palette[pixel];
+		pixel_temp = rotl_16(pixel_temp, 2);
+	}
+}
+
 static inline void copy_oam(emu_state *state, uint8_t tile, oam *obj)
 {
 	uint8_t *mem = state->lcdc.oam_ram + (4 * tile);
@@ -162,6 +312,95 @@ static inline void copy_oam(emu_state *state, uint8_t tile, oam *obj)
 }
 
 static inline void dmg_oam_render(emu_state *restrict state)
+{
+	int curr_tile;
+	uint16_t pixel_y_offset;
+	uint32_t *row = state->lcdc.out[state->lcdc.ly];
+	uint8_t y_len = (LCDC_OBJ_SIZE(state)) ? 16 : 8;
+	uint16_t tx;
+
+	if(!LCDC_OBJ(state))
+	{
+		return;
+	}
+
+	for(curr_tile = 39; curr_tile >= 0; curr_tile -= 1)
+	{
+		oam obj;
+		copy_oam(state, curr_tile, &obj);
+		uint8_t tile = obj.chr;
+		const int16_t obj_x = obj.x - 8, obj_y = obj.y - 16;
+
+		uint8_t *mem;
+		uint16_t pixel_temp;
+
+		// Adjusted for offsets
+		if(!(obj.x && obj.y && obj.x < 168 && obj.y < 160))
+		{
+			// Off-screen
+			continue;
+		}
+
+		pixel_y_offset = state->lcdc.ly - obj_y;
+		if(pixel_y_offset > (y_len - 1))
+		{
+			// out of display
+			continue;
+		}
+
+		if(obj.vflip)
+		{
+			pixel_y_offset = y_len - 1 - pixel_y_offset;
+		}
+
+		if(pixel_y_offset > 7)
+		{
+			// Bottom tile
+			pixel_y_offset = (pixel_y_offset - 8) * 2;
+			mem = state->lcdc.vram[0x0] + ((tile | 0x01) * 16) + pixel_y_offset;
+		}
+		else
+		{
+			if (y_len == 16) tile &= 0xFE;
+			// Top tile
+			pixel_y_offset *= 2;
+			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_y_offset;
+		}
+
+		// Interleave bits and reverse
+		pixel_temp = interleave8(0, *mem, 0, *(mem + 1)) & 0xFFFF;
+
+		if(!(obj.hflip))
+		{
+			// XXX
+			pixel_temp = rotl_16(pixel_temp, 2);
+		}
+
+		for(tx = 0; tx < 8; tx++)
+		{
+			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) &&
+				((obj_x + tx) >= 0) && (!obj.priority ||
+				(obj.priority && row[obj_x + tx] ==
+				 dmg_palette[0])))
+			{
+				const uint8_t pal = state->lcdc.obj_pal[obj.pal_dmg];
+				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
+				row[obj_x + tx] = dmg_palette[pixel];
+			}
+
+			if(obj.hflip)
+			{
+				pixel_temp >>= 2;
+			}
+			else
+			{
+				pixel_temp = rotl_16(pixel_temp, 2);
+			}
+		}
+	}
+}
+
+static inline void cgb_oam_render(emu_state *restrict state)
 {
 	int curr_tile;
 	uint16_t pixel_y_offset;
@@ -287,7 +526,6 @@ static inline void render_scanline(emu_state *restrict state)
 		case SYSTEM_MGL:
 		case SYSTEM_SGB:
 		case SYSTEM_SGB2:
-		case SYSTEM_CGB: // TODO: give it its own rendering stuff
 			if(LCDC_DMG_BG(state))
 			{
 				dmg_bg_render(state);
@@ -308,9 +546,32 @@ static inline void render_scanline(emu_state *restrict state)
 				dmg_oam_render(state);
 			}
 			break;
-			//case SYSTEM_CGB:
+
+		case SYSTEM_CGB:
+			// TODO: get the actual info for what flag affects what
+			if(LCDC_DMG_BG(state))
+			{
+				cgb_bg_render(state);
+			}
+			else
+			{
+				memset(state->lcdc.out, 0x00FFFFFF,
+				       sizeof(state->lcdc.out));
+			}
+
+			if(LCDC_WIN(state))
+			{
+				cgb_window_render(state);
+			}
+
+			if(LCDC_OBJ(state))
+			{
+				cgb_oam_render(state);
+			}
+			break;
+
 		default:
-			fatal(state, "No CGB support yet, sorry!");
+			fatal(state, "No support for this GB type yet, sorry!");
 			break;
 	}
 }
@@ -721,7 +982,7 @@ void bg_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		return;
 	}
 
-	// TODO
+	state->lcdc.bcpi = data & (0x80|0x3F);
 }
 
 void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -732,7 +993,24 @@ void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		return;
 	}
 
-	// TODO
+	state->lcdc.bcpd[state->lcdc.bcpi&0x3F] = data;
+
+	int idx = (state->lcdc.bcpi>>1) & 0x1F;
+	uint8_t c0 = state->lcdc.bcpd[(idx<<1)+0];
+	uint8_t c1 = state->lcdc.bcpd[(idx<<1)+1];
+	uint32_t r = c0 & 0x1F;
+	uint32_t g = ((c0>>5) | (c1<<3)) & 0x1F;
+	uint32_t b = (c1>>2) & 0x1F;
+	r = cgb_ramp[r];
+	g = cgb_ramp[g];
+	b = cgb_ramp[b];
+	r <<= 16;
+	g <<= 8;
+	state->lcdc.bcpal[idx] = (r|g|b);
+	//printf("pal %08X %08X\n", idx, (r|g|b));
+		
+	state->lcdc.bcpi += (state->lcdc.bcpi>>7);
+	state->lcdc.bcpi &= (0x80|0x3F);
 }
 
 void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)

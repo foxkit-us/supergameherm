@@ -57,11 +57,13 @@ struct lcdc_state_t
 	//! CGB only (FIXME palette RAM)
 	struct
 	{
-		cps bcps;
-		uint8_t bcpd;	//! BG data write
+		uint8_t bcpi;
+		uint8_t bcpd[64];	//! BG data write
+		uint32_t bcpal[32];
 
-		cps ocps;
-		uint8_t ocpd;	//! OBJ data write
+		uint8_t ocpi;
+		uint8_t ocpd[64];	//! OBJ data write
+		uint32_t ocpal[32];
 	};
 
 	uint_fast8_t scroll_y;	//! Y position in scrolling map

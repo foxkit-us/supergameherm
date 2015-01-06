@@ -218,7 +218,7 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	}
 
 	// FIXME For now we're targeting DMG, not CGB.
-	state->system = SYSTEM_DMG;
+	//state->system = SYSTEM_DMG;
 
 	// Select the correct MBC
 	if(!mbc_select(state))
