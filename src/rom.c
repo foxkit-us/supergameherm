@@ -93,7 +93,7 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	int64_t i;
 	uint64_t read_size, cart_size;
 	int8_t checksum = 0;
-	char title[19] = "\0", publisher[5] = "\0"; // Max sizes
+	char title[20] = "\0", publisher[5] = "\0"; // Max sizes
 	const cart_offsets begin = OFF_GRAPHIC_BEGIN;
 	bool err = true;
 	FILE *rom = NULL;
