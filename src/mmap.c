@@ -24,12 +24,14 @@
 #include <sys/types.h>	// open flags (some systems)
 #include <fcntl.h>	// open flags (some systems)
 
-typedef struct memmap_state_t
+
+struct memmap_state_t
 {
 	char *path;
 	size_t size, f_size;
 	int flags;
-} memmap_state;
+};
+
 
 static inline int _open_map(const char *path, size_t size)
 {
@@ -284,12 +286,12 @@ void memmap_sync(emu_state *restrict state UNUSED, void *map, memmap_state **dat
 #include <stdio.h>	// file functions
 
 
-typedef struct memmap_state_t
+struct memmap_state_t
 {
 	FILE *f;
 	bool anonymous;
 	size_t size;
-} memmap_state;
+};
 
 
 void * memmap_open(emu_state *restrict state, const char *path, size_t size, memmap_state **data)
