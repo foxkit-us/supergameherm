@@ -103,9 +103,15 @@ void w32_put_audio(emu_state *state)
 void w32_pull_audio(emu_state *state)
 {
 	audio_state *ad = (audio_state *)(state->front.audio.data);
+	int idx;
+
+	if(ad == NULL)
+	{
+		return;
+	}
 
 	// Get a buffer
-	int idx = ad->whd_read;
+	idx = ad->whd_read;
 	//printf("RRR write %i read %i\n", ad->whd_write, ad->whd_read);
 	if((ad->whd_write-idx) <= 0)
 	{
