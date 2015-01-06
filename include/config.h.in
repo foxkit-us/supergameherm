@@ -17,6 +17,7 @@
 // System has mmap/mremap
 #cmakedefine HAVE_MMAP
 #cmakedefine HAVE_MREMAP
+#cmakedefine HAVE_MAP_ANONYMOUS
 
 // Platforms
 #cmakedefine HAVE_POSIX

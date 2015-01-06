@@ -11,6 +11,13 @@
 
 #ifdef HAVE_MMAP
 
+// Smooth over MAP_ANON and MAP_ANONYMOUS differences
+#ifdef HAVE_MAP_ANONYMOUS
+#	ifndef MAP_ANONYMOUS
+#		define MAP_ANONYMOUS MAP_ANON
+#	endif
+#endif
+
 #include <sys/mman.h>	// mmap/munmap/msync
 #include <unistd.h>	// open/close
 #include <sys/stat.h>	// open flags (some systems)
@@ -115,9 +122,22 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	else
 	{
 		// Anonymous mapping
+#ifdef HAVE_MAP_ANONYMOUS
 		fd = -1;
 		m_state->path = NULL;
-		m_state->flags = MAP_PRIVATE|MAP_ANONYMOUS;
+		m_state->flags = MAP_PRIVATE | MAP_ANONYMOUS;
+#else
+		m_state->path = "/dev/zero";
+		if((fd = _open_map(m_state->path, size)) < 0)
+		{
+			error(state, "Could not open /dev/zero for mmap: %s", strerror(errno));
+			free(m_state);
+			*data = NULL;
+			return NULL;
+		}
+
+		m_state->flags = MAP_PRIVATE;
+#endif
 	}
 
 	// Round up to nearest page size
@@ -133,7 +153,10 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	}
 
 	// POSIX says it's okay to close the file
-	close(fd);
+	if(fd > 0)
+	{
+		close(fd);
+	}
 
 	madvise(map, size, MADV_RANDOM);
 
