@@ -72,6 +72,7 @@ static inline int _open_map(const char *path, size_t size)
 	else if((size_t)filesize > size && ftruncate(fd, size) < 0)
 	{
 		// Truncate the fie or fail
+		close(fd);
 		return -1;
 	}
 
@@ -149,13 +150,19 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	if(!(map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)))
 	{
 		error(state, "Could not mmap file: %s", strerror(errno));
+
+		if(fd > -1)
+		{
+			close(fd);
+		}
+
 		free(m_state);
 		*data = NULL;
 		return NULL;
 	}
 
 	// POSIX says it's okay to close the file
-	if(fd > 0)
+	if(fd > -1)
 	{
 		close(fd);
 	}
