@@ -130,10 +130,10 @@ static inline void cgb_bg_render(emu_state *restrict state)
 		tile_map_start += 0x400;
 	}
 
+	uint32_t *palette = state->lcdc.bcpal;
 	for(x = 0; x < 160; x++, sx++)
 	{
 		uint8_t pixel;
-		uint32_t *palette = state->lcdc.bcpd;
 
 		if(x == 0 || (sx & 7) == 0)
 		{
@@ -252,10 +252,10 @@ static inline void cgb_window_render(emu_state *restrict state)
 		return;
 	}
 
+	uint32_t *palette = state->lcdc.bcpal;
 	for(; wx < 159; x++, wx++)
 	{
 		uint8_t pixel;
-		uint32_t *palette = state->lcdc.bcpd;
 
 		if((wx & 7) == 0 || x == 0)
 		{
