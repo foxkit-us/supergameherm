@@ -741,21 +741,21 @@ static inline void mbc5_write(emu_state *restrict state, uint16_t location, uint
 	case 0x2:
 		state->mbc.rom_bank_lower = value;
 		state->mbc.rom_bank = state->mbc.rom_bank_lower |
-			(uint16_t)(state->mbc.rom_bank_upper << 9);
+			(uint16_t)(state->mbc.rom_bank_upper << 8);
 
 		assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 		break;
 	case 0x3:
 		state->mbc.rom_bank_upper = value & 0x1;
 		state->mbc.rom_bank = state->mbc.rom_bank_lower |
-			(uint16_t)(state->mbc.rom_bank_upper << 9);
+			(uint16_t)(state->mbc.rom_bank_upper << 8);
 
 		assert(state->mbc.rom_bank <= state->mbc.rom_bank_count);
 		break;
 	case 0x4:
 	case 0x5:
 		// RAM banking mode
-		state->mbc.ram_bank = value;
+		state->mbc.ram_bank = value & 0x0F;
 		break;
 	case 0xA:
 	case 0xB:
