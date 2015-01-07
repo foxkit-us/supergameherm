@@ -130,7 +130,7 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 		m_state->path = NULL;
 		m_state->flags = MAP_PRIVATE | MAP_ANONYMOUS;
 #else
-		m_state->path = "/dev/zero";
+		m_state->path = strdup("/dev/zero");
 		if((fd = _open_map(m_state->path, size)) < 0)
 		{
 			error(state, "Could not open /dev/zero for mmap: %s", strerror(errno));
