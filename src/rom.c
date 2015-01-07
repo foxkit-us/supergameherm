@@ -92,6 +92,7 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 {
 	int64_t i;
 	uint64_t read_size, cart_size;
+	size_t result;
 	int8_t checksum = 0;
 	char title[20] = "\0", publisher[5] = "\0"; // Max sizes
 	const cart_offsets begin = OFF_GRAPHIC_BEGIN;
@@ -130,7 +131,9 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 		goto close_rom;
 	}
 
-	if(unlikely(fread(state->cart_data, cart_size, 1, rom) == 0))
+	result = fread(state->cart_data, 1, cart_size, rom);
+
+	if(unlikely(result != cart_size))
 	{
 		fatal(state, "Could not read ROM: %s", strerror(errno));
 		goto close_rom;
@@ -189,10 +192,18 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 	{
 		debug(state, "publisher %s", publisher);
 	}
-	debug(state, "type: %s", friendly_cart_names[(*header)->cart_type]);
+
+	if(unlikely((*header)->cart_type > 0x20))
+	{
+		debug(state, "type is unknown (%X)", (*header)->cart_type);
+	}
+	else
+	{
+		debug(state, "type: %s", friendly_cart_names[(*header)->cart_type]);
+	}
 
 	debug(state, "Header size is %d\n", (*header)->rom_size);
-	read_size = 0x8000 << (*header)->rom_size;
+	read_size = (uint64_t)0x8000 << (*header)->rom_size;
 
 	if(cart_size != read_size)
 	{
