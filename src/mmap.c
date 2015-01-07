@@ -243,6 +243,12 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 		return NULL;
 	}
 
+	// Close file
+	if(fd > -1)
+	{
+		close(fd);
+	}
+
 	madvise(map_new, size, MADV_RANDOM);
 
 	// Remove old mapping
