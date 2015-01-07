@@ -726,6 +726,17 @@ inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 		warning(state, "read from VRAM while not in h/v-blank");
 	}
 #endif
+
+	if(reg < 0x8000 || reg > 0x9FFF)
+	{
+#ifdef NDEBUG
+		fatal
+#else
+		warning
+#endif
+		(state, "read from illegal VRAM address %04X", reg);
+	}
+
 	return state->lcdc.vram[bank][reg - 0x8000];
 }
 
@@ -873,6 +884,16 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		warning(state, "write to VRAM while not in h/v-blank");
 	}
 #endif
+
+	if(reg < 0x8000 || reg > 0x9FFF)
+	{
+#ifdef NDEBUG
+		fatal
+#else
+		warning
+#endif
+		(state, "write to illegal VRAM address %04X", reg);
+	}
 
 	state->lcdc.vram[bank][reg - 0x8000] = data;
 }
