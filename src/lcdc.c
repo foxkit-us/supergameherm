@@ -666,6 +666,7 @@ void lcdc_tick(emu_state *restrict state, int count)
 			{
 				// Fire the vblank interrupt
 				signal_interrupt(state, INT_VBLANK);
+				state->lcdc.throt_trigger = true;
 
 				// Blit
 				BLIT_CANVAS(state);

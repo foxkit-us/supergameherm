@@ -98,15 +98,17 @@ void finish_emulator(emu_state *restrict state)
 
 bool step_emulator(emu_state *restrict state)
 {
-	const int count_per_step = 1;
+	// TODO: handle CGB speed better
+	int count_per_step = 1;
+	int count_per_step_core = (state->freq == CPU_FREQ_CGB ? 2 : 1);
 
-	execute(state, count_per_step);
+	execute(state, count_per_step_core);
 	lcdc_tick(state, count_per_step);
-	serial_tick(state, count_per_step);
-	timer_tick(state, count_per_step);
+	serial_tick(state, count_per_step_core);
+	timer_tick(state, count_per_step_core);
 	sound_tick(state, count_per_step);
 
-	state->cycles += count_per_step;
+	state->cycles += count_per_step_core;
 
 	if(state->mbc.dirty && (state->cycles % state->freq) == 0)
 	{
@@ -117,13 +119,15 @@ bool step_emulator(emu_state *restrict state)
 
 #ifdef THROTTLE_VBLANK
 	// Wait for vblank
-	if(unlikely(LCDC_STAT_MODE_FLAG(state) == 1 &&
-		state->lcdc.curr_clk == 0))
+	//if(unlikely(LCDC_STAT_MODE_FLAG(state) == 1 &&
+	//	state->lcdc.curr_clk == 0))
+	if(unlikely(state->lcdc.throt_trigger))
 	{
+		state->lcdc.throt_trigger = false;
 		uint64_t t = get_time();
 		int64_t wait = (int64_t)state->next_vblank_time - (int64_t)t;
 
-		if(wait > 0)
+		if(wait > 1000000)
 		{
 			sleep_nsec(wait);
 		}

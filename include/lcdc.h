@@ -78,6 +78,8 @@ struct lcdc_state_t
 	uint_fast8_t ly;	//! Present line being transferred (144-153 = V-Blank)
 	uint_fast8_t lyc;	//! LY comparison (set stat.lyc_state when == ly)
 
+	bool throt_trigger; //! Trigger to allow throttling of vblank
+
 	uint8_t bg_pal;		//! Background palette
 	uint8_t obj_pal[2];	//! OAM palettes
 
