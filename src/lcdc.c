@@ -102,7 +102,7 @@ static inline void dmg_bg_render(emu_state *restrict state)
 			if(x == 0)
 			{
 				// Compensate for off-screen pixels
-				rotl_16(pixel_temp, 2 * (sx & 7));
+				pixel_temp = rotl_16(pixel_temp, 2 * (sx & 7));
 			}
 		}
 
@@ -165,7 +165,7 @@ static inline void cgb_bg_render(emu_state *restrict state)
 			if(x == 0)
 			{
 				// Compensate for off-screen pixels
-				rotl_16(pixel_temp, 2 * (sx & 7));
+				pixel_temp = rotl_16(pixel_temp, 2 * (sx & 7));
 			}
 		}
 
