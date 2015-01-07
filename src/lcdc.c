@@ -421,6 +421,7 @@ static inline void cgb_oam_render(emu_state *restrict state)
 		const int16_t obj_x = obj.x - 8, obj_y = obj.y - 16;
 
 		uint8_t *mem;
+		uint32_t *palette = state->lcdc.ocpal;
 		uint16_t pixel_temp;
 
 		// Adjusted for offsets
@@ -429,6 +430,10 @@ static inline void cgb_oam_render(emu_state *restrict state)
 			// Off-screen
 			continue;
 		}
+
+		// Get attribute information
+		palette = state->lcdc.ocpal + (obj.pal_cgb<<2);
+		int tbank = obj.char_bank;
 
 		pixel_y_offset = state->lcdc.ly - obj_y;
 		if(pixel_y_offset > (y_len - 1))
@@ -446,14 +451,14 @@ static inline void cgb_oam_render(emu_state *restrict state)
 		{
 			// Bottom tile
 			pixel_y_offset = (pixel_y_offset - 8) * 2;
-			mem = state->lcdc.vram[0x0] + ((tile | 0x01) * 16) + pixel_y_offset;
+			mem = state->lcdc.vram[tbank] + ((tile | 0x01) * 16) + pixel_y_offset;
 		}
 		else
 		{
 			if (y_len == 16) tile &= 0xFE;
 			// Top tile
 			pixel_y_offset *= 2;
-			mem = state->lcdc.vram[0x0] + (tile * 16) + pixel_y_offset;
+			mem = state->lcdc.vram[tbank] + (tile * 16) + pixel_y_offset;
 		}
 
 		// Interleave bits and reverse
@@ -467,6 +472,7 @@ static inline void cgb_oam_render(emu_state *restrict state)
 
 		for(tx = 0; tx < 8; tx++)
 		{
+			// TODO: proper priority
 			if((pixel_temp & 0x03) && ((obj_x + tx) <= 159) &&
 				((obj_x + tx) >= 0) && (!obj.priority ||
 				(obj.priority && row[obj_x + tx] ==
@@ -474,7 +480,7 @@ static inline void cgb_oam_render(emu_state *restrict state)
 			{
 				const uint8_t pal = state->lcdc.obj_pal[obj.pal_dmg];
 				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
-				row[obj_x + tx] = dmg_palette[pixel];
+				row[obj_x + tx] = palette[pixel];
 			}
 
 			if(obj.hflip)
@@ -1042,7 +1048,7 @@ void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		return;
 	}
 
-	// TODO
+	state->lcdc.ocpi = data & (0x80|0x3F);
 }
 
 void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
@@ -1053,7 +1059,89 @@ void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data
 		return;
 	}
 
+	state->lcdc.ocpd[state->lcdc.ocpi&0x3F] = data;
+
+	int idx = (state->lcdc.ocpi>>1) & 0x1F;
+	uint8_t c0 = state->lcdc.ocpd[(idx<<1)+0];
+	uint8_t c1 = state->lcdc.ocpd[(idx<<1)+1];
+	uint32_t r = c0 & 0x1F;
+	uint32_t g = ((c0>>5) | (c1<<3)) & 0x1F;
+	uint32_t b = (c1>>2) & 0x1F;
+	r = cgb_ramp[r];
+	g = cgb_ramp[g];
+	b = cgb_ramp[b];
+	r <<= 16;
+	g <<= 8;
+	state->lcdc.ocpal[idx] = (r|g|b);
+	//printf("pal %08X %08X\n", idx, (r|g|b));
+
+	state->lcdc.ocpi += (state->lcdc.ocpi>>7);
+	state->lcdc.ocpi &= (0x80|0x3F);
+}
+
+void hdma_reg_write(emu_state *restrict state, uint16_t reg, uint8_t data)
+{
+	int i;
+
+	reg &= 0xFF;
+
+	switch(reg)
+	{
+		case 0x51: // Source High
+			state->lcdc.hsrc = (state->lcdc.hsrc & 0x00FF)
+				| (((uint16_t)data)<<8);
+			break;
+
+		case 0x52: // Source Low
+			state->lcdc.hsrc = (state->lcdc.hsrc & 0xFF00)
+				| (((uint16_t)data));
+			break;
+
+		case 0x53: // Dest High
+			state->lcdc.hdst = (state->lcdc.hdst & 0x00FF)
+				| (((uint16_t)data)<<8);
+			break;
+
+		case 0x54: // Dest Low
+			state->lcdc.hdst = (state->lcdc.hdst & 0xFF00)
+				| (((uint16_t)data));
+			break;
+
+		case 0x55: // Start transfer
+			// TODO: do this properly!
+			// TODO: clamp/verify addresses correctly
+			state->lcdc.hlen = data;
+			while((state->lcdc.hlen & 0x7F) != 0x7F)
+			{
+				for(i = 0; i < 16; i++)
+				{
+					mem_write8(state, state->lcdc.hdst,
+						mem_read8(state, state->lcdc.hsrc));
+					state->lcdc.hsrc++;
+					state->lcdc.hdst++;
+				}
+				
+				state->lcdc.hlen = ((state->lcdc.hlen - 1) & 0x7F)
+					| (state->lcdc.hlen & 0x80);
+			}
+			break;
+
+		default:
+			error(state, "[%4X] EDOOFUS: register %02X is not an HDMA register!\n",
+				REG_PC(state), reg);
+			break;
+	}
+}
+
+uint8_t hdma_status_read(emu_state *restrict state, uint16_t reg)
+{
+	if(state->system != SYSTEM_CGB)
+	{
+		return no_hardware(state, reg);
+	}
+
 	// TODO
+	return 0xFF;
 }
 
 void magical_mystery_cure(void)

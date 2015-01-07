@@ -64,6 +64,9 @@ struct lcdc_state_t
 		uint8_t ocpi;
 		uint8_t ocpd[64];	//! OBJ data write
 		uint32_t ocpal[32];
+
+		uint16_t hsrc, hdst;
+		uint8_t hlen;
 	};
 
 	uint_fast8_t scroll_y;	//! Y position in scrolling map
@@ -131,5 +134,7 @@ void bg_pal_ind_write(emu_state *restrict, uint16_t, uint8_t);
 void bg_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
 void sprite_pal_ind_write(emu_state *restrict, uint16_t, uint8_t);
 void sprite_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
+void hdma_reg_write(emu_state *restrict, uint16_t, uint8_t);
+uint8_t hdma_status_read(emu_state *restrict state, uint16_t reg);
 
 #endif /*!__LCDC_H_*/

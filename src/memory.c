@@ -121,9 +121,15 @@ static mem_read_fn hw_reg_read[0x80] =
 	// 4F - switch VRAM bank (CGB only)
 	vram_bank_switch_read,
 
-	// 50..67 - NO HARDWARE
+	// 50..54 - NO HARDWARE
 	no_hardware, no_hardware, no_hardware, no_hardware, // 0x53
-	no_hardware, no_hardware, no_hardware, no_hardware, // 0x57
+	no_hardware, // 0x54
+
+	// 55 - HDMA status (CGB only)
+	hdma_status_read,
+
+	// 56..67 - NO HARDWARE
+	no_hardware, no_hardware, // 0x57
 	no_hardware, no_hardware, no_hardware, no_hardware, // 0x5B
 	no_hardware, no_hardware, no_hardware, no_hardware, // 0x5F
 	no_hardware, no_hardware, no_hardware, no_hardware, // 0x63
@@ -413,9 +419,15 @@ static mem_write8_fn hw_reg_write[0x80] =
 	// 50 - exit boot ROM
 	bootrom_exit,
 
+	// 51..55 - HDMA
+	hdma_reg_write,
+	hdma_reg_write,
+	hdma_reg_write,
+	hdma_reg_write,
+	hdma_reg_write,
+
 	// 51..67 - NO HARDWARE
-	doofus_write, doofus_write, doofus_write,		// 0x53
-	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x57
+	doofus_write, doofus_write,	// 0x57
 	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x5B
 	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x5F
 	doofus_write, doofus_write, doofus_write, doofus_write,	// 0x63
