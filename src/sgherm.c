@@ -27,10 +27,16 @@ emu_state * init_emulator(const char *bootrom_path, const char *rom_path, const 
 	emu_state *state = (emu_state *)calloc(1, sizeof(emu_state));
 	cart_header *header;
 
-	if(rom_path && save_path && strcmp(rom_path, save_path) == 0)
+	if(!rom_path)
 	{
-		error(state, "ROM path can't be the same as the save path!");
+		error(state, "Unspecified ROM path!");
 		return NULL;
+	}
+
+	if(save_path && strcmp(rom_path, save_path) == 0)
+	{
+		error(state, "Save path can't be the same as ROM path (ignoring)");
+		save_path = NULL;
 	}
 
 	if(bootrom_path && ((save_path && strcmp(bootrom_path, save_path) == 0) ||
