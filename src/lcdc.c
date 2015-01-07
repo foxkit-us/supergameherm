@@ -883,7 +883,7 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 
 	state->lcdc.lcd_control = data;
 
-	if(is_off & LCDC_ENABLE(state))
+	if(is_off && LCDC_ENABLE(state))
 	{
 		// Restart LY clock
 		state->lcdc.ly = 0;
@@ -891,7 +891,7 @@ inline void lcdc_control_write(emu_state *restrict state, uint16_t reg UNUSED, u
 		state->lcdc.initial = true;
 		lcdc_mode_change(state, 0);
 	}
-	else if(!is_off & !LCDC_ENABLE(state))
+	else if(!is_off && !LCDC_ENABLE(state))
 	{
 		// hardware sets mode to 1 when disabling
 		// source: http://www.codeslinger.co.uk/pages/projects/gameboy/lcd.html
@@ -1008,7 +1008,7 @@ void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	g <<= 8;
 	state->lcdc.bcpal[idx] = (r|g|b);
 	//printf("pal %08X %08X\n", idx, (r|g|b));
-		
+
 	state->lcdc.bcpi += (state->lcdc.bcpi>>7);
 	state->lcdc.bcpi &= (0x80|0x3F);
 }
