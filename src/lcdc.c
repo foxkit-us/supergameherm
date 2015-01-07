@@ -682,13 +682,13 @@ static inline void lcdc_mode0(emu_state *restrict state)
 		if(state->lcdc.ly == 144)
 		{
 			// going to v-blank
-			state->lcdc.curr_clk = 0;
+			state->lcdc.curr_clk = state->lcdc.next_clk = 0;
 			lcdc_mode_change(state, 1);
 		}
 		else
 		{
 			// start another scan line
-			state->lcdc.curr_clk = 0;
+			state->lcdc.curr_clk = state->lcdc.next_clk = 0;
 			lcdc_mode_change(state, 2);
 		}
 	}
