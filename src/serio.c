@@ -14,7 +14,7 @@ uint8_t serial_read(emu_state *restrict state, uint16_t reg)
 	switch(reg)
 	{
 	case 0xFF01:	// SB - data to read
-		return state->ser.in;
+		return state->ser.out;
 	case 0xFF02:	// SC - serial control
 	{
 		uint8_t res = 0;
@@ -92,7 +92,11 @@ void serial_tick(emu_state *restrict state, int count)
 		if((state->ser.curr_clk % ticks) == 0)
 		{
 			// TODO put out a bit.
+			state->ser.out <<= 1;
+
 			// TODO take in a bit.
+			state->ser.out |= 1;
+
 			// sockets?  IPC?  something else?  all three?
 			if(state->ser.cur_bit-- == -1)
 			{
