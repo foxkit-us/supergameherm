@@ -169,8 +169,7 @@ static inline void cgb_bg_render(emu_state *restrict state)
 			}
 		}
 
-		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
-		state->lcdc.out[state->lcdc.ly][x] = palette[pixel];
+		state->lcdc.out[state->lcdc.ly][x] = palette[pixel_temp & 3];
 		pixel_temp = rotl_16(pixel_temp, 2);
 	}
 }
@@ -289,8 +288,7 @@ static inline void cgb_window_render(emu_state *restrict state)
 			continue;
 		}
 
-		pixel = (state->lcdc.bg_pal >> ((pixel_temp & 3) * 2)) & 0x3;
-		state->lcdc.out[y][wx] = palette[pixel];
+		state->lcdc.out[y][wx] = palette[pixel_temp & 3];
 		pixel_temp = rotl_16(pixel_temp, 2);
 	}
 }
@@ -478,9 +476,7 @@ static inline void cgb_oam_render(emu_state *restrict state)
 				(obj.priority && row[obj_x + tx] ==
 				 dmg_palette[0])))
 			{
-				const uint8_t pal = state->lcdc.obj_pal[obj.pal_dmg];
-				const uint8_t pixel = (pal >> ((pixel_temp & 3) * 2)) & 0x3;
-				row[obj_x + tx] = palette[pixel];
+				row[obj_x + tx] = palette[pixel_temp & 0x3];
 			}
 
 			if(obj.hflip)
@@ -1088,7 +1084,7 @@ void hdma_reg_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	switch(reg)
 	{
 		case 0x51: // Source High
-			state->lcdc.hsrc = (state->lcdc.hsrc & 0x00FF)
+			state->lcdc.hsrc = (state->lcdc.hsrc & 0x00F0)
 				| (((uint16_t)data)<<8);
 			break;
 
@@ -1098,7 +1094,7 @@ void hdma_reg_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 			break;
 
 		case 0x53: // Dest High
-			state->lcdc.hdst = (state->lcdc.hdst & 0x00FF)
+			state->lcdc.hdst = (state->lcdc.hdst & 0x00F0)
 				| (((uint16_t)data)<<8);
 			break;
 
@@ -1110,20 +1106,21 @@ void hdma_reg_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		case 0x55: // Start transfer
 			// TODO: do this properly!
 			// TODO: clamp/verify addresses correctly
-			state->lcdc.hlen = data;
-			while((state->lcdc.hlen & 0x7F) != 0x7F)
+			for(i = 0; i < 16*((data&0x7F)+1); i++)
 			{
-				for(i = 0; i < 16; i++)
+				if(true
+					&& ((state->lcdc.hsrc >= 0x0000 && state->lcdc.hsrc <= 0x7FFF)
+					|| (state->lcdc.hsrc >= 0xA000 && state->lcdc.hsrc <= 0xDFFF))
+					&& (state->lcdc.hdst >= 0x8000 && state->lcdc.hdst <= 0x9FFF))
 				{
 					mem_write8(state, state->lcdc.hdst,
 						mem_read8(state, state->lcdc.hsrc));
-					state->lcdc.hsrc++;
-					state->lcdc.hdst++;
 				}
-				
-				state->lcdc.hlen = ((state->lcdc.hlen - 1) & 0x7F)
-					| (state->lcdc.hlen & 0x80);
+
+				state->lcdc.hsrc++;
+				state->lcdc.hdst++;
 			}
+
 			break;
 
 		default:

@@ -11,6 +11,7 @@ static inline void stop(emu_state *restrict state, uint8_t data[] UNUSED)
 		{
 			//state->freq = ((speed_reg & 0x40) ? CPU_FREQ_DMG : CPU_FREQ_CGB);
 			state->freq = (state->freq == CPU_FREQ_CGB ? CPU_FREQ_DMG : CPU_FREQ_CGB);
+			printf("Frequency transition to %i\n", state->freq);
 			state->key1 = false;
 		}
 		else
