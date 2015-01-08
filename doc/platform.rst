@@ -125,6 +125,13 @@ The libcaca and SDL 2 frontends work on 5.6/amd64.
 Other versions and architectures have not been tested.
 
 
+********
+Mac OS X
+********
+
+SDL 2 has not been tested.  libcaca does not work.
+
+
 *****
 Other
 *****
