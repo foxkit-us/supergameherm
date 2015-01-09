@@ -129,7 +129,8 @@ Other versions and architectures have not been tested.
 Mac OS X
 ********
 
-SDL 2 has not been tested.  libcaca does not work.
+SDL 2 has not been tested.  libcaca has endianness issues on PowerPC, and
+has not been tested on Intel Macs.
 
 
 *****
