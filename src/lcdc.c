@@ -32,6 +32,7 @@ void init_lcdc(emu_state *restrict state)
 
 	// Enable LCD + BG char sel + BG
 	state->lcdc.lcd_control = 0x91;
+	state->lcdc.next_clk = 0;
 
 	// Initialise to mode 2
 	state->lcdc.stat = 2;
@@ -578,6 +579,168 @@ static inline void render_scanline(emu_state *restrict state)
 	}
 }
 
+/*!
+ * @brief LCD Mode 02 - Reading OAM for current scan line.
+ * @details Mode 02 is the first mode of a scanline.  The LCD controller
+ * will read the OAM and determine which sprites need to be loaded during
+ * drawing.  The OAM area of memory is neither readable nor writable while
+ * this mode is active.  This mode typically lasts for 80 clocks, though
+ * it may have some variance.  Unknown at this point what causes the
+ * variance so we're leaving it a steady 80 for now.
+ */
+static inline void lcdc_mode2(emu_state *restrict state)
+{
+	uint8_t clocks = 167;
+	static bool lyc_checked = false;
+
+	if(state->lcdc.curr_clk < 80)
+	{
+		state->lcdc.next_clk = 80;
+		if(!lyc_checked)
+		{
+			if(state->lcdc.ly == state->lcdc.lyc && state->lcdc.curr_clk == 0)
+			{
+				// Set LYC flag
+				state->lcdc.stat |= 0x4;
+				
+				if(LCDC_STAT_LYC(state))
+				{
+					signal_interrupt(state, INT_LCD_STAT);
+				}
+			}
+			else
+			{
+				state->lcdc.stat &= ~0x4;
+			}
+			lyc_checked = true;
+		}
+	}
+	else
+	{
+		lcdc_mode_change(state, 3);
+		lyc_checked = false;
+		return;
+	}
+
+	/* Calculate the amount of clocks Mode 03 will need. */
+	clocks += state->lcdc.scroll_x % 7;
+
+	if(LCDC_WIN(state))
+	{
+		if(state->lcdc.window_x == 0)
+		{
+			clocks += 7;
+		}
+		clocks += 6;
+	}
+	else
+	{
+		clocks += 7;
+	}
+
+	state->lcdc.curr_m3_clks = clocks;
+}
+
+/*!
+ * @brief LCD Mode 03 - Reading VRAM for current scan line
+ * @details Only in this mode is VRAM inaccessible.  IT IS STILL
+ * ACCESSIBLE IN ALL OTHER MODES.
+ */
+static inline void lcdc_mode3(emu_state *restrict state)
+{
+	uint16_t needed_clk = 80 + state->lcdc.curr_m3_clks;
+
+	if(state->lcdc.curr_clk == needed_clk)
+	{
+		render_scanline(state);
+		lcdc_mode_change(state, 0);
+	}
+	else
+	{
+		state->lcdc.next_clk = needed_clk;
+	}
+}
+
+/*!
+ * @brief LCD Mode 00 - Horizontal Blank simulation
+ * @details ...
+ */
+static inline void lcdc_mode0(emu_state *restrict state)
+{
+	if(state->system < SYSTEM_CGB && state->lcdc.curr_clk == 452)
+	{
+		++(state->lcdc.ly);
+	}
+	else if(state->lcdc.curr_clk == 456)
+	{
+		if(state->system >= SYSTEM_CGB)
+		{
+			// NOTE: AGB does this also, if we ever emulate that.
+			++(state->lcdc.ly);
+		}
+		
+		if(state->lcdc.ly == 144)
+		{
+			// going to v-blank
+			state->lcdc.curr_clk = state->lcdc.next_clk = 0;
+			lcdc_mode_change(state, 1);
+		}
+		else
+		{
+			// start another scan line
+			state->lcdc.curr_clk = state->lcdc.next_clk = 0;
+			lcdc_mode_change(state, 2);
+		}
+	}
+	else if(unlikely(state->lcdc.initial && state->lcdc.ly == 0 && state->lcdc.curr_clk == 80))
+	{
+		state->lcdc.initial = false;
+		state->lcdc.curr_m3_clks = 174 + (state->lcdc.scroll_x % 7);
+		lcdc_mode_change(state, 3);
+	}
+}
+
+/*!
+ * @brief LCD Mode 01 - Vertical Blank / refresh
+ * @details ...
+ */
+static inline void lcdc_mode1(emu_state *restrict state)
+{
+	if(state->lcdc.ly == 144 && state->lcdc.curr_clk == 1)
+	{
+		// Fire the vblank interrupt
+		signal_interrupt(state, INT_VBLANK);
+		state->lcdc.throt_trigger = true;
+		
+		// Blit
+		BLIT_CANVAS(state);
+	}
+	
+	if(state->lcdc.curr_clk % 456 == 0)
+	{
+		if(state->lcdc.ly == 0)
+		{
+			state->lcdc.curr_clk = 0;
+			lcdc_mode_change(state, 2);
+		}
+		else
+		{
+			state->lcdc.ly++;
+		}
+	};
+	
+	if(state->lcdc.ly == 153 && state->lcdc.curr_clk >= 56)
+	{
+		state->lcdc.ly = 0;
+	}
+}
+
+typedef void (*lcdc_mode_fn)(emu_state *restrict);
+
+static lcdc_mode_fn mode_fns[0x4] = {
+	lcdc_mode0, lcdc_mode1, lcdc_mode2, lcdc_mode3
+};
+
 void lcdc_tick(emu_state *restrict state, int count)
 {
 	if(unlikely(state->stop) ||
@@ -586,129 +749,16 @@ void lcdc_tick(emu_state *restrict state, int count)
 		return;
 	}
 
+	if((state->lcdc.curr_clk + count) < state->lcdc.next_clk)
+	{
+		state->lcdc.curr_clk += count;
+		return;
+	}
+
 	for(; count > 0; count--)
 	{
 		state->lcdc.curr_clk++;
-
-		switch(LCDC_STAT_MODE_FLAG(state))
-		{
-		case 2:
-			// first mode - reading OAM for h scan line
-			if(state->lcdc.curr_clk == 80)
-			{
-				uint8_t clocks = 167;
-				clocks += state->lcdc.scroll_x % 7;
-
-				if(LCDC_WIN(state))
-				{
-					if(state->lcdc.window_x == 0)
-					{
-						clocks += 7;
-					}
-					clocks += 6;
-				}
-				else
-				{
-					clocks += 7;
-				}
-				state->lcdc.curr_m3_clks = clocks;
-				lcdc_mode_change(state, 3);
-			}
-			break;
-		case 3:
-		{
-			// second mode - reading VRAM for h scan line
-			if(state->lcdc.curr_clk == 80 + state->lcdc.curr_m3_clks)
-			{
-				render_scanline(state);
-				lcdc_mode_change(state, 0);
-			}
-			break;
-		}
-		case 0:
-			// third mode - h-blank
-			if(state->system < SYSTEM_CGB && state->lcdc.curr_clk == 452)
-			{
-				++(state->lcdc.ly);
-			}
-			else if(state->lcdc.curr_clk == 456)
-			{
-				if(state->system >= SYSTEM_CGB)
-				{
-					// NOTE: AGB does this also, if we ever emulate that.
-					++(state->lcdc.ly);
-				}
-
-				if(state->lcdc.ly == 144)
-				{
-					// going to v-blank
-					state->lcdc.curr_clk = 0;
-					lcdc_mode_change(state, 1);
-				}
-				else
-				{
-					// start another scan line
-					state->lcdc.curr_clk = 0;
-					lcdc_mode_change(state, 2);
-				}
-			}
-			else if(unlikely(state->lcdc.initial && state->lcdc.ly == 0 && state->lcdc.curr_clk == 80))
-			{
-				state->lcdc.initial = false;
-				state->lcdc.curr_m3_clks = 174 + (state->lcdc.scroll_x % 7);
-				lcdc_mode_change(state, 3);
-			}
-			break;
-		case 1:
-			// v-blank
-			if(state->lcdc.ly == 144 &&
-			   state->lcdc.curr_clk == 1)
-			{
-				// Fire the vblank interrupt
-				signal_interrupt(state, INT_VBLANK);
-				state->lcdc.throt_trigger = true;
-
-				// Blit
-				BLIT_CANVAS(state);
-			}
-
-			if(state->lcdc.curr_clk % 456 == 0)
-			{
-				if(state->lcdc.ly == 0)
-				{
-					state->lcdc.curr_clk = 0;
-					lcdc_mode_change(state, 2);
-				}
-				else
-				{
-					state->lcdc.ly++;
-				}
-			};
-
-			if(state->lcdc.ly == 153 && state->lcdc.curr_clk >= 56)
-			{
-				state->lcdc.ly = 0;
-			}
-			break;
-		default:
-			fatal(state, "somehow wound up in an unknown impossible video mode");
-		}
-
-		// FIXME: find out when this really fires
-		if(state->lcdc.ly == state->lcdc.lyc && state->lcdc.curr_clk == 0)
-		{
-			// Set LYC flag
-			state->lcdc.stat |= 0x4;
-
-			if(LCDC_STAT_LYC(state))
-			{
-				signal_interrupt(state, INT_LCD_STAT);
-			}
-		}
-		else
-		{
-			state->lcdc.stat &= ~0x4;
-		}
+		mode_fns[LCDC_STAT_MODE_FLAG(state)](state);
 	}
 }
 
