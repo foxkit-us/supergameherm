@@ -52,7 +52,11 @@ bool libcaca_init_video(emu_state *state)
 	video->display = caca_create_display(NULL);
 	if(!(video->display))
 	{
-		warning(state, "Failed to initalise the libcaca video frontend");
+		fatal(state, "Failed to initalise the libcaca video frontend");
+		fclose(video->stdout_new);
+		fclose(video->stderr_new);
+		to_stdout = stdout;
+		to_stderr = stderr;
 		free(video);
 		return false;
 	}
@@ -65,7 +69,7 @@ bool libcaca_init_video(emu_state *state)
 			RED, GREEN, BLUE, 0);
 	if(!(video->dither))
 	{
-		warning(state, "Failed to initalise the libcaca video frontend");
+		fatal(state, "Failed to initalise the libcaca video frontend");
 		caca_free_display(video->display);
 		fclose(video->stdout_new);
 		fclose(video->stderr_new);
