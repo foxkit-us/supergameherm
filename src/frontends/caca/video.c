@@ -67,6 +67,10 @@ bool libcaca_init_video(emu_state *state)
 	{
 		warning(state, "Failed to initalise the libcaca video frontend");
 		caca_free_display(video->display);
+		fclose(video->stdout_new);
+		fclose(video->stderr_new);
+		to_stdout = stdout;
+		to_stderr = stderr;
 		free(video);
 		return false;
 	}
