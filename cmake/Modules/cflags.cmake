@@ -25,41 +25,36 @@ macro(set_cflags)
 	if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
 		set(HAVE_COMPILER_CLANG "1")
 		test_c11()
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGHERM_C_STANDARD} -Wpedantic -Wall -Wextra")
+		list(APPEND CMAKE_C_FLAGS "${SGHERM_C_STANDARD} -Wpedantic -Wall -Wextra")
 		if(HAVE_POSIX)
-			set(CMAKE_CXX_FLAGS_DEBUG, "${CMAKE_CXX_FLAGS_DEBUG} -g3")
-			set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g3")
+			list(APPEND CMAKE_CXX_FLAGS_DEBUG "-g3")
+			list(APPEND CMAKE_C_FLAGS_RELWITHDEBINFO "-g3")
 		endif()
 	elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 		set(HAVE_COMPILER_GCC "1")
 		test_c11()
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGHERM_C_STANDARD} -pedantic -Wall -Wextra")
+		list(APPEND CMAKE_C_FLAGS "${SGHERM_C_STANDARD} -pedantic -Wall -Wextra")
 		if(HAVE_POSIX)
-			set(CMAKE_CXX_FLAGS_DEBUG, "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
-			set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -ggdb")
+			list(APPEND CMAKE_CXX_FLAGS_DEBUG "-ggdb")
+			list(APPEND CMAKE_C_FLAGS_RELWITHDEBINFO "-ggdb")
 		endif()
 	elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
 		set(HAVE_COMPILER_INTEL "1")
 		test_c11()
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGHERM_C_STANDARD} -Wall -Wextra")
-		if(HAVE_POSIX)
-			set(CMAKE_CXX_FLAGS_DEBUG, "${CMAKE_CXX_FLAGS_DEBUG} -g")
-			set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g")
-		endif()
+		list(APPEND CMAKE_C_FLAGS "${SGHERM_C_STANDARD} -Wall -Wextra")
 	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		set(HAVE_COMPILER_MSVC "1")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /G5 /Gr /D _CRT_SECURE_NO_WARNINGS")
+		list(APPEND CMAKE_CXX_FLAGS "/G5 /Gr /D _CRT_SECURE_NO_WARNINGS")
 		# /G5 - Enable Pentium optimisations
 		# /Gr - __fastcall as deafult
 		# /D _CRT_NO_SECURE_WARNINGS - disable whining about fopen and friends
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4
-		/Ot /Oa /Gy")
+		list(APPEND CMAKE_CXX_FLAGS_DEBUG "/MTd /W4 /Ot /Oa /Gy")
 		# /MTd - statically link to runtime library
 		# /W4 - enable all warnings
 		# /Ot, /Oa - still enable some performance improvements
 		# /Gy - function-level linking (slightly faster)
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zp4
-		/MT /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /GF")
+		list(APPEND CMAKE_CXX_FLAGS_RELEASE "/Zp4 /MT /W3 /Zi /Ox /Ot /Oa /Og /Ob2
+		/GF")
 		# /Zp4 - 4-byte struct alignment (~150k cycle/sec speed up on
 		# P5 microarchitecture)
 		# /MT - statically link to runtime library (larger file size,
