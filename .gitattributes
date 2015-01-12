@@ -1,3 +1,5 @@
 *.h linguist-language=C
 *.c linguist-language=C
 include/config.h.in linguist-language=CMake
+CMakeLists.txt linguist-language=CMake
+cmake/Modules/* linguist-language=CMake
