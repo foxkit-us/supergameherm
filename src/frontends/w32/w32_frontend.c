@@ -24,8 +24,8 @@
 /*! buffer length */
 #define WHD_BUF_LEN 2048
 
-LRESULT CALLBACK VViewProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK HermProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK VViewProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK HermProc(HWND, UINT, WPARAM, LPARAM);
 
 emu_state *g_state;
 
