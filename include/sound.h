@@ -101,7 +101,7 @@ struct snd_state_t
 
 uint8_t sound_read(emu_state *restrict, uint16_t);
 void sound_write(emu_state *restrict, uint16_t, uint8_t);
-void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size_t len_samples);
-void sound_tick(emu_state *restrict, int count);
+void sound_fetch_s16ne(emu_state *restrict, int16_t *restrict, size_t);
+void sound_tick(emu_state *restrict, int);
 
 #endif /*!__SOUND_H_*/

@@ -15,28 +15,28 @@
  * 		(atexit() methods are still run - use abort if you don't
  * 		like it.)
  */
-NORETURN void fatal(emu_state *state, const char *str, ...);
+NORETURN void fatal(emu_state *, const char *, ...);
 
 /*!
  * @brief	Report an error condition to the user.
  * @param	state	The state raising the error.  NULL if global.
  * @param	str	The format of the error to print.
  */
-void error(emu_state *state, const char *str, ...);
+void error(emu_state *, const char *, ...);
 
 /*!
  * @brief	Display information to the user.
  * @param	state	The state showing the message.  NULL if global.
  * @param	str	The format of the information to print.
  */
-void info(emu_state *state, const char *str, ...);
+void info(emu_state *, const char *, ...);
 
 /*!
  * @brief	Report a warning condition to the user
  * @param	state	The state reporting the warning.  NULL if global.
  * @param	str	The format of the warning to print
  */
-void warning(emu_state *state, const char *str, ...);
+void warning(emu_state *, const char *, ...);
 
 /*!
  * @brief	Display debug information to the user.
@@ -46,7 +46,7 @@ void warning(emu_state *state, const char *str, ...);
  * 		compilation.  Do not rely on this method for important
  * 		messages; use info instead.
  */
-void debug(emu_state *state, const char *str, ...);
+void debug(emu_state *, const char *, ...);
 
 //! Where stdout goes with these functions
 extern FILE *to_stdout;

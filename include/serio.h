@@ -17,6 +17,6 @@ struct ser_state_t
 
 uint8_t serial_read(emu_state *restrict, uint16_t);
 void serial_write(emu_state *restrict, uint16_t, uint8_t);
-void serial_tick(emu_state *restrict state, int count);
+void serial_tick(emu_state *restrict, int);
 
 #endif /*!__SERIO_H_*/

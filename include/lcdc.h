@@ -106,7 +106,7 @@ struct lcdc_state_t
 
 
 void init_lcdc(emu_state *restrict);
-void lcdc_tick(emu_state *restrict, int count);
+void lcdc_tick(emu_state *restrict, int);
 
 uint8_t lcdc_read(emu_state *restrict, uint16_t);
 uint8_t vram_read(emu_state *restrict, uint16_t);
@@ -138,6 +138,6 @@ void bg_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
 void sprite_pal_ind_write(emu_state *restrict, uint16_t, uint8_t);
 void sprite_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
 void hdma_reg_write(emu_state *restrict, uint16_t, uint8_t);
-uint8_t hdma_status_read(emu_state *restrict state, uint16_t reg);
+uint8_t hdma_status_read(emu_state *restrict, uint16_t);
 
 #endif /*!__LCDC_H_*/
