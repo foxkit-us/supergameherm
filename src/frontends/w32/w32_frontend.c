@@ -95,7 +95,9 @@ void w32_put_audio(emu_state *state)
 	if(woerr != MMSYSERR_NOERROR)
 	{
 		error(state, "waveOutWrite: %04X\n", woerr);
-	//} else {
+	//}
+	//else
+	//{
 		//printf("written!\n");
 	}
 }
