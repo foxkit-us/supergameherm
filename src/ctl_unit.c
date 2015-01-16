@@ -228,7 +228,7 @@ static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
 			opcode, cb, mnemonics_cb[cb], pc_prev, flags_prev);
 	}
 }
-#endif
+#endif //!NDEBUG
 
 //! the emulated CU for the 'z80-ish' CPU
 bool execute(emu_state *restrict state, int count)
@@ -251,7 +251,7 @@ bool execute(emu_state *restrict state, int count)
 		uint8_t flags_prev = REG_F(state);
 		uint8_t cb = 0;
 		const char *flag_req;
-#endif
+#endif //!NDEBUG
 
 		if(unlikely(state->dma_wait))
 		{
@@ -328,7 +328,7 @@ bool execute(emu_state *restrict state, int count)
 		{
 			flag_req = flags_expect[opcode];
 		}
-#endif /*NDEBUG*/
+#endif //NDEBUG
 
 		handler = handlers[opcode];
 		handler(state, op_data);
@@ -458,7 +458,7 @@ bool execute(emu_state *restrict state, int count)
 
 			break;
 		}
-#endif /*NDEBUG*/
+#endif //NDEBUG
 	}
 
 	return true;

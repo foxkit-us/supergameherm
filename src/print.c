@@ -76,4 +76,4 @@ void debug(emu_state *state UNUSED, const char *str, ...)
 
 	va_end(argp);
 }
-#endif
+#endif //NDEBUG

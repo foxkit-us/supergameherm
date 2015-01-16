@@ -778,7 +778,7 @@ inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 		// Every freaking game seems to do this.
 		warning(state, "read from VRAM while not in h/v-blank");
 	}
-#endif
+#endif //... *why*
 
 	if(reg < 0x8000 || reg > 0x9FFF)
 	{
@@ -786,7 +786,7 @@ inline uint8_t vram_read(emu_state *restrict state, uint16_t reg)
 		fatal
 #else
 		warning
-#endif
+#endif //NDEBUG
 		(state, "read from illegal VRAM address %04X", reg);
 	}
 
@@ -936,7 +936,7 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		// Every freaking game seems to do this
 		warning(state, "write to VRAM while not in h/v-blank");
 	}
-#endif
+#endif // *why*
 
 	if(reg < 0x8000 || reg > 0x9FFF)
 	{
@@ -944,7 +944,7 @@ inline void vram_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		fatal
 #else
 		warning
-#endif
+#endif //NDEBUG
 		(state, "write to illegal VRAM address %04X", reg);
 	}
 
@@ -1003,7 +1003,7 @@ inline void lcdc_ly_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_
 	fatal(state, "write to LY (FF44); you can't just vsync yourself!");
 #else
 	error(state, "write to LY (FF44) is being ignored");
-#endif
+#endif //!NDEBUG
 }
 
 inline void lcdc_lyc_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)

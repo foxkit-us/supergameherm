@@ -148,7 +148,7 @@ bool read_rom_data(emu_state *restrict state, const char *rom_path,
 #else
 		fatal(state, "invalid nintendo graphic!");
 		goto close_rom;
-#endif
+#endif //NDEBUG
 	}
 	else
 	{

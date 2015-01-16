@@ -141,7 +141,7 @@ bool step_emulator(emu_state *restrict state)
 			state->next_vblank_time = t - (int64_t)(NSEC_PER_VBLANK*5);
 		}
 	}
-#endif
+#endif //THROTTLE_VBLANK
 
 	return true;
 }

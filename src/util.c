@@ -104,8 +104,8 @@ void unix_time_delta(uint64_t t_new, uint64_t t_old, time_delta *td)
 #endif
 
 #if defined(_WIN32) || defined(HAVE_POSIX)
-#include <sys/types.h>
-#include <sys/stat.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
 
 int64_t get_file_size(const char *path)
 {
@@ -120,7 +120,7 @@ int64_t get_file_size(const char *path)
 }
 #else
 
-#include <stdio.h>	// FILE, etc.
+#	include <stdio.h>	// FILE, etc.
 
 // ANSI portable version, slow but works
 int64_t get_file_size(const char *path)
@@ -144,4 +144,4 @@ int64_t get_file_size(const char *path)
 
 	return ret;
 }
-#endif
+#endif //defined(_WIN32) || defined(HAVE_POSIX)

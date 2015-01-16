@@ -1,13 +1,13 @@
 // need strdup
 // this must be called before windows.h is
 #ifdef __STRICT_ANSI__
-#define OLD_STRICT_ANSI __STRICT_ANSI__
-#undef __STRICT_ANSI__
-#include <string.h>
-#define __STRICT_ANSI__ OLD_STRICT_ANSI
+#	define OLD_STRICT_ANSI __STRICT_ANSI__
+#	undef __STRICT_ANSI__
+#	include <string.h>
+#	define __STRICT_ANSI__ OLD_STRICT_ANSI
 #else
-#include <string.h>
-#endif
+#	include <string.h>
+#endif //__STRICT_ANSI__
 
 #include <stdio.h>
 #include <errno.h>

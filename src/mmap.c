@@ -15,8 +15,8 @@
 #ifdef HAVE_MAP_ANONYMOUS
 #	ifndef MAP_ANONYMOUS
 #		define MAP_ANONYMOUS MAP_ANON
-#	endif
-#endif
+#	endif //!MAP_ANONYMOUS
+#endif //HAVE_MAP_ANONYMOUS
 
 #include <sys/mman.h>	// mmap/munmap/msync
 #include <unistd.h>	// open/close
@@ -140,7 +140,7 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 		}
 
 		m_state->flags = MAP_PRIVATE;
-#endif
+#endif //HAVE_MAP_ANONYMOUS
 	}
 
 	// Round up to nearest page size
