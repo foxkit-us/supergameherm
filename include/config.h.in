@@ -4,6 +4,7 @@
 // Frontends
 #cmakedefine HAVE_LIBCACA
 #cmakedefine HAVE_SDL2
+#cmakedefine HAVE_QT4
 
 // System has CLOCK_GETTIME
 #cmakedefine HAVE_CLOCK_GETTIME
