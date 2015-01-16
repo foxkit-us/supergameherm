@@ -727,7 +727,7 @@ static inline void lcdc_mode1(emu_state *restrict state)
 		{
 			state->lcdc.ly++;
 		}
-	};
+	}
 	
 	if(state->lcdc.ly == 153 && state->lcdc.curr_clk >= 56)
 	{
