@@ -67,19 +67,15 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 		// nope, data is ignored.  reset to 0.
 		state->timer.div = 0;
 		return;
-	/*
-	 * TIMA - XXX FIXME does any game do this?
-	 * should it reset to 0 ala DIV or does it keep data?
-	 */
+
+	// TIMA
 	case 0xFF05:
-		state->timer.tima = data;
+		state->timer.tima = 0;
 		return;
-	/*
-	 * TMA - I guess writing to this maybe makes sense
-	 * maybe...
-	 */
+
+	// TMA
 	case 0xFF06:
-		state->timer.rounds = data;
+		state->timer.rounds = 0;
 		return;
 	/*
 	 * TAC - timer control
@@ -105,7 +101,7 @@ void timer_tick(emu_state *restrict state, int count)
 	// DIV increases even if the timer is disabled
 	for(i = 0; i < count; i++)
 	{
-		if(++state->timer.curr_clk % 128 == 0)
+		if(++state->timer.div_clk == 0)
 		{
 			state->timer.div++;
 		}

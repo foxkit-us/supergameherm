@@ -14,6 +14,7 @@ struct timer_state_t
 	uint8_t rounds;			//! TMA register
 	uint16_t ticks_per_tima;	//! ticks per TIMA++
 	uint8_t curr_clk;		//! ticks passed
+	uint8_t div_clk;		//! DIV clock
 	bool enabled;			//! timer armed
 };
 
