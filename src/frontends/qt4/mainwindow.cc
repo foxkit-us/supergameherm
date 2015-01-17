@@ -1,6 +1,7 @@
 #include <QtGui>
 
 #include "frontends/qt4/mainwindow.h"
+#include "frontends/qt4/emuthread.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -131,6 +132,16 @@ void MainWindow::quickOpenRom()
 						       filter,
 						       0,
 						       QFileDialog::HideNameFilterDetails);
+
+	EmuThread *thread = new EmuThread(romFile, 0, 0, this);
+	if(thread->initialise())
+	{
+		thread->start();
+	}
+	else
+	{
+		delete thread;
+	}
 }
 
 /*!
