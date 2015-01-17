@@ -134,7 +134,7 @@ static inline void cgb_bg_render(emu_state *restrict state)
 	uint32_t *palette = state->lcdc.bcpal;
 	for(x = 0; x < 160; x++, sx++)
 	{
-		uint8_t pixel;
+		//uint8_t pixel;
 
 		if(x == 0 || (sx & 7) == 0)
 		{
@@ -255,7 +255,7 @@ static inline void cgb_window_render(emu_state *restrict state)
 	uint32_t *palette = state->lcdc.bcpal;
 	for(; wx < 159; x++, wx++)
 	{
-		uint8_t pixel;
+		//uint8_t pixel;
 
 		if((wx & 7) == 0 || x == 0)
 		{
@@ -602,7 +602,7 @@ static inline void lcdc_mode2(emu_state *restrict state)
 			{
 				// Set LYC flag
 				state->lcdc.stat |= 0x4;
-				
+
 				if(LCDC_STAT_LYC(state))
 				{
 					signal_interrupt(state, INT_LCD_STAT);
@@ -678,7 +678,7 @@ static inline void lcdc_mode0(emu_state *restrict state)
 			// NOTE: AGB does this also, if we ever emulate that.
 			++(state->lcdc.ly);
 		}
-		
+
 		if(state->lcdc.ly == 144)
 		{
 			// going to v-blank
@@ -711,11 +711,11 @@ static inline void lcdc_mode1(emu_state *restrict state)
 		// Fire the vblank interrupt
 		signal_interrupt(state, INT_VBLANK);
 		state->lcdc.throt_trigger = true;
-		
+
 		// Blit
 		BLIT_CANVAS(state);
 	}
-	
+
 	if(state->lcdc.curr_clk % 456 == 0)
 	{
 		if(state->lcdc.ly == 0)
@@ -728,7 +728,7 @@ static inline void lcdc_mode1(emu_state *restrict state)
 			state->lcdc.ly++;
 		}
 	}
-	
+
 	if(state->lcdc.ly == 153 && state->lcdc.curr_clk >= 56)
 	{
 		state->lcdc.ly = 0;
