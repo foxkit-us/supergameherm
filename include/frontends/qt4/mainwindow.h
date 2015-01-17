@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 
+#include "frontends/qt4/emuthread.h"
+#include "frontends/qt4/lcdwidget.h"
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -26,10 +29,14 @@ private slots:
 	void fileBug();
 	void showAbout();
 
+	void frameRendered(QImage);
+
 private:
 	void initActions();
 	void initMenus();
 	void initWidgets();
+
+	void toggleOpenROM(bool);
 
 	QMenu *romMenu;
 	QAction *openRomAction;
@@ -47,6 +54,9 @@ private:
 	QAction *openDocAction;
 	QAction *fileBugAction;
 	QAction *aboutAction;
+
+	EmuThread *thread;
+	LCDWidget *lcd;
 };
 
 #endif //__MAINWINDOW_H_

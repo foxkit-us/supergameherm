@@ -1,7 +1,6 @@
 #include <QtGui>
 
 #include "frontends/qt4/mainwindow.h"
-#include "frontends/qt4/emuthread.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -109,7 +108,26 @@ void MainWindow::initMenus()
  */
 void MainWindow::initWidgets()
 {
+	lcd = new LCDWidget(this);
+	this->setCentralWidget(lcd);
+}
 
+/*!
+ * @brief Toggle actions/menus/etc for when a ROM is opened or closed.
+ * @param isOpen	Whether a ROM is open or not.
+ */
+void MainWindow::toggleOpenROM(bool isOpen)
+{
+	openRomAction->setEnabled(!isOpen);
+	quickOpenRomAction->setEnabled(!isOpen);
+	saveStateAction->setEnabled(isOpen);
+	closeRomAction->setEnabled(isOpen);
+}
+
+void MainWindow::frameRendered(QImage image)
+{
+	lcd->currentFrame = image;
+	lcd->update();
 }
 
 /*!
@@ -133,9 +151,11 @@ void MainWindow::quickOpenRom()
 						       0,
 						       QFileDialog::HideNameFilterDetails);
 
-	EmuThread *thread = new EmuThread(romFile, 0, 0, this);
+	thread = new EmuThread(romFile, 0, 0, this);
+	connect(thread, SIGNAL(frameRendered(QImage)), this, SLOT(frameRendered(QImage)));
 	if(thread->initialise())
 	{
+		toggleOpenROM(true);
 		thread->start();
 	}
 	else
@@ -158,7 +178,8 @@ void MainWindow::saveState()
  */
 void MainWindow::closeRom()
 {
-	// todo
+	toggleOpenROM(false);
+	delete thread;
 }
 
 /*!

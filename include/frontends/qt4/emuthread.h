@@ -2,8 +2,11 @@
 #define __EMUTHREAD_H__
 
 #include <QThread>
-extern "C" {
-#include "sgherm.h"
+#include <QImage>
+
+extern "C"
+{
+#	include "sgherm.h"
 }
 
 class EmuThread : public QThread
@@ -21,16 +24,21 @@ protected:
 	void run();
 
 signals:
+	void frameRendered(QImage);
 
 public slots:
 
 private:
+	void blitHandler(uchar *);
+
 	QString pathToROM;
 	QString pathToSave;
 	QString pathToBootROM;
 
 	emu_state *state;
-	bool go = true;
+	bool go;
+
+	friend void qt4_blit_canvas(emu_state *state);
 };
 
 #endif // !__EMUTHREAD_H__

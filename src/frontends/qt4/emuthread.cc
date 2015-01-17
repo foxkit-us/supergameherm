@@ -15,6 +15,8 @@ void qt4_video_finish(emu_state *state)
 
 void qt4_blit_canvas(emu_state *state)
 {
+	EmuThread *thread = static_cast<EmuThread *>(state->front.data);
+	thread->blitHandler(reinterpret_cast<uchar *>(&state->lcdc.out));
 }
 
 frontend_video_t qt4_video = {
@@ -54,8 +56,10 @@ bool EmuThread::initialise()
 		return false;
 	}
 
+	state->front.data = this;
+
 	// why NULL_LOOP?  because we use thread->run().
-	select_frontend_all(state, NULL_AUDIO, &qt4_video, NULL_LOOP);
+	select_frontend_all(state, SDL2_AUDIO, &qt4_video, NULL_LOOP);
 
 	return true;
 }
@@ -63,11 +67,27 @@ bool EmuThread::initialise()
 void EmuThread::run()
 {
 	QEventLoop loop;
+	go = true;
+	int i = 0;
+
 	while(go)
 	{
-		loop.processEvents();
+		// process events every 64 ticks.  why?  idk.
+		// I literally pulled this number out of my butt.  it works.
+		// I doubt input could be processed any quicker any way.
+		if(++i == 64)
+		{
+			loop.processEvents();
+			i = 0;
+		}
 		step_emulator(state);
 	}
+}
+
+void EmuThread::blitHandler(uchar *data)
+{
+	QImage im(data, 160, 144, QImage::Format_ARGB32);
+	emit frameRendered(im);
 }
 
 EmuThread::~EmuThread()
