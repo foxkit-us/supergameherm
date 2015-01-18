@@ -34,7 +34,7 @@ static inline int key_to_index(input_key key)
 	}
 }
 
-static inline int key_scan(emu_state *restrict state)
+int key_scan(emu_state *restrict state)
 {
 	int val = 0xf;
 	int i = 0;
@@ -58,16 +58,6 @@ static inline int key_scan(emu_state *restrict state)
 	}
 
 	return val;
-}
-
-uint8_t joypad_read(emu_state *restrict state, uint16_t reg UNUSED)
-{
-	return (state->input.col << 4) | key_scan(state);
-}
-
-void joypad_write(emu_state *restrict state, uint16_t reg UNUSED, uint8_t data)
-{
-	state->input.col = data >> 4;
 }
 
 void joypad_signal(emu_state *restrict state, input_key key, bool down)
