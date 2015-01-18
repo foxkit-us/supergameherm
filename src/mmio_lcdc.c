@@ -333,8 +333,7 @@ static inline void hdma_reg_write(emu_state *restrict state, uint16_t reg, uint8
 			// TODO: clamp/verify addresses correctly
 			for(i = 0; i < 16*((data&0x7F)+1); i++)
 			{
-				if(true
-					&& ((state->lcdc.hsrc >= 0x0000 && state->lcdc.hsrc <= 0x7FFF)
+				if(((state->lcdc.hsrc <= 0x7FFF)
 					|| (state->lcdc.hsrc >= 0xA000 && state->lcdc.hsrc <= 0xDFFF))
 					&& (state->lcdc.hdst >= 0x8000 && state->lcdc.hdst <= 0x9FFF))
 				{
