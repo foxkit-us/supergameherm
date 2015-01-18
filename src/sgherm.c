@@ -102,7 +102,16 @@ bool step_emulator(emu_state *restrict state)
 	int count_per_step = 1;
 	int count_per_step_core = (state->freq == CPU_FREQ_CGB ? 2 : 1);
 
-	execute(state, count_per_step_core);
+	// The overhead of calling execute is enough where this is worthwhile
+	if(state->wait)
+	{
+		state->wait--;
+	}
+	else
+	{
+		execute(state, count_per_step_core);
+	}
+
 	lcdc_tick(state, count_per_step);
 	serial_tick(state, count_per_step_core);
 	timer_tick(state, count_per_step_core);

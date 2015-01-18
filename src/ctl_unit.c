@@ -189,47 +189,15 @@ static inline void call_interrupt(emu_state *restrict state)
 	state->interrupts.irq = 0;
 }
 
-#ifndef NDEBUG
-static inline void dump_all_state_invalid_flag(emu_state *state, uint8_t opcode,
-		uint8_t cb, uint16_t pc_prev, uint8_t flags_prev)
-{
-	dump_all_state(state);
-
-	if(cb == 0)
-	{
-		debug(state, "opcode: %02X [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
-			opcode, mnemonics[opcode], pc_prev, flags_prev);
-	}
-	else
-	{
-		debug(state, "opcode: %02X [cb %02X] [mnemonic: %s] pc_prev: %04X flags_prev: %04X",
-			opcode, cb, mnemonics_cb[cb], pc_prev, flags_prev);
-	}
-}
-#endif //!NDEBUG
-
 //! the emulated CU for the 'z80-ish' CPU
 bool execute(emu_state *restrict state, int count)
 {
-	uint8_t opcode;
-	uint8_t op_data[2] = {0xBE, 0xEF};
-	int op_len;
-	opcode_t handler;
-
 	for(; count > 0; count--)
 	{
-		if(state->wait)
-		{
-			state->wait--;
-			continue;
-		}
-
-#ifndef NDEBUG
-		uint16_t pc_prev = REG_PC(state);
-		uint8_t flags_prev = REG_F(state);
-		uint8_t cb = 0;
-		const char *flag_req;
-#endif //!NDEBUG
+		uint8_t opcode;
+		uint8_t op_data[2] = {0xBE, 0xEF};
+		int op_len;
+		opcode_t handler;
 
 		if(unlikely(state->dma_wait))
 		{
@@ -247,7 +215,6 @@ bool execute(emu_state *restrict state, int count)
 		{
 			call_interrupt(state);
 		}
-
 
 		switch(state->interrupts.enable_ctr)
 		{
@@ -296,147 +263,8 @@ bool execute(emu_state *restrict state, int count)
 			}
 		}
 
-#ifndef NDEBUG
-		if(opcode == 0xCB)
-		{
-			cb = op_data[0];
-			flag_req = flags_cb_expect[cb];
-		}
-		else
-		{
-			flag_req = flags_expect[opcode];
-		}
-#endif //NDEBUG
-
 		handler = handlers[opcode];
 		handler(state, op_data);
-
-#ifndef NDEBUG
-		// Flag assertions
-		switch(flag_req[0])
-		{
-		case '-':
-			// Check to see if it has changed
-			if((REG_F(state) ^ flags_prev) & FLAG_Z)
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag Z changed when it wasn't supposed to");
-			}
-
-			break;
-		case '0':
-			// Check to ensure the flag has been cleared
-			if(IS_FLAG(state, FLAG_Z))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag Z is set when it is NOT supposed to be");
-			}
-
-			break;
-		case '1':
-			// Check to ensure the flag has been set
-			if(!IS_FLAG(state, FLAG_Z))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag Z is NOT set when it is supposed to be");
-			}
-
-			break;
-		}
-
-		switch(flag_req[1])
-		{
-		case '-':
-			// Check to see if it has changed
-			if((REG_F(state) ^ flags_prev) & FLAG_N)
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag N changed when it wasn't supposed to");
-			}
-
-			break;
-		case '0':
-			// Check to ensure the flag has been cleared
-			if(IS_FLAG(state, FLAG_N))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag N is set when it is NOT supposed to be");
-			}
-
-			break;
-		case '1':
-			// Check to ensure the flag has been set
-			if(!IS_FLAG(state, FLAG_N))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag N is NOT set when it is supposed to be");
-			}
-
-			break;
-		}
-
-		switch(flag_req[2])
-		{
-		case '-':
-			// Check to see if it has changed
-			if((REG_F(state) ^ flags_prev) & FLAG_H)
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag H changed when it wasn't supposed to");
-			}
-
-			break;
-		case '0':
-			// Check to ensure the flag has been cleared
-			if(IS_FLAG(state, FLAG_H))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag H is set when it is NOT supposed to be");
-			}
-
-			break;
-		case '1':
-			// Check to ensure the flag has been set
-			if(!IS_FLAG(state, FLAG_H))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag H is NOT set when it is supposed to be");
-			}
-
-			break;
-		}
-
-		switch(flag_req[3])
-		{
-		case '-':
-			// Check to see if it has changed
-			if((REG_F(state) ^ flags_prev) & FLAG_C)
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag C changed when it wasn't supposed to");
-			}
-
-			break;
-		case '0':
-			// Check to ensure the flag has been cleared
-			if(IS_FLAG(state, FLAG_C))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag C is set when it is NOT supposed to be");
-			}
-
-			break;
-		case '1':
-			// Check to ensure the flag has been set
-			if(!IS_FLAG(state, FLAG_C))
-			{
-				dump_all_state_invalid_flag(state, opcode, cb, pc_prev, flags_prev);
-				fatal(state, "Flag C is NOT set when it is supposed to be");
-			}
-
-			break;
-		}
-#endif //NDEBUG
 	}
 
 	return true;
