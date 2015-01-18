@@ -46,7 +46,9 @@ stderr.log
 # CMake
 CMakeCache.txt
 CMakeFiles
-build
 Makefile
 cmake_install.cmake
 include/config.h
+
+# Qt Creator
+CMakeLists.txt.user
