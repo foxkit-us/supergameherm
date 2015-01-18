@@ -37,8 +37,7 @@ struct input_state_t
 };
 
 
-uint8_t joypad_read(emu_state *restrict, uint16_t);
-void joypad_write(emu_state *restrict, uint16_t, uint8_t);
+int key_scan(emu_state *restrict);
 void joypad_signal(emu_state *restrict, input_key, bool);
 
 #endif /*!__INPUT_H_*/

@@ -44,18 +44,17 @@ macro(set_cflags)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGHERM_C_STANDARD} -Wall -Wextra")
 	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		set(HAVE_COMPILER_MSVC "1")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /G5 /Gr /D _CRT_SECURE_NO_WARNINGS")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /G5 /Gr /D _CRT_SECURE_NO_WARNINGS")
 		# /G5 - Enable Pentium optimisations
 		# /Gr - __fastcall as deafult
 		# /D _CRT_NO_SECURE_WARNINGS - disable whining about fopen and friends
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4
-		/Ot /Oa /Gy")
+		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd /W4 /Ot /Oa /Gy")
 		# /MTd - statically link to runtime library
 		# /W4 - enable all warnings
 		# /Ot, /Oa - still enable some performance improvements
 		# /Gy - function-level linking (slightly faster)
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zp4
-		/MT /W3 /Zi /Ox /Ot /Oa /Og /Ob2 /GF")
+		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Zp4 /MT
+		/W3 /Zi /Ox /Ot /Oa /Og /Ob2 /GF")
 		# /Zp4 - 4-byte struct alignment (~150k cycle/sec speed up on
 		# P5 microarchitecture)
 		# /MT - statically link to runtime library (larger file size,

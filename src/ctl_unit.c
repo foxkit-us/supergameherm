@@ -26,28 +26,6 @@ void signal_interrupt(emu_state *restrict state, int interrupt)
 	compute_irq(state);
 }
 
-uint8_t int_flag_read(emu_state *restrict state, uint16_t location UNUSED)
-{
-	return state->interrupts.pending;
-}
-
-void int_flag_write(emu_state *restrict state, uint16_t location UNUSED, uint8_t data)
-{
-	state->interrupts.pending = data;
-	compute_irq(state);
-}
-
-uint8_t int_mask_flag_read(emu_state *restrict state, uint16_t location UNUSED)
-{
-	return state->interrupts.mask;
-}
-
-void int_mask_flag_write(emu_state *restrict state, uint8_t data)
-{
-	state->interrupts.mask = data;
-	compute_irq(state);
-}
-
 #include "instr_alu_arith.c"
 #include "instr_alu_logic.c"
 #include "instr_branch.c"

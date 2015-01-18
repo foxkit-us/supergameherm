@@ -4,7 +4,7 @@
 #include "config.h"	// bool, *int*_t
 #include "sgherm.h"	// emu_state
 #include "rom.h"	// OFF_CART_TYPE
-#include "mmap.h"	// memmap_*
+#include "memmap.h"	// memmap_*
 
 
 typedef enum

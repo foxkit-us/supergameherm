@@ -104,40 +104,9 @@ struct lcdc_state_t
 #define LCDC_STAT_LYC(state) ((state)->lcdc.stat & 0x40)
 
 
-
 void init_lcdc(emu_state *restrict);
 void lcdc_tick(emu_state *restrict, int);
 
-uint8_t lcdc_read(emu_state *restrict, uint16_t);
-uint8_t vram_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_control_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_stat_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_scroll_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_ly_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_lyc_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_bgp_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_objp_read(emu_state *restrict, uint16_t);
-uint8_t lcdc_window_read(emu_state *restrict, uint16_t);
-uint8_t bg_pal_ind_read(emu_state *restrict, uint16_t);
-uint8_t bg_pal_data_read(emu_state *restrict, uint16_t);
-uint8_t sprite_pal_ind_read(emu_state *restrict, uint16_t);
-uint8_t sprite_pal_data_read(emu_state *restrict, uint16_t);
-
-void lcdc_write(emu_state *restrict, uint16_t, uint8_t);
-void vram_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_control_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_stat_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_scroll_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_ly_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_lyc_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_bgp_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_objp_write(emu_state *restrict, uint16_t, uint8_t);
-void lcdc_window_write(emu_state *restrict, uint16_t, uint8_t);
-void bg_pal_ind_write(emu_state *restrict, uint16_t, uint8_t);
-void bg_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
-void sprite_pal_ind_write(emu_state *restrict, uint16_t, uint8_t);
-void sprite_pal_data_write(emu_state *restrict, uint16_t, uint8_t);
-void hdma_reg_write(emu_state *restrict, uint16_t, uint8_t);
-uint8_t hdma_status_read(emu_state *restrict, uint16_t);
+void lcdc_mode_change(emu_state *restrict, uint8_t);
 
 #endif /*!__LCDC_H_*/

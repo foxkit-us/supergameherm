@@ -26,8 +26,6 @@ typedef enum
 } cpu_freq;
 
 
-uint8_t timer_read(emu_state *restrict, uint16_t);
-void timer_write(emu_state *restrict, uint16_t, uint8_t);
 void timer_tick(emu_state *restrict, int);
 
 #endif /*!__TIMER_H_*/
