@@ -63,7 +63,7 @@ void CALLBACK KillAfter30(HWND hWnd UNUSED, UINT iMsg UNUSED, UINT_PTR idEvent U
 	do_exit = true;
 }
 
-void w32_put_audio(emu_state *state)
+void w32_put_audio(emu_state *restrict state)
 {
 	int woerr;
 	audio_state *ad = (audio_state *)(state->front.audio.data);
@@ -102,7 +102,7 @@ void w32_put_audio(emu_state *state)
 	}
 }
 
-void w32_pull_audio(emu_state *state)
+void w32_pull_audio(emu_state *restrict state)
 {
 	audio_state *ad = (audio_state *)(state->front.audio.data);
 	int idx;
@@ -140,7 +140,7 @@ void CALLBACK w32_audio_callback(HWAVEOUT waveout UNUSED, UINT uMsg, DWORD_PTR d
 	}
 }
 
-bool w32_init_audio(emu_state *state)
+bool w32_init_audio(emu_state *restrict state)
 {
 	WAVEFORMATEX wfex;
 	int woerr;
@@ -191,7 +191,7 @@ bool w32_init_audio(emu_state *state)
 	return true;
 }
 
-void w32_finish_audio(emu_state *state)
+void w32_finish_audio(emu_state *restrict state)
 {
 	audio_state *ad = (audio_state *)state->front.audio.data;
 
@@ -201,14 +201,14 @@ void w32_finish_audio(emu_state *state)
 	state->front.audio.data = NULL;
 }
 
-void w32_output_sample(emu_state *state UNUSED)
+void w32_output_sample(emu_state *restrict state UNUSED)
 {
 	//printf("PUT\n");
 	w32_put_audio(state);
 	return;
 }
 
-bool w32_init_video(emu_state *state)
+bool w32_init_video(emu_state *restrict state)
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 	WNDCLASSEX wndcl;
@@ -281,7 +281,7 @@ bool w32_init_video(emu_state *state)
 	return true;
 }
 
-void w32_finish_video(emu_state *state)
+void w32_finish_video(emu_state *restrict state)
 {
 	video_state *s = (video_state *)state->front.video.data;
 
@@ -293,7 +293,7 @@ void w32_finish_video(emu_state *state)
 	state->front.video.data = NULL;
 }
 
-uint32_t *GetPixelsForTiles(emu_state *state)
+uint32_t *GetPixelsForTiles(emu_state *restrict state)
 {
 	uint32_t *fb = calloc(256 * 256, 4);
 
@@ -326,7 +326,7 @@ uint32_t *GetPixelsForTiles(emu_state *state)
 	return fb;
 }
 
-void w32_blit_canvas(emu_state *state)
+void w32_blit_canvas(emu_state *restrict state)
 {
 	video_state *s = (video_state *)state->front.video.data;
 	HDC hdc = GetDC(s->hWnd);
@@ -341,8 +341,8 @@ void w32_blit_canvas(emu_state *state)
 
 	if(s->vramViewerIsActive)
 	{
-		HDC hdc = GetDC(s->vramWindow);
 		uint32_t *stuff = GetPixelsForTiles(state);
+		hdc = GetDC(s->vramWindow);
 		SetBitmapBits(s->vramBM, 262144, stuff);
 		free(stuff);
 		BitBlt(hdc, 0, 0, 256, 256, s->vramMem, 0, 0, SRCCOPY);
@@ -350,7 +350,7 @@ void w32_blit_canvas(emu_state *state)
 	}
 }
 
-void ShowVRAMViewer(emu_state *state)
+void ShowVRAMViewer(emu_state *restrict state)
 {
 	HDC hdc;
 	video_state *s = (video_state *)state->front.video.data;
@@ -367,7 +367,7 @@ void ShowVRAMViewer(emu_state *state)
 	ReleaseDC(s->vramWindow, hdc);
 }
 
-input_key TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam UNUSED)
+input_key TranslateKeyToGameBoy(emu_state *restrict state, WPARAM wParam, LPARAM lParam UNUSED)
 {
 	switch(wParam)
 	{
@@ -404,12 +404,12 @@ input_key TranslateKeyToGameBoy(emu_state *state, WPARAM wParam, LPARAM lParam U
 	}
 }
 
-void StepEmulator(emu_state *state)
+void StepEmulator(emu_state *restrict state)
 {
 	step_emulator(state);
 }
 
-int w32_event_loop(emu_state *state UNUSED)
+int w32_event_loop(emu_state *restrict state UNUSED)
 {
 	//video_state *s = (video_state *)state->front.video.data;
 	MSG msg;

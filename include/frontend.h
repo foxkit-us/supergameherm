@@ -8,20 +8,20 @@
 
 struct frontend_audio_t
 {
-	bool (*init)(emu_state *);		//! Initalise the audio output
-	void (*finish)(emu_state *);		//! Deinitalise the audio output
-	void (*output_sample)(emu_state *);	//! Output an audio sample
+	bool (*init)(emu_state *restrict);		//! Initalise the audio output
+	void (*finish)(emu_state *restrict);		//! Deinitalise the audio output
+	void (*output_sample)(emu_state *restrict);	//! Output an audio sample
 
-	void *data;				//! Opaque data
+	void *data;					//! Opaque data
 };
 
 struct frontend_video_t
 {
-	bool (*init)(emu_state *);		//! Initalise the video output
-	void (*finish)(emu_state *);		//! Deinitalise the video output
-	void (*blit_canvas)(emu_state *);	//! Blit the canvas
+	bool (*init)(emu_state *restrict);		//! Initalise the video output
+	void (*finish)(emu_state *restrict);		//! Deinitalise the video output
+	void (*blit_canvas)(emu_state *restrict);	//! Blit the canvas
 
-	void *data;				//! Opaque data
+	void *data;					//! Opaque data
 };
 
 struct frontend_t
@@ -31,7 +31,7 @@ struct frontend_t
 
 	bool input_set, audio_set, video_set;
 
-	int (*event_loop)(emu_state *);		//! Event loop function (for use with toolkits)
+	int (*event_loop)(emu_state *restrict);	//! Event loop function (for use with toolkits)
 
 	void *data;				//! Opaque data
 };
@@ -56,7 +56,7 @@ void finish_frontend(emu_state *restrict);
 //! Null frontends
 extern const frontend_audio null_frontend_audio;
 extern const frontend_video null_frontend_video;
-int null_event_loop(emu_state *);
+int null_event_loop(emu_state *restrict);
 
 #define NULL_AUDIO &null_frontend_audio
 #define NULL_VIDEO &null_frontend_video

@@ -108,7 +108,7 @@ struct mbc_state_t
 };
 
 
-bool mbc_select(emu_state *);
-void adjust_mbc3_time(emu_state *); // XXX
+bool mbc_select(emu_state *restrict);
+void adjust_mbc3_time(emu_state *restrict); // XXX
 
 #endif //__MBC_H__
