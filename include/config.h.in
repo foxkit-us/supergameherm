@@ -66,4 +66,8 @@
 // For lesser platforms
 #include "platform/stubs.h"
 
+#ifdef __cplusplus
+#	define restrict
+#endif
+
 #endif /*__CONFIG_H__*/
