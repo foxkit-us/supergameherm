@@ -3,6 +3,10 @@
 
 #include "frontends/sdl2/sdl_inc.h"
 
+#if defined(HAVE_MACH_CLOCK_H)
+#	undef bool
+typedef _Bool bool;
+#endif
 
 typedef struct sdl2_video_data_t
 {
