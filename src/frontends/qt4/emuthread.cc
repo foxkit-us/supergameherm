@@ -16,7 +16,7 @@ void qt4_video_finish(emu_state *state)
 void qt4_blit_canvas(emu_state *state)
 {
 	EmuThread *thread = static_cast<EmuThread *>(state->front.data);
-	thread->blitHandler(reinterpret_cast<uchar *>(&state->lcdc.out));
+	thread->blitHandler();
 }
 
 frontend_video_t qt4_video = {
@@ -84,10 +84,19 @@ void EmuThread::run()
 	}
 }
 
-void EmuThread::blitHandler(uchar *data)
+void EmuThread::blitHandler()
 {
-	QImage im(data, 160, 144, QImage::Format_ARGB32);
-	emit frameRendered(im);
+	emit frameRendered();
+}
+
+uchar *EmuThread::frameLocation()
+{
+	if(state == NULL)
+	{
+		return NULL;
+	}
+
+	return reinterpret_cast<uchar *>(&state->lcdc.out);
 }
 
 EmuThread::~EmuThread()

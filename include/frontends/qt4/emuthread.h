@@ -18,18 +18,20 @@ public:
 		  QObject *parent = 0);
 	~EmuThread();
 
+	uchar *frameLocation();
+
 	bool initialise();
 
 protected:
 	void run();
 
 signals:
-	void frameRendered(QImage);
+	void frameRendered();
 
 public slots:
 
 private:
-	void blitHandler(uchar *);
+	void blitHandler();
 
 	QString pathToROM;
 	QString pathToSave;

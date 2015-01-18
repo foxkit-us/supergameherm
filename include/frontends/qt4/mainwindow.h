@@ -29,7 +29,7 @@ private slots:
 	void fileBug();
 	void showAbout();
 
-	void frameRendered(QImage);
+	void frameRendered();
 
 private:
 	void initActions();

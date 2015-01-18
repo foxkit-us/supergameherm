@@ -124,9 +124,8 @@ void MainWindow::toggleOpenROM(bool isOpen)
 	closeRomAction->setEnabled(isOpen);
 }
 
-void MainWindow::frameRendered(QImage image)
+void MainWindow::frameRendered()
 {
-	lcd->currentFrame = image;
 	lcd->update();
 }
 
@@ -152,11 +151,12 @@ void MainWindow::quickOpenRom()
 						       QFileDialog::HideNameFilterDetails);
 
 	thread = new EmuThread(romFile, 0, 0, this);
-	connect(thread, SIGNAL(frameRendered(QImage)), this, SLOT(frameRendered(QImage)));
+	connect(thread, SIGNAL(frameRendered()), this, SLOT(frameRendered()));
 	if(thread->initialise())
 	{
 		toggleOpenROM(true);
 		thread->start();
+		lcd->setData(thread->frameLocation());
 	}
 	else
 	{
