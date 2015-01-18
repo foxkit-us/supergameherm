@@ -110,11 +110,12 @@ bool step_emulator(emu_state *restrict state)
 
 	state->cycles += count_per_step_core;
 
-	if(state->mbc.dirty && (state->cycles % state->freq) == 0)
+	if(unlikely(state->mbc.dirty && ++(state->mbc.dirty_timer) == state->freq))
 	{
 		// Do a write back
 		memmap_sync(state, state->mbc.cart_ram, &(state->mbc.cart_mm_data));
 		state->mbc.dirty = false;
+		state->mbc.dirty_timer = 0;
 	}
 
 #ifdef THROTTLE_VBLANK
