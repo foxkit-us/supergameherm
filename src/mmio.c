@@ -264,11 +264,11 @@ static mem_write8_fn hw_reg_write[0x80] =
 
 uint8_t hw_read(emu_state *restrict state, uint16_t location)
 {
-	return hw_reg_read[location - 0xFF00](state, location);
+	return hw_reg_read[location & 0xFF](state, location);
 }
 
 void hw_write(emu_state *restrict state, uint16_t location, uint8_t data)
 {
-	hw_reg_write[location - 0xFF00](state, location, data);
+	hw_reg_write[location & 0xFF](state, location, data);
 }
 

@@ -50,31 +50,31 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 	case 0x9:
 		// video memory - 0x8000..0x9FFF
 		// TODO - hooks for debug on bad read
-		return state->lcdc.vram[state->lcdc.vram_bank][location - 0x8000];
+		return state->lcdc.vram[state->lcdc.vram_bank][location & 0x7FFF];
 	case 0xC:
 		// Work RAM - 0xC000..0xCFFF
-		return state->wram[0][location - 0xC000];
+		return state->wram[0][location & 0x3FFF];
 	case 0xD:
 		// Work RAM banks 1-7 - 0xD000.0xDFFF
 		if(state->system == SYSTEM_CGB)
 		{
-			return state->wram[state->wram_bank][location - 0xD000];
+			return state->wram[state->wram_bank][location & 0x2FFF];
 		}
 		else
 		{
-			return state->wram[1][location - 0xD000];
+			return state->wram[1][location & 0x2FFF];
 		}
 	case 0xE:
 	case 0xF:
 		if(unlikely(location <= 0xFDFF))
 		{
 			// Echo RAM - 0xE000..0xFDFF
-			return mem_read8(state, location - 0x2000);
+			return mem_read8(state, location & 0xDFFF);
 		}
 		else if(location <= 0xFE9F)
 		{
 			// OAM RAM - 0xFE00..0xFE9F
-			return state->lcdc.oam_ram[location - 0xFE00];
+			return state->lcdc.oam_ram[location & 0x1FF];
 		}
 		else if(unlikely(location <= 0xFEFF))
 		{
@@ -89,7 +89,7 @@ uint8_t mem_read8(emu_state *restrict state, uint16_t location)
 		else if(location <= 0xFFFE)
 		{
 			// High RAM - 0xFF80..FFFE
-			return state->hram[location - 0xFF80];
+			return state->hram[location & 0x7F];
 		}
 		else
 		{
@@ -151,19 +151,19 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 	case 0x9:
 		// VRAM
 		// TODO - hook on bad writes outside vblank
-		state->lcdc.vram[state->lcdc.vram_bank][location - 0x8000] = data;
+		state->lcdc.vram[state->lcdc.vram_bank][location & 0x7FFF] = data;
 		return;
 	case 0xC:
-		state->wram[0][location - 0xC000] = data;
+		state->wram[0][location & 0x3FFF] = data;
 		return;
 	case 0xD:
 		if(state->system == SYSTEM_CGB)
 		{
-			state->wram[state->wram_bank][location - 0xD000] = data;
+			state->wram[state->wram_bank][location & 0x2FFF] = data;
 		}
 		else
 		{
-			state->wram[1][location - 0xD000] = data;
+			state->wram[1][location & 0x2FFF] = data;
 			return;
 		}
 		return;
@@ -172,12 +172,12 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		if(unlikely(location <= 0xFDFF))
 		{
 			// Echo RAM - 0xE000..0xFDFF
-			mem_write8(state, location - 0x2000, data);
+			mem_write8(state, location & 0xDFFF, data);
 		}
 		else if(location <= 0xFE9F)
 		{
 			// OAM RAM - 0xFE00..0xFE9F
-			state->lcdc.oam_ram[location - 0xFE00] = data;
+			state->lcdc.oam_ram[location & 0x1FF] = data;
 		}
 		else if(unlikely(location <= 0xFEFF))
 		{
@@ -192,7 +192,7 @@ void mem_write8(emu_state *restrict state, uint16_t location, uint8_t data)
 		else if(location <= 0xFFFE)
 		{
 			// High RAM - 0xFF80..FFFE
-			state->hram[location - 0xFF80] = data;
+			state->hram[location & 0x7F] = data;
 		}
 		else
 		{

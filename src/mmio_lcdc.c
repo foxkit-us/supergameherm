@@ -56,7 +56,7 @@ static inline uint8_t lcdc_bgp_read(emu_state *restrict state, uint16_t reg UNUS
 
 static inline uint8_t lcdc_objp_read(emu_state *restrict state, uint16_t reg)
 {
-	return state->lcdc.obj_pal[reg - 0xFF48];
+	return state->lcdc.obj_pal[reg & 0xB7];
 }
 
 static inline uint8_t lcdc_window_read(emu_state *restrict state, uint16_t reg)

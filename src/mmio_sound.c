@@ -105,7 +105,7 @@ static inline void sound_write(emu_state *restrict state, uint16_t reg, uint8_t 
 {
 	if(reg >= 0xFF30 && reg <= 0xFF3F)
 	{
-		state->snd.ch3.wave[reg - 0xFF30] = data;
+		state->snd.ch3.wave[reg & 0xCF] = data;
 		return;
 	}
 

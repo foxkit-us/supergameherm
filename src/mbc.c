@@ -23,7 +23,7 @@ static inline uint8_t rom_bank_read(emu_state *restrict state, uint16_t location
 static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location)
 {
 	size_t pos = (state->mbc.ram_bank * state->mbc.ram_bank_size) +
-		(location - 0xA000);
+		(location & 0x5FFF);
 	uint8_t value;
 
 	if(unlikely(pos > state->mbc.ram_total))
@@ -45,7 +45,7 @@ static inline uint8_t ram_bank_read(emu_state *restrict state, uint16_t location
 static inline void ram_bank_write(emu_state *restrict state, uint16_t location, uint8_t value)
 {
 	size_t pos = (state->mbc.ram_bank * state->mbc.ram_bank_size) +
-		(location - 0xA000);
+		(location & 0x5FFF);
 
 	if(unlikely(pos > state->mbc.ram_total))
 	{
