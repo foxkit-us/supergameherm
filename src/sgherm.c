@@ -105,7 +105,12 @@ bool step_emulator(emu_state *restrict state)
 	// The overhead of calling execute is enough where this is worthwhile
 	if(state->wait)
 	{
-		state->wait--;
+		int wait_old = state->wait;
+		state->wait -= count_per_step_core;
+		if(unlikely(state->wait > wait_old))
+		{
+			state->wait = 0;
+		}
 	}
 	else
 	{
