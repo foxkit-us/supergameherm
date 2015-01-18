@@ -94,6 +94,7 @@ void timer_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 	}
 }
 
+// XXX don't loop, compute this dynamically
 void timer_tick(emu_state *restrict state, int count)
 {
 	int i;

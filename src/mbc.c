@@ -2,7 +2,7 @@
 #include "sgherm.h"	// emu_state
 #include "memory.h"	// constants
 #include "print.h"	// warning/debug
-#include "mmap.h"	// memmap_*
+#include "memmap.h"	// memmap_*
 #include "util.h"	// unix_time_delta
 
 #include <string.h>	// memset
