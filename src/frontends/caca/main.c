@@ -4,6 +4,9 @@
 #include "print.h"	// to_stdout/to_stderr
 #include "signals.h"	// register_handlers
 
+#include "frontend.h"
+#include "frontends/caca/frontend.h"
+
 #include <stdio.h>	// file methods
 #include <stdlib.h>	// exit
 #include <string.h>	// memset

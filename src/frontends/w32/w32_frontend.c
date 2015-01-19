@@ -18,6 +18,7 @@
 #include "sgherm.h"
 #include "print.h"	// debug
 #include "frontend.h"	// frontend
+#include "frontends/w32/frontend.h"
 
 /*! buffer count (must be power of two) */
 #define WHD_COUNT 4

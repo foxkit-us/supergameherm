@@ -62,42 +62,6 @@ int null_event_loop(emu_state *restrict);
 #define NULL_VIDEO &null_frontend_video
 #define NULL_LOOP &null_event_loop
 
-//! libcaca frontends
-#ifdef HAVE_LIBCACA
-#	include "frontends/caca/frontend.h"
-#	define LIBCACA_AUDIO &null_frontend_audio
-#	define LIBCACA_VIDEO &libcaca_frontend_video
-#	define LIBCACA_LOOP &libcaca_event_loop
-#else
-#	define LIBCACA_AUDIO &null_frontend_audio
-#	define LIBCACA_VIDEO &null_frontend_video
-#	define LIBCACA_LOOP &null_event_loop
-#endif
-
-//! SDL2 frontends
-#ifdef HAVE_SDL2
-#	include "frontends/sdl2/frontend.h"
-#	define SDL2_AUDIO &sdl2_frontend_audio
-#	define SDL2_VIDEO &sdl2_frontend_video
-#	define SDL2_LOOP sdl2_event_loop
-#else
-#	define SDL2_INPUT &null_frontend_input
-#	define SDL2_AUDIO &null_frontend_audio
-#	define SDL2_VIDEO &null_frontend_video
-#	define SDL2_LOOP &null_event_loop
-#endif
-
-//! Win32 frontend
-#ifdef HAVE_WINDOWS
-#	include "frontends/w32/frontend.h"
-#	define WIN32_AUDIO &w32_frontend_audio
-#	define WIN32_VIDEO &w32_frontend_video
-#	define WIN32_LOOP &w32_event_loop
-#else
-#	define WIN32_AUDIO &null_frontend_audio
-#	define WIN32_VIDEO &null_frontend_video
-#	define WIN32_LOOP &null_event_loop
-#endif
 
 // Helpers to call functions
 #define CALL_FRONTEND_0(state, type, fn) ((*(state->front.type.fn))(state))

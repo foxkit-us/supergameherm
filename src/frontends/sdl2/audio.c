@@ -2,6 +2,7 @@
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
 #include "frontend.h"	// frontend
+#include "frontends/sdl2/frontend.h"
 #include "frontends/sdl2/sdl_inc.h"	// SDL
 
 static void sdl2_audio_callback(void *userdata, Uint8 *stream, int len)
@@ -39,7 +40,7 @@ bool sdl2_init_audio(emu_state *state)
 	}
 
 	snd->freq = aspec.freq;
-	
+
 	SDL_PauseAudio(0);
 
 	return true;
