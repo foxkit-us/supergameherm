@@ -50,7 +50,7 @@ typedef enum
 bool select_frontend_audio(emu_state * restrict, const frontend_audio * restrict);
 bool select_frontend_video(emu_state * restrict, const frontend_video * restrict);
 bool select_frontend_all(emu_state * restrict, const frontend_audio * restrict,
-	const frontend_video * restrict, int (*)(emu_state *));
+	const frontend_video * restrict, int (*)(emu_state *restrict));
 void finish_frontend(emu_state *restrict);
 
 //! Null frontends

@@ -37,7 +37,7 @@ bool select_frontend_video(emu_state *restrict state, const frontend_video *rest
 bool select_frontend_all(emu_state *restrict state,
 		const frontend_audio *restrict audio,
 		const frontend_video *restrict video,
-		int (*event_loop)(emu_state *))
+		int (*event_loop)(emu_state *restrict))
 {
 	if(!select_frontend_video(state, video))
 	{
