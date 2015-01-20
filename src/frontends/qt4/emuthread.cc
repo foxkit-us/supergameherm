@@ -1,6 +1,7 @@
 #include <QEventLoop>
 #include <QProcess>
 #include "frontends/qt4/emuthread.h"
+#include "frontends/sdl2/frontend.h"	// we use SDL2 audio
 
 #include "print.h"
 
