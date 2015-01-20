@@ -1,6 +1,7 @@
 #include "config.h"	// macros, uint[XX]_t
 #include <assert.h>	// assert
 #include <string.h>	// memmove
+#include <stdlib.h>	// free
 
 #include "sgherm.h"	// emu_state
 #include "ctl_unit.h"	// int_flag_*

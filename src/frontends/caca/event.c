@@ -4,7 +4,7 @@
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
 #include "frontend.h"	// frontend
-
+#include "frontends/caca/frontend.h"
 
 static inline input_key get_key(caca_event_t *ev)
 {

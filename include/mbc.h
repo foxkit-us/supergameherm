@@ -87,6 +87,7 @@ struct mbc_state_t
 	uint8_t *cart_ram;		//! Cartridge RAM
 	memmap_state *cart_mm_data;	//! Opaque data for cart RAM
 	bool dirty;			//! Whether data needs to be written back
+	uint_fast32_t dirty_timer;	//! Timer for dirty write
 
 	unsigned ram_bank;		//! Current RAM bank
 	unsigned ram_bank_size;		//! Size of each bank
@@ -107,7 +108,7 @@ struct mbc_state_t
 };
 
 
-bool mbc_select(emu_state *);
-void adjust_mbc3_time(emu_state *); // XXX
+bool mbc_select(emu_state *restrict);
+void adjust_mbc3_time(emu_state *restrict); // XXX
 
 #endif //__MBC_H__

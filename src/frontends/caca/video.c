@@ -2,6 +2,7 @@
 #include "print.h"	// debug
 #include "signals.h"	// do_exit
 #include "frontend.h"	// frontend
+#include "frontends/caca/frontend.h"
 
 #include <caca.h>	// libcaca
 #include <stdbool.h>	// bool

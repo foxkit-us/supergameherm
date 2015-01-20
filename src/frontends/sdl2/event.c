@@ -1,3 +1,4 @@
+#include "config.h"	// bool, etc
 #include "sgherm.h"	// emu_state
 #include "print.h"	// debug
 #include "signals.h"	// do_exit

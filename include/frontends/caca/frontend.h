@@ -19,4 +19,8 @@ typedef struct libcaca_video_data_t
 	FILE *stderr_new;
 } libcaca_video_data;
 
+#define LIBCACA_AUDIO &null_frontend_audio
+#define LIBCACA_VIDEO &libcaca_frontend_video
+#define LIBCACA_LOOP &libcaca_event_loop
+
 #endif /*__FRONTEND_CACA_FRONTEND_H__*/

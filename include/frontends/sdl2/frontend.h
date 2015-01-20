@@ -21,4 +21,9 @@ extern const frontend_audio sdl2_frontend_audio;
 extern const frontend_video sdl2_frontend_video;
 int sdl2_event_loop(emu_state *);
 
+
+#define SDL2_AUDIO &sdl2_frontend_audio
+#define SDL2_VIDEO &sdl2_frontend_video
+#define SDL2_LOOP sdl2_event_loop
+
 #endif

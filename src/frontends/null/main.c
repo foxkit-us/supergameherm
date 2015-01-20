@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	register_handlers();
 
 	to_stdout = stdout;
-	to_stderr = stderr;
+	to_stderr = freopen("stderr.log", "a", stderr);
 
 	fprintf(to_stdout, "Super Game Herm (null frontend)!\n");
 	fprintf(to_stdout, "Beta version!\n\n");
