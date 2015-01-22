@@ -38,7 +38,7 @@ const char *friendly_cart_names[0x20] =
 
 bool read_bootrom_data(emu_state *restrict state, const char *bootrom_path)
 {
-	int64_t i;
+	int i;
 	size_t read_size;
 	FILE *bootrom;
 
@@ -90,7 +90,7 @@ bool read_bootrom_data(emu_state *restrict state, const char *bootrom_path)
 bool read_rom_data(emu_state *restrict state, const char *restrict rom_path,
 	cart_header *restrict *restrict header)
 {
-	int64_t i;
+	int i;
 	size_t read_size, cart_size;
 	size_t result;
 	int8_t checksum = 0;

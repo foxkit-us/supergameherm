@@ -16,7 +16,7 @@ typedef struct time_delta_t
 // Functions
 uint32_t interleave8(uint8_t, uint8_t, uint8_t, uint8_t);
 uint32_t interleave16(uint16_t, uint16_t);
-int64_t get_file_size(const char *);
+int get_file_size(const char *);
 
 void unix_time_delta(uint64_t, uint64_t, time_delta *);
 

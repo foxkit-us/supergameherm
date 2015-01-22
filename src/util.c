@@ -107,7 +107,7 @@ void unix_time_delta(uint64_t t_new, uint64_t t_old, time_delta *td)
 #	include <sys/types.h>
 #	include <sys/stat.h>
 
-int64_t get_file_size(const char *path)
+int get_file_size(const char *path)
 {
 	struct stat buf;
 
@@ -123,7 +123,7 @@ int64_t get_file_size(const char *path)
 #	include <stdio.h>	// FILE, etc.
 
 // ANSI portable version, slow but works
-int64_t get_file_size(const char *path)
+int get_file_size(const char *path)
 {
 	FILE *f;
 	int64_t ret;
