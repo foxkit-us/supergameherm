@@ -19,19 +19,48 @@ macro(libcaca_check)
 	endif()
 endmacro()
 
-macro(qt4_check)
+macro(qt_check)
+	####
+	# Finding the Qt packages.
+	####
+	find_package(Qt5Widgets)
+	if(Qt5Widgets_FOUND)
+		option(QT5_ENABLE "Enable Qt 5 frontend" on)
+	endif()
+
 	find_package(Qt4)
 	if(Qt4_FOUND)
 		option(QT4_ENABLE "Enable Qt 4 frontend" on)
 	endif()
+
+
+	####
+	# Qt5 specific
+	####
+	if(QT5_ENABLE)
+		find_package(SDL2 REQUIRED)  # XXX should go away and use Phonon.
+		set(HAVE_QT5 1)
+
+		file(GLOB QT5_FRONTEND_SOURCES src/frontends/qt/*.cc src/frontends/sdl2/audio.c)
+		file(GLOB QT5_FRONTEND_HEADERS include/frontends/qt/*.h)
+		file(GLOB QT5_FRONTEND_RESOURCES src/frontends/qt/*.qrc)
+		qt5_wrap_cpp(QT5_FRONTEND_MOC ${QT5_FRONTEND_HEADERS})
+		qt5_add_resources(QT5_COMPILED_RESOURCES ${QT5_FRONTEND_RESOURCES})
+		add_executable("sgherm-qt5" ${QT5_FRONTEND_SOURCES} ${QT5_FRONTEND_MOC} ${QT5_COMPILED_RESOURCES} $<TARGET_OBJECTS:sgherm-core>)
+		target_link_libraries("sgherm-qt5" Qt5::Widgets ${SDL2_LIBRARY})
+	endif()
+
+	####
+	# Qt4 specific
+	####
 	if(QT4_ENABLE)
-		find_package(SDL2 REQUIRED)
+		find_package(SDL2 REQUIRED)  # XXX same as qt5
 		set(HAVE_QT4 1)
 		include(${QT_USE_FILE})
 
-		file(GLOB QT4_FRONTEND_SOURCES src/frontends/qt4/*.cc src/frontends/sdl2/audio.c)
-		file(GLOB QT4_FRONTEND_HEADERS include/frontends/qt4/*.h)
-		file(GLOB QT4_FRONTEND_RESOURCES src/frontends/qt4/*.qrc)
+		file(GLOB QT4_FRONTEND_SOURCES src/frontends/qt/*.cc src/frontends/sdl2/audio.c)
+		file(GLOB QT4_FRONTEND_HEADERS include/frontends/qt/*.h)
+		file(GLOB QT4_FRONTEND_RESOURCES src/frontends/qt/*.qrc)
 		qt4_wrap_cpp(QT4_FRONTEND_MOC ${QT4_FRONTEND_HEADERS})
 		qt4_add_resources(QT4_COMPILED_RESOURCES ${QT4_FRONTEND_RESOURCES})
 		add_executable("sgherm-qt4" ${QT4_FRONTEND_SOURCES} ${QT4_FRONTEND_MOC} ${QT4_COMPILED_RESOURCES} $<TARGET_OBJECTS:sgherm-core>)
@@ -102,7 +131,7 @@ endmacro()
 macro(frontend_checks)
 	sdl2_check()
 	libcaca_check()
-	qt4_check()
+	qt_check()
 	win32_check()
 	null_check()
 endmacro()
