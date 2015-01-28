@@ -1,6 +1,6 @@
 #include <QtGui>
 
-#include "frontends/qt4/mainwindow.h"
+#include "frontends/qt/mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)

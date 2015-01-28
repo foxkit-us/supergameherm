@@ -1,5 +1,5 @@
 #include <QPainter>
-#include "frontends/qt4/lcdwidget.h"
+#include "frontends/qt/lcdwidget.h"
 #include <QDebug>
 
 LCDWidget::LCDWidget(QWidget *parent) :

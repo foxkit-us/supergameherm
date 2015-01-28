@@ -3,8 +3,8 @@
 
 #include <QMainWindow>
 
-#include "frontends/qt4/emuthread.h"
-#include "frontends/qt4/lcdwidget.h"
+#include "frontends/qt/emuthread.h"
+#include "frontends/qt/lcdwidget.h"
 
 class MainWindow : public QMainWindow
 {

@@ -1,5 +1,5 @@
 #include <QApplication>
-#include "frontends/qt4/mainwindow.h"
+#include "frontends/qt/mainwindow.h"
 
 int main(int argc, char *argv[])
 {
