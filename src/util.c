@@ -97,9 +97,7 @@ void unix_time_delta(uint64_t t_new, uint64_t t_old, time_delta *td)
 	td->seconds = val % 60;
 }
 
-#if defined(_WIN32) && !defined(__MINGW32__)
-#	define stat _stat
-#elif defined(HAVE_POSIX)
+#if defined(HAVE_POSIX)
 #	include <unistd.h>
 #endif
 
