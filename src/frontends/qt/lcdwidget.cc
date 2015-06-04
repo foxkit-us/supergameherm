@@ -1,6 +1,7 @@
 #include <QPainter>
 #include "frontends/qt/lcdwidget.h"
 #include <QDebug>
+#include <stdint.h>
 
 LCDWidget::LCDWidget(QWidget *parent) :
 	QWidget(parent), image(NULL)
@@ -18,7 +19,7 @@ void LCDWidget::setData(uchar *data)
 
 	if(data != NULL)
 	{
-		image = new QImage(data, 160, 144, QImage::Format_ARGB32);
+		image = new QImage(data, 160, 144, QImage::Format_RGB32);
 	}
 }
 
@@ -39,8 +40,7 @@ void LCDWidget::paintEvent(QPaintEvent *event)
 		return;
 	}
 
-	p.eraseRect(0, 0, 160, 144);
-	p.drawImage(0, 0, *image);
+	p.drawImage(QPoint(0, 0), *image);
 
 	p.end();
 }
