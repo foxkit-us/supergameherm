@@ -28,12 +28,6 @@ macro(qt_check)
 		option(QT5_ENABLE "Enable Qt 5 frontend" on)
 	endif()
 
-	find_package(Qt4)
-	if(Qt4_FOUND)
-		option(QT4_ENABLE "Enable Qt 4 frontend" on)
-	endif()
-
-
 	####
 	# Qt5 specific
 	####
@@ -41,6 +35,7 @@ macro(qt_check)
 		find_package(SDL2 REQUIRED)  # XXX should go away and use Phonon.
 		set(HAVE_QT5 1)
 
+		include_directories(${Qt5Widgets_INCLUDE_DIR})
 		file(GLOB QT5_FRONTEND_SOURCES src/frontends/qt/*.cc src/frontends/sdl2/audio.c)
 		file(GLOB QT5_FRONTEND_HEADERS include/frontends/qt/*.h)
 		file(GLOB QT5_FRONTEND_RESOURCES src/frontends/qt/*.qrc)
@@ -48,6 +43,12 @@ macro(qt_check)
 		qt5_add_resources(QT5_COMPILED_RESOURCES ${QT5_FRONTEND_RESOURCES})
 		add_executable("sgherm-qt5" ${QT5_FRONTEND_SOURCES} ${QT5_FRONTEND_MOC} ${QT5_COMPILED_RESOURCES} $<TARGET_OBJECTS:sgherm-core>)
 		target_link_libraries("sgherm-qt5" Qt5::Widgets ${SDL2_LIBRARY})
+	endif()
+
+
+	find_package(Qt4)
+	if(Qt4_FOUND)
+		option(QT4_ENABLE "Enable Qt 4 frontend" on)
 	endif()
 
 	####

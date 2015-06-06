@@ -37,20 +37,30 @@ EmuThread::EmuThread(QString romPath, QString savePath, QString bootROM,
 
 bool EmuThread::initialise()
 {
-	// XXX
-	// I HATE THIS
-	const char *boot_rom = pathToBootROM.toAscii();
-	const char *rom = pathToROM.toAscii();
-	const char *save = pathToSave.toAscii();
+	char *boot_rom = NULL, *rom = NULL, *save = NULL;
 
-	if(strlen(boot_rom) == 0) boot_rom = NULL;
-	if(strlen(rom) == 0) rom = NULL;
-	if(strlen(save) == 0) save = NULL;
+	// why strdup?  because the std::string object will be deconstructed
+	// at the ;, and the c_str pointer becomes invalid at dtor time.
+	if(pathToBootROM.length() > 0)
+	{
+		boot_rom = strdup(pathToBootROM.toStdString().c_str());
+	}
+
+	if(pathToROM.length() > 0)
+	{
+		rom = strdup(pathToROM.toStdString().c_str());
+	}
+
+	if(pathToSave.length() > 0)
+	{
+		save = strdup(pathToSave.toStdString().c_str());
+	}
 
 	state = init_emulator(boot_rom, rom, save);
 
-	// end hate
-	// XXX
+	free(save);
+	free(rom);
+	free(boot_rom);
 
 	if(state == NULL)
 	{
