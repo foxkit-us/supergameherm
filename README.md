@@ -16,8 +16,8 @@ Our emulator's a herm. Deal with it.
 
 ## Who made this?
 The authors are, in alphabetical order:
-* [awilfox](http://github.com/awilfox)
-* [Elizafox](http://github.com/Elizafox)
+* [awilfox](http://code.foxkit.us/awilfox)
+* [Elizafox](http://code.foxkit.us/Elizafox)
 * [GreaseMonkey](http://github.com/iamgreaser)
 
 They've done as follows:
