@@ -147,7 +147,7 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 	m_state->f_size = size;
 	m_state->size = size = _round_nearest(size, sysconf(_SC_PAGESIZE));
 
-	if(!(map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)))
+	if((map = mmap(NULL, size, PROT_READ | PROT_WRITE, m_state->flags, fd, 0)) == -1)
 	{
 		error(state, "Could not mmap file: %s", strerror(errno));
 
