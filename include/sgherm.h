@@ -81,6 +81,7 @@ struct emu_state_t
 
 	// CPU state
 	cpu_freq freq;			//! CPU frequency
+	uint_fast8_t step_core;		//! Ticks per step
 	interrupt_state interrupts;
 	register_state registers;	//! Registers
 

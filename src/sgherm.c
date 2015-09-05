@@ -51,6 +51,7 @@ emu_state * init_emulator(const char *bootrom_path, const char *rom_path, const 
 	state->interrupts.enabled = true;
 	state->wait = 1;
 	state->freq = CPU_FREQ_DMG;
+	state->step_core = 1;
 
 	if(unlikely(!read_rom_data(state, rom_path, &header)))
 	{
@@ -100,7 +101,7 @@ bool step_emulator(emu_state *restrict state)
 {
 	// TODO: handle CGB speed better
 	int count_per_step = 1;
-	int count_per_step_core = (state->freq == CPU_FREQ_CGB ? 2 : 1);
+	int count_per_step_core = state->step_core;
 
 	// The overhead of calling execute is enough where this is worthwhile
 	if(state->wait)
