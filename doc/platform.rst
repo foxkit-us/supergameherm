@@ -129,8 +129,12 @@ Other versions and architectures have not been tested.
 Mac OS X
 ********
 
-SDL 2 has not been tested.  libcaca has endianness issues on PowerPC, and
-has not been tested on Intel Macs.
+SDL 2 has horrific throughput, at least on Power Macs.  libcaca meanwhile
+works very well on both PowerPC and Intel Macs.
+
+SuperGameHerm cannot be built with the Mac OS X 10.4 SDK due to visibility
+issues with MAP_ANON.  It runs on any Mac OS X version 10.2+, but if you
+must build on 10.4, use the 10.3 SDK included with your Xcode Tools CD.
 
 
 *****
