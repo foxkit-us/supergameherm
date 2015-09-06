@@ -118,10 +118,22 @@ bool step_emulator(emu_state *restrict state)
 		execute(state, count_per_step_core);
 	}
 
-	lcdc_tick(state, count_per_step);
-	serial_tick(state, count_per_step_core);
+	if(likely(LCDC_ENABLE(state)) && !unlikely(state->stop))
+	{
+		lcdc_tick(state, count_per_step);
+	}
+
+	if(unlikely(state->ser.enabled))
+	{
+		serial_tick(state, count_per_step_core);
+	}
+
 	timer_tick(state, count_per_step_core);
-	sound_tick(state, count_per_step);
+
+	if(likely(state->snd.enabled))
+	{
+		sound_tick(state, count_per_step);
+	}
 
 	state->cycles += count_per_step_core;
 

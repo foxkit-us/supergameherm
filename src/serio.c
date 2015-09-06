@@ -13,11 +13,13 @@ void serial_tick(emu_state *restrict state, int count)
 {
 	uint16_t ticks;
 
+#ifdef DEFENSIVE
 	// we aren't active; we don't care
 	if(!state->ser.enabled)
 	{
 		return;
 	}
+#endif
 
 	for(; count > 0; count--)
 	{

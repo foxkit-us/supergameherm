@@ -735,11 +735,13 @@ static lcdc_mode_fn mode_fns[0x4] = {
 
 void lcdc_tick(emu_state *restrict state, int count)
 {
+#ifdef DEFENSIVE
 	if(unlikely(state->stop) ||
 	   unlikely(!LCDC_ENABLE(state)))
 	{
 		return;
 	}
+#endif
 
 	if((state->lcdc.curr_clk + count) < state->lcdc.next_clk)
 	{
