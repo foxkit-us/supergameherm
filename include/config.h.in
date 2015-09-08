@@ -25,6 +25,7 @@
 
 #if defined(HAVE_POSIX_MADVISE) && !defined(HAVE_MADVISE)
 #	define madvise posix_madvise
+#	define MADV_RANDOM POSIX_MADV_RANDOM
 #	define HAVE_MADVISE 1
 #endif
 
