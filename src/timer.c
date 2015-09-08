@@ -11,15 +11,8 @@ void timer_tick(emu_state *restrict state, int count)
 
 	// DIV increases even if the timer is disabled
 	div_clk += count;
-	if(div_clk > 0xFF)
-	{
-		state->timer.div += (div_clk >> 8);
-		state->timer.div_clk = (div_clk & 0xFF);
-	}
-	else
-	{
-		state->timer.div_clk = div_clk;
-	}
+	state->timer.div += (div_clk >> 8);
+	state->timer.div_clk = (div_clk & 0xFF);
 
 	// but nothing else does.
 	if(!state->timer.enabled)
