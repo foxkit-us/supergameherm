@@ -5,18 +5,20 @@
 #include "sgherm.h"	// emu_state
 
 
-// XXX don't loop, compute this dynamically
 void timer_tick(emu_state *restrict state, int count)
 {
-	int i;
+	int i, div_clk = state->timer.div_clk;
 
 	// DIV increases even if the timer is disabled
-	for(i = 0; i < count; i++)
+	div_clk += count;
+	if(div_clk > 0xFF)
 	{
-		if(++state->timer.div_clk == 0)
-		{
-			state->timer.div++;
-		}
+		state->timer.div += (div_clk >> 8);
+		state->timer.div_clk = (div_clk & 0xFF);
+	}
+	else
+	{
+		state->timer.div_clk = div_clk;
 	}
 
 	// but nothing else does.
