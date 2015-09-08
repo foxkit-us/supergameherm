@@ -167,7 +167,9 @@ void * memmap_open(emu_state *restrict state, const char *path, size_t size, mem
 		close(fd);
 	}
 
+#ifdef HAVE_MADVISE
 	madvise(map, size, MADV_RANDOM);
+#endif //HAVE_MADVISE
 
 	debug(state, "Allocated %ld bytes", size);
 
@@ -249,7 +251,9 @@ void * memmap_resize(emu_state *restrict state, void *map, size_t size, memmap_s
 		close(fd);
 	}
 
+#ifdef HAVE_MADVISE
 	madvise(map_new, size, MADV_RANDOM);
+#endif //HAVE_MADVISE
 
 	// Remove old mapping
 	munmap(map, m_state->size);
