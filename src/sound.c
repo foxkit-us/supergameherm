@@ -8,6 +8,7 @@ const uint8_t au_pulses[4] = { 0x80, 0xC0, 0xF0, 0x3F, };
 void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size_t len_samples)
 {
 	size_t i;
+	uint16_t lfsr_tap;
 
 	snd_state *snd = &state->snd;
 
@@ -20,7 +21,7 @@ void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size
 		<<(snd->ch4.period_exp+0));
 
 	if(snd->ch4.lfsr == 0) snd->ch4.lfsr = 0xFFFF;
-	uint16_t lfsr_tap = (snd->ch4.is_short
+	lfsr_tap = (snd->ch4.is_short
 		? 0x4040
 		: 0x4000);
 	//printf("per %c %i\n", snd->ch4.is_short?'s':'L', ch4_period);
@@ -98,10 +99,10 @@ void sound_fetch_s16ne(emu_state *restrict state, int16_t *restrict outbuf, size
 		if(ch4_period > 0)
 		while(snd->ch4.per_remain < 0)
 		{
-			snd->ch4.per_remain += ch4_period;
-
 			// Update LFSR
 			int lbit = (snd->ch4.lfsr^(snd->ch4.lfsr>>1))&1;
+
+			snd->ch4.per_remain += ch4_period;
 
 			snd->ch4.lfsr >>= 1;
 

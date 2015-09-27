@@ -117,13 +117,13 @@ static inline void cgb_bg_render(emu_state *restrict state)
 	uint8_t pixel_y_offset = (sy & 7) * 2;
 
 	uint16_t pixel_temp = 0;
+	uint32_t *palette = state->lcdc.bcpal;
 
 	if(LCDC_BG_CODE_SEL(state))
 	{
 		tile_map_start += 0x400;
 	}
 
-	uint32_t *palette = state->lcdc.bcpal;
 	for(x = 0; x < 160; x++, sx++)
 	{
 		//uint8_t pixel;
@@ -136,8 +136,8 @@ static inline void cgb_bg_render(emu_state *restrict state)
 			uint8_t *mem;
 
 			// Get attribute information
-			palette = state->lcdc.bcpal + ((attr&7)<<2);
 			int tbank = ((attr&0x08) != 0 ? 1 : 0);
+			palette = state->lcdc.bcpal + ((attr&7)<<2);
 
 			// TODO: hflip/vflip/prio
 
@@ -237,6 +237,7 @@ static inline void cgb_window_render(emu_state *restrict state)
 	uint16_t pixel_data_start = LCDC_BG_CHAR_SEL(state) ? 0x0 : 0x800;
 
 	uint16_t pixel_temp = 0;
+	uint32_t *palette = state->lcdc.bcpal;
 
 	if(wx > 159 || wy > 143 || wy < 0)
 	{
@@ -244,7 +245,6 @@ static inline void cgb_window_render(emu_state *restrict state)
 		return;
 	}
 
-	uint32_t *palette = state->lcdc.bcpal;
 	for(; wx < 159; x++, wx++)
 	{
 		//uint8_t pixel;
@@ -257,8 +257,8 @@ static inline void cgb_window_render(emu_state *restrict state)
 			uint8_t *mem;
 
 			// Get attribute information
-			palette = state->lcdc.bcpal + ((attr&7)<<2);
 			int tbank = ((attr&0x08) != 0 ? 1 : 0);
+			palette = state->lcdc.bcpal + ((attr&7)<<2);
 
 			// TODO: hflip/vflip/prio
 
@@ -318,12 +318,16 @@ static inline void dmg_oam_render(emu_state *restrict state)
 	for(curr_tile = 39; curr_tile >= 0; curr_tile -= 1)
 	{
 		oam obj;
-		copy_oam(state, curr_tile, &obj);
-		uint8_t tile = obj.chr;
-		const int16_t obj_x = obj.x - 8, obj_y = obj.y - 16;
+		uint8_t tile;
+		int16_t obj_x, obj_y;
 
 		uint8_t *mem;
 		uint16_t pixel_temp;
+
+		copy_oam(state, curr_tile, &obj);
+		tile = obj.chr;
+		obj_x = obj.x - 8;
+		obj_y = obj.y - 16;
 
 		// Adjusted for offsets
 		if(!(obj.x && obj.y && obj.x < 168 && obj.y < 160))
@@ -407,13 +411,18 @@ static inline void cgb_oam_render(emu_state *restrict state)
 	for(curr_tile = 39; curr_tile >= 0; curr_tile -= 1)
 	{
 		oam obj;
-		copy_oam(state, curr_tile, &obj);
-		uint8_t tile = obj.chr;
-		const int16_t obj_x = obj.x - 8, obj_y = obj.y - 16;
+		uint8_t tile;
+		int16_t obj_x, obj_y;
 
 		uint8_t *mem;
 		uint32_t *palette = state->lcdc.ocpal;
 		uint16_t pixel_temp;
+		int tbank;
+
+		copy_oam(state, curr_tile, &obj);
+		tile = obj.chr;
+		obj_x = obj.x - 8;
+		obj_y = obj.y - 16;
 
 		// Adjusted for offsets
 		if(!(obj.x && obj.y && obj.x < 168 && obj.y < 160))
@@ -424,7 +433,7 @@ static inline void cgb_oam_render(emu_state *restrict state)
 
 		// Get attribute information
 		palette = state->lcdc.ocpal + (obj.pal_cgb<<2);
-		int tbank = obj.char_bank;
+		tbank = obj.char_bank;
 
 		pixel_y_offset = state->lcdc.ly - obj_y;
 		if(pixel_y_offset > (y_len - 1))

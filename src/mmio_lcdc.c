@@ -235,6 +235,10 @@ static inline void bg_pal_ind_write(emu_state *restrict state, uint16_t reg, uin
 
 static void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
+	int idx;
+	uint8_t c0, c1;
+	uint32_t r, g, b;
+
 	if(state->system != SYSTEM_CGB)
 	{
 		no_hw_write(state, reg, data);
@@ -243,12 +247,12 @@ static void bg_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t d
 
 	state->lcdc.bcpd[state->lcdc.bcpi&0x3F] = data;
 
-	int idx = (state->lcdc.bcpi>>1) & 0x1F;
-	uint8_t c0 = state->lcdc.bcpd[(idx<<1)+0];
-	uint8_t c1 = state->lcdc.bcpd[(idx<<1)+1];
-	uint32_t r = c0 & 0x1F;
-	uint32_t g = ((c0>>5) | (c1<<3)) & 0x1F;
-	uint32_t b = (c1>>2) & 0x1F;
+	idx = (state->lcdc.bcpi>>1) & 0x1F;
+	c0 = state->lcdc.bcpd[(idx<<1)+0];
+	c1 = state->lcdc.bcpd[(idx<<1)+1];
+	r = c0 & 0x1F;
+	g = ((c0>>5) | (c1<<3)) & 0x1F;
+	b = (c1>>2) & 0x1F;
 	r = cgb_ramp[r];
 	g = cgb_ramp[g];
 	b = cgb_ramp[b];
@@ -274,6 +278,10 @@ static inline void sprite_pal_ind_write(emu_state *restrict state, uint16_t reg,
 
 static inline void sprite_pal_data_write(emu_state *restrict state, uint16_t reg, uint8_t data)
 {
+	int idx;
+	uint8_t c0, c1;
+	uint32_t r, g, b;
+
 	if(state->system != SYSTEM_CGB)
 	{
 		no_hw_write(state, reg, data);
@@ -282,12 +290,12 @@ static inline void sprite_pal_data_write(emu_state *restrict state, uint16_t reg
 
 	state->lcdc.ocpd[state->lcdc.ocpi&0x3F] = data;
 
-	int idx = (state->lcdc.ocpi>>1) & 0x1F;
-	uint8_t c0 = state->lcdc.ocpd[(idx<<1)+0];
-	uint8_t c1 = state->lcdc.ocpd[(idx<<1)+1];
-	uint32_t r = c0 & 0x1F;
-	uint32_t g = ((c0>>5) | (c1<<3)) & 0x1F;
-	uint32_t b = (c1>>2) & 0x1F;
+	idx = (state->lcdc.ocpi>>1) & 0x1F;
+	c0 = state->lcdc.ocpd[(idx<<1)+0];
+	c1 = state->lcdc.ocpd[(idx<<1)+1];
+	r = c0 & 0x1F;
+	g = ((c0>>5) | (c1<<3)) & 0x1F;
+	b = (c1>>2) & 0x1F;
 	r = cgb_ramp[r];
 	g = cgb_ramp[g];
 	b = cgb_ramp[b];
